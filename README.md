@@ -1,8 +1,6 @@
-tech docs
+<img align="left" width="48" height="48" src="https://github.com/phR0ze/cyberlinux/blob/main/art/logo_256x256.png">tech docs
 ====================================================================================================
-
-<img align="left" width="48" height="48" src="https://github.com/phR0ze/cyberlinux/blob/main/art/logo_256x256.png">
-Documenting general tech and Arch Linux flavored linux instructions. 
+Documenting general tech and Arch Linux flavored linuxes 
 
 ### Quick links
 * [Development](development)
