@@ -1,4 +1,4 @@
-<img align="left" width="48" height="48" src="https://github.com/phR0ze/cyberlinux/blob/main/art/logo_256x256.png">tech docs
+<img align="left" width="48" height="48" src="images/logo_256x256.png">tech docs
 ====================================================================================================
 Documenting general tech and Arch Linux flavored linuxes 
 
