@@ -1,6 +1,5 @@
-# vscode
+<img align="left" width="48" height="48" src="../../images/logo_256x256.png">vscode
 ====================================================================================================
-<img align="left" width="48" height="48" src="../../../art/logo_256x256.png">
 Develop with Visual Studio Code
 <br><br>
 
@@ -19,14 +18,16 @@ Develop with Visual Studio Code
     * [Debug with dlv](#debug-with-dlv)
   * [Ruby](#ruby)
     * [Config Ruby](#config-ruby)
+    * [Debug Ruby](#debug-ruby)
   * [Rust](#rust)
     * [Install Rust](#install-rust)
     * [Config Rust](#config-rust)
     * [Rust tasks](#rust-tasks)
+* [Developing inside a Container](#developing-inside-a-container)
 * [Troubleshooting](#troubleshooting)
   * [Remove All Extensions](#remove-all-extensions)
 
-# Install <a name="install"></a>
+# Install
 ```bash
 # Install from the cyberlinux repo
 $ sudo pacman -S visual-studio-code-bin ripgrep
@@ -37,7 +38,7 @@ $ cd visual-studio-code-bin; makepkg -s
 $ sudo pacman -U visual-studio-code-bin-1.8.1-3x86_64.pkg.tar.xz
 ```
 
-# Install Extensions <a name="install-extensions"></a>
+# Install Extensions
 1. Launch `code`
 
 2. Click the button on the left that looks like an extension icon
@@ -63,7 +64,7 @@ $ sudo pacman -U visual-studio-code-bin-1.8.1-3x86_64.pkg.tar.xz
    | CodeLLDB             | `vadimcn.vscode-lldb`                 |
    | crates               | `serayuzgur.crates`                   |
 
-# Keyboard Shortcuts <a name="keyboard-shortcuts"></a>
+# Keyboard Shortcuts
 Hit `Ctrl+Shift+p` and search for keyboard then choose `Preferences: Open Keyboard Shortcuts`
 
 | Key sequence   | Description             |
@@ -95,13 +96,13 @@ Keyboard shortcut overrides are found in: `~/.config/Code/User/keybindings.json`
 ]
 ```
 
-## tasks.json <a name="tasks-json"></a>
+## tasks.json
 Every project requires the creation of the `.vscode/tasks.json` file to map keybindings to your 
 specific project.
 
 * see [Rust tasks](#rust-tasks)
 
-# General Settings <a name="general-settings"></a>
+# General Settings
 Configuration is saved at `~/.config/Code/User/settings.json`
 
 Hit `Ctrl+Shift+p` and search for `json` and select `Preferences: Open Settings(JSON)`
@@ -173,7 +174,7 @@ Hit `Ctrl+Shift+p` and search for `json` and select `Preferences: Open Settings(
 }
 ```
 
-## Powerline glyphs in terminal <a name="powerline-glyphs-in-terminal"/></a>
+## Powerline glyphs in terminal
 Powerline depends on fonts that support the particular glyphs that it uses. In order to get them to 
 show up properly you need to install the right fonts then set VSCode to use the correct fonts for the 
 terminal.
@@ -202,18 +203,18 @@ terminal.
    "terminal.integrated.fontSize": 16
    ```
 
-# Language Config <a name="language-config"></a>
+# Language Config
 
-## Golang <a name="golang"></a>
+## Golang
 
-### Install Golang <a name="install-golang"></a>
+### Install Golang
 Install golang dependencies;
 
 ```bash
 $ sudo pacman -S go go-tools go-bindata delve
 ```
 
-### Config Golang <a name="config-golang"></a>
+### Config Golang
 1. Set go path in `~/.bashrc`:    
    `export GOPATH=~/Projects/go`  
 
@@ -255,7 +256,7 @@ $ sudo pacman -S go go-tools go-bindata delve
    "files.eol": "\n", // Gopls formatting only supports LF line endings
    ```
 
-### Debug with dlv <a name="debug-with-dlv"></a>
+### Debug with dlv
 The golang extension that we installed ealier will fire the first time you open a golang project and 
 ask if you want to download the missing helper tools, say yes to all and it will install `dlv-dap` 
 into your go path and keep it up to date i.e. `~/Projects/go/bin` for cyberlinux.
@@ -281,22 +282,53 @@ into your go path and keep it up to date i.e. `~/Projects/go/bin` for cyberlinux
 }
 ```
 
-## Ruby <a name="ruby"></a>
+## Ruby
 
-### Config Ruby <a name="config-ruby"></a>
-1. Install language gems
-  * `gem install solargraph`
-2. Install language extensions
-  * `Ruby by Peng Lv`
-  * `VSCode Ruby by Stafford Brunk`
-  * `endwise by Kai Wood`
-  * `Rails by CHINESE GLIPHS`
-  * `Rails DB Schema by aki77`
-  * `Ruby Solargraph by Castwide`
+**References**
+* [Visual Studio Code Ruby guide](https://code.visualstudio.com/docs/languages/ruby)
 
-## Rust <a name="rust"></a>
+### Config Ruby
+`Ruby LSP` is meant to replace Solargraph, rubocop, byebug and others
 
-### Install Rust <a name="install-rust"></a>
+1. Launch `code`
+2. Install Ruby version manager
+   1. Download AUR package: `yay -Ga rbenv`
+   2. Build: `makepkg -s`
+   3. Install: `sudo pacman -U rbenv-1.2.0-1-any.pkg.tar.zst`
+   4. Add `eval "$(rbenv init - bash)"` to your `~/.bashrc`
+3. Install Ruby LSB extension 
+   1. Navigate to extensions
+   2. Install `Ruby LSP` from `Shopify`
+   3. Press `Ctrl+,` to load Settings
+   4. Search for Ruby and select `Ruby LSP` on the left
+   5. Select `Ruby Version Manager` drop down and pick `rbenv`
+
+### Debug Ruby
+https://dev.to/dnamsons/ruby-debugging-in-vscode-3bkj
+
+```json
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Listen for rdebug-ide",
+      "type": "Ruby",
+      "request": "attach",
+      "cwd": "${file}",
+      "remoteHost": "127.0.0.1",
+      "remotePort": "1234",
+      "remoteWorkspaceRoot": "${file}"
+    }
+  ]
+}
+```
+
+## Rust
+
+### Install Rust
 The Rust `toolchain` is all the necessary build components for your local system while a `target` is 
 the ability to cross compile to another platform.
 
@@ -318,7 +350,7 @@ the ability to cross compile to another platform.
    $ rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
    ```
 
-### Config Rust <a name="config-rust"></a>
+### Config Rust
 1. Install and configure language server:
    a. Install extension `rust-analyzer by matklad.rust-analyzer`  
    b. Click `Yes` bottom right to install helper tooling  
@@ -332,7 +364,7 @@ the ability to cross compile to another platform.
    b. Install extension `crates by Seray Uzgur`  
 4. Configure Rust Analyzer to not show automatic types
 
-### Rust tasks <a name="rust-tasks"></a>
+### Rust tasks
 If you use a `workbench.action.tasks.runTask` in your keybindings it points to your local 
 `.vscode/tasks.json` file which you can then associate to a specific task using the keybinding's 
 `args` to your tasks.json's `label` mapping. `Build` and `Test` are predetermined labels that vscode 
@@ -374,9 +406,38 @@ tee .vscode/tasks.json <<EOL
 EOL
 ```
 
-## Troubleshooting <a name="troubleshooting"></a>
+# Developing inside a Container
+Scripting languages like Ruby and Python frequently roll out changes to the language and library 
+pieces breaking a system install. To keep the system up to date with the madness is a full time job. 
+The only way to develop sanely is to do so from a stable development environment and that is what the 
+[Developing inside a container](https://code.visualstudio.com/docs/devcontainers/containers) 
+extension and paradigm brings. It is the ability to have a stable well defined environment that won't 
+change unless you want it to.
 
-### Remove All Extensions <a name="remove-all-extensions"></a>
+Workspace files are mounted from the local file system. Extensions are installed and run inside the 
+container, where they have full access to the tools, platform, and file system. This means that you 
+can seamlessly switch your entire development environment just by connecting to a different 
+container.
+
+![Dev inside container image](images/dev-env-inside-container.png)
+
+This lets VS Code provide a local-quality debugging experience including full code completions, code 
+navigation, and debugging regardless of where your tools and code are located.
+
+1. You can use a container as your full-time development environment
+2. You can attach to a running container to inspect it
+
+## Dev Containers Prerequisites
+1. You need VS Code installed
+2. You need Docker installed
+
+The `devcontainer.json` file in your project tells VS Code how to access or create a development 
+container.
+
+
+# Troubleshooting
+
+## Remove All Extensions
 Extensions are stored in ***~/.vscode/extensions***
 
 To clean up all extensions simply remove this directory

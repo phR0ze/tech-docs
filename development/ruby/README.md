@@ -2,9 +2,7 @@
 Develop in Ruby
 
 ### Table of Contents
-* [vscode](#vscode)
-  * [Configure vscode](#configure-vscode)
-  * [Debugging with vscode](#debugging-with-vscode)
+* [vscode](../vscode/README.md#ruby)
 * [Projects](#projects)
   * [Create gemspec](#create-gemspec)
   * [Unit Tests](#unit-tests)
@@ -26,92 +24,7 @@ Develop in Ruby
   * [Mechanize](#mechanize)
 
 ## vscode
-* Ruby extension for automatic linting and auto-formatting via RoboCop
-  * Great debugging
-* For intellisense - turn off that setting for ruby extension and use solargraph extension
-* Open vscode from within the project folder to solve intellisense issues
-  * `code .` from project always works
-  * specify gem path in config for solargraph to work
-
-* find usage?
-* autocomplete?
-* goto declaration?
-* refactoring(rename etc...)
-
-1. Install the gem solargraph before the extension
-
-### Configure vscode
-https://marketplace.visualstudio.com/items?itemName=rebornix.Ruby
-
-1. Launch `code`
-2. Install gem support:
-   ```bash
-   # Install ruby doc builder
-   sudo gem install --no-user-install rdoc
-
-   # Install vscode ruby support gems
-   # debase               // fast debugger for Ruby 2.x
-   # ruby-debug-ide       // ide interface wrapper around debase
-   # solargraph           // code completion and inline documentation
-   # rubocop              // automatic linting and formatting
-   # ruby-lint            // linter and static code analysis
-   # reek                 // examine and report code smells
-   # fasterer             // finds areas of code that could be faster
-   # debride              // analyze code for dead code
-   sudo gem install --no-user-install debase ruby-debug-ide solargraph rubocop ruby-lint reek fasterer debride
-   ```
-3. Install Extensions:
-   a. Click the button on the left that looks like an extension icon  
-   e. Install ***Ruby rebomix.ruby***  
-   f. Install ***Ruby Solargraph*** via castwide.solargraph  
-4. Configure ***Ruby*** extension to turn of language server
-   ```bash
-   useLanguageServer = false?
-   ```
-4. Configure ***.solargraph.yml***
-   a. Open your project folder  
-   b. Switch to the in ide terminal  
-   c. Run `solargraph config .`  
-   d. Disable Ruby ext intellisense
-      `ruby.intellisense to false`
-5. Add Debug Launch configuration
-   a. Press ***Ctrl+Shift+d*** to switch to the debugger view  
-   b. Click the little ***gear*** then select ***Ruby***  
-   c. This creates the file `.vscode/launch.json`  
-   d. Install binstubs:  
-      ```bash
-      bundle install --binstubs
-      ```
-   c. Edit the files and delete everything but the ***Debug Local File*** entry  
-   d. Change the ***program*** from ***main.rb*** to ***test.rb***  
-6. Enable linters
-   a. By default no linters are enabled  
-7. Enable code formatting on save
-   a. ...  
-
-### Debugging with vscode
-https://dev.to/dnamsons/ruby-debugging-in-vscode-3bkj
-
-```json
-{
-  // Use IntelliSense to learn about possible attributes.
-  // Hover to view descriptions of existing attributes.
-  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Listen for rdebug-ide",
-      "type": "Ruby",
-      "request": "attach",
-      "cwd": "${file}",
-      "remoteHost": "127.0.0.1",
-      "remotePort": "1234",
-      "remoteWorkspaceRoot": "${file}"
-    }
-  ]
-}
-```
-
+see [vscode dev reference](../vscode/README.md#ruby)
 
 ## Projects
 Every project I've done with Ruby follows the pattern I established with ruby-nub. I'm using
