@@ -1,6 +1,5 @@
-Git, Bitbucket, Github, Github
+<img align="left" width="40" height="40" src="../../images/logo_256x256.png">Git Git, Bitbucket, Github, Github
 ====================================================================================================
-<img align="left" width="48" height="48" src="../../../art/logo_256x256.png">
 git documentation including public hosting such as github, gitlab and bitbucket
 <br><br>
 
@@ -38,6 +37,7 @@ git documentation including public hosting such as github, gitlab and bitbucket
   * [Bitbucket SSH Keys](#bitbucket-ssh-keys)
 * [Github](#github)
   * [CLI](#cli)
+    * [CLI](#cli)
   * [Actions](#actions)
     * [Build & Test Workflow](#build-and-test-workflow)
     * [Block PRs on failing checks](#block-prs-on-failing-checks)
