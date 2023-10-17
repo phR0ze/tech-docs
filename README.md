@@ -181,7 +181,7 @@ Documenting general tech and Arch Linux flavored linuxes
 
 # Bash
 Although bash isn't the most elegant or fastest scripting language out there it has the largest reach 
-and most pervasive install base and most importantly is almost never changes. For this reason it is 
+and most pervasive install base and most importantly it almost never changes. For this reason it is 
 an excellent technology for small scripts that you want to just work over an extended period of time.
 
 ## heredoc
