@@ -7,6 +7,9 @@ Documenting various virtualization technologies
 ### Quick links
 * [.. up dir](https://github.com/phR0ze/cyberlinux)
 * [QEMU](#qemu)
+  * [Install QEMU](#install-qemu)
+  * [Install ISO with QEMU](#install-iso-with-qemu)
+  * [Run QEMU VM](#run-qemu-vm)
 * [ProxMox](#prox-mox)
 * [Virtual Box](#virtual-box)
   * [USB Access in VM](#usb-access-in-vm)
@@ -56,6 +59,8 @@ $ sudo pacman -S qemu-base
 | `-sdl`                                          | Use standard graphical output window
 
 ## Run QEMU VM
+Pro tip to name your VMs so you can find them later
+
 ```bash
 $ qemu-system-x86_64 \
     -enable-kvm \
