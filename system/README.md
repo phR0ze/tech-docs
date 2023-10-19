@@ -15,8 +15,8 @@ Documentation for various system technologies
   * [Installing Powerling](#installing-powerline)
   * [Powerline GitStatus](#powerline-git-status)
   * [Troubleshooting Powerline](#troubleshooting-powerline)
-* [Pureline](#pureline)
-  * [Installing Pureline](#installing-pureline)
+* [Starship](#starship)
+  * [Installing Starship](#installing-starship)
 * [System Update](#system-update)
 * [Systemd](#systemd)
   * [Systemd Status](#systemd-status)
@@ -142,21 +142,19 @@ Try killing the daemon then running a command in a shell with powerline already 
 3. Notice that the `powerline_gitstatus` module is missing for python 3.9
 4. To get a clean bash terminal you'll need to disable powerline in `~/.bashrc` then open a new shell
 
-# Pureline
-[Pureline](https://github.com/chris-marsh/pureline) is a pure Bash Powerline replacement. Some would 
-ask why? I can't count how many times an upgrade has broken Powerline. Enough is enough. Bash almost 
-never changes.
+# Starship
+[Starship](https://starship.rs/guide/#%F0%9F%9A%80-installation) is a cross-shell prompt that 
+replaces powerline. Some would ask why? The reason is that I can't count the number of times an 
+upgrade has broken Powerline. Enough is enough. Rust always works.
 
-## Installing Pureline
+## Installing Starship
 1. Download the configs
    ```bash
-   $ cd ~/.config
-   $ git clone https://github.com/chris-marsh/pureline
-   $ cp pureline/configs/powerline_full_256col.conf ~/.pureline
+   $ sudo pacman -S starship
    ```
-2. Source the config files
+2. Add the following to the bottom of your `~/.bashrc` to run starship
    ```bash
-   $ source ~/.config/pureline/pureline ~/.pureline
+   eval "$(starship init bash)"
    ```
 
 # System Update <a name="system-update"/></a>
