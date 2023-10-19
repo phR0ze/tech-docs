@@ -15,6 +15,9 @@ Documentation for various system technologies
   * [Installing Powerling](#installing-powerline)
   * [Powerline GitStatus](#powerline-git-status)
   * [Troubleshooting Powerline](#troubleshooting-powerline)
+* [Pureline](#pureline)
+  * [Installing Pureline](#installing-pureline)
+* [System Update](#system-update)
 * [Systemd](#systemd)
   * [Systemd Status](#systemd-status)
   * [Systemd Boot Performance](#systemd-boot-performance)
@@ -24,7 +27,6 @@ Documentation for various system technologies
   * [Systemd Debug Shell](#systemd-debug-shell)
   * [Systemd Timers](#systemd-timers)
     * [Shutdown Timer](#shutdown-timer)
-* [System Update](#system-update)
 * [Thunar](#thunar)
   * [Thunar webp thumbnails](#thunar-webp-thumbnails)
 * [Wine](wine)
@@ -139,6 +141,23 @@ Try killing the daemon then running a command in a shell with powerline already 
    ```
 3. Notice that the `powerline_gitstatus` module is missing for python 3.9
 4. To get a clean bash terminal you'll need to disable powerline in `~/.bashrc` then open a new shell
+
+# Pureline
+[Pureline](https://github.com/chris-marsh/pureline) is a pure Bash Powerline replacement. Some would 
+ask why? I can't count how many times an upgrade has broken Powerline. Enough is enough. Bash almost 
+never changes.
+
+## Installing Pureline
+1. Download the configs
+   ```bash
+   $ cd ~/.config
+   $ git clone https://github.com/chris-marsh/pureline
+   $ cp pureline/configs/powerline_full_256col.conf ~/.pureline
+   ```
+2. Source the config files
+   ```bash
+   $ source ~/.config/pureline/pureline ~/.pureline
+   ```
 
 # System Update <a name="system-update"/></a>
 1. Update keyring first
