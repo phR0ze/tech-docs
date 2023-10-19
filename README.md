@@ -1401,7 +1401,6 @@ $ convert -resize 50% -quality 98 -units pixelsperinch -density 150 image1.jpg i
 ```
 
 # pacman packages
-* Create repo: `repo-add cyberlinux.db.tar.gz *.pkg.tar.*`
 
 ## Init database
 ***cyberlinux*** is configured out of the box with initial keys and databases; however should the
@@ -1453,6 +1452,15 @@ $ repo-add cyberlinux.db.tar.gz *.pkg.tar.*
 $ ln -f cyberlinux.db.tar.gz cyberlinux.db
 $ ln -f cyberlinux.files.tar.gz cyberlinux.files
 ```
+
+## Host your own repo database
+Using the slick [Rust static-web-server](https://github.com/static-web-server/static-web-server) we 
+can easily host our own packages for internal use.
+
+References:
+* [Static Web Server docs](https://static-web-server.net/)
+
+1. 
 
 ## Share Package Cache
 When running more than one arch linux based machine sharing the package cache can be usefull to
