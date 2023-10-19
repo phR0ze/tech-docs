@@ -8,6 +8,9 @@ Documentation for various system technologies
 * [.. up dir](..)
 * [Distros](distros)
 * [Flatpak](flatpak)
+* [inital ramdisk](#initial-ramdisk)
+  * [mkinitcpio](#mkinitcpio)
+  * [tput colored output](#tput-colored-output)
 * [Powerline](#powerline)
   * [Installing Powerling](#installing-powerline)
   * [Powerline GitStatus](#powerline-git-status)
@@ -25,6 +28,52 @@ Documentation for various system technologies
 * [Thunar](#thunar)
   * [Thunar webp thumbnails](#thunar-webp-thumbnails)
 * [Wine](wine)
+
+# initial ramdisk
+
+## mkinitcpio
+mkinitcpio is a bash script used to create an initial ramdisk environment. This is a small early 
+userspace environment which loads various kernel modules and sets up necessary things before handing 
+over control to init.
+
+Resources:
+* [Arch linux docs](https://wiki.archlinux.org/title/Mkinitcpio)
+
+### Build customized image
+You can build a customized early boot environment image with custom hooks by specifying them with the 
+`mkinitcpio.conf` and the `HOOKS` call outs.
+
+***HOOKS*** are small scripts which describe what will be added to the image and can optionally 
+contain a runtime component which provides additional behavior, such as starting a daemon, or 
+assemblying a stacked block device.
+
+**Create custom image**
+```bash
+$ mkinitcpio --config /etc/mkinitcpio-custom.conf --generate /boot/initramfs-custom.img
+```
+
+## tput colored output
+`tput` is part of the ncurses package and is supplied with most Linux distributions and is used to 
+send advanced instructions to the terminal for things like color or moving the cursor.
+
+To configure color with tput inside the early boot environment
+1. Include the following `mkinitcpio` commands
+   ```
+   add_binary /usr/bin/tput
+   add_full_dir /usr/lib/terminfo
+   ```
+2. Export the `TERMINFO` environment variable inside your hook
+   ```bash
+   export TERMINFO=/usr/lib/terminfo
+   ```
+
+### Debugging tput color issues
+[ncurses root environment access was disabled to fix CVE-2023-29491](https://gitlab.archlinux.org/archlinux/packaging/packages/ncurses/-/commit/3c2606603aa4a5a3b2d29e560a1bc14986153f49) thus no support for 
+
+1. First check that the terminfo files end up in the image
+   ```bash
+   lsinitcpio ~/Projects/cyberlinux/temp/iso/boot/installer | grep usr/lib/terminfo/l/linux
+   ```
 
 # Powerline
 https://powerline.readthedocs.io/en/latest/usage/shell-prompts.html#bash-prompt

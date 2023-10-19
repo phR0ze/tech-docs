@@ -275,7 +275,8 @@ $ git push origin --delete $(git tag -l)
   * 5000 requests per hour
   * 2 GB archive.zip files
   * Upload file size limit of 1GB?
-    * I was able to push 115MB so maybe
+    * I was able to push 115MB
+    * Failed with 200+MB file :(
   * Push limit of 3.5 GB/hour
 * Features
   * Unlimited private repos
@@ -284,6 +285,8 @@ $ git push origin --delete $(git tag -l)
   * e.g. `git clone https://bitbucket.org/cyberlinux/aur.git`
 
 ### Bitbucket Publish Pages
+Note: because of 200+MB limit I'm going to have to host my own packages
+
 [Reference](https://support.atlassian.com/bitbucket-cloud/docs/publishing-a-website-on-bitbucket-cloud/)
 1. Create a new repository
    1. Set the Project name to `cyberlinux.bitbucket.io`
