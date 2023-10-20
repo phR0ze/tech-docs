@@ -1,0 +1,6 @@
+[book]
+authors = ["phR0ze"]
+language = "en"
+multilingual = false
+src = "src"
+title = "tech-docs"
