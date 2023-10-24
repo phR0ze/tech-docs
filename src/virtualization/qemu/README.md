@@ -1,10 +1,8 @@
-<img align="left" width="40" height="40" src="../../images/logo_256x256.png">QEMU
-====================================================================================================
+# QEMU
+<img align="left" width="40" height="40" src="../../data/images/logo_256x256.png">
 Documenting my experience with QEMU
-<br><br>
 
 ### Quick links
-* [.. up dir](..)
 * [Overview](#overview)
   * [Install QEMU](#install-qemu)
 * [QEMU Monitor](#qemu-monitor)
