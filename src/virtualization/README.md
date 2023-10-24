@@ -1,12 +1,8 @@
-Virtualization
-====================================================================================================
-<img align="left" width="48" height="48" src="../../art/logo_256x256.png">
+# Virtualization
+<img align="left" width="48" height="48" src="../data/images/logo_256x256.png">
 Documenting various virtualization technologies
-<br><br>
 
 ### Quick links
-* [.. up dir](..)
-* [QEMU](QEMU.md)
 * [ProxMox](#prox-mox)
 * [Virtual Box](#virtual-box)
   * [USB Access in VM](#usb-access-in-vm)
