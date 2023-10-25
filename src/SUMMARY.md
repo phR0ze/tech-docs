@@ -2,9 +2,14 @@
 
 [Introduction](README.md)
 
+- [AI](ai/README.md)
+  - [Copilot](ai/copilot/README.md)
+  - [Duet](ai/duet/README.md)
+
 - [Development](development/README.md)
   - [Android](development/android/README.md)
   - [CI/CD](development/cicd/README.md)
+    - [Cloud Build](development/cicd/cloud_build/README.md)
     - [Github Actions](development/cicd/github_actions/README.md)
       - [OSX Builds](development/cicd/github_actions/osx_builds.md)
       - [Strategy](development/cicd/github_actions/strategy.md)
@@ -30,6 +35,7 @@
       - [Platforms](development/languages/rust/platforms/README.md)
         - [Shuttle](development/languages/rust/platforms/shuttle/README.md)
       - [Web](development/languages/rust/web/README.md)
+  - [Monitoring](development/monitoring/README.md)
   - [Version Control](development/version_control/README.md)
     - [Git](development/version_control/git/README.md)
     - [Bitbucket](development/version_control/bitbucket/README.md)

@@ -26,3 +26,8 @@ GitHub Copilot subscription is required
 ### Copilot Chat VSCode Extension
 Copilot chat is a much easier way to interacting with the AI providing the ability to select code 
 blocks for context and ask the AI questions about it in an interactive chat window.
+
+<!-- 
+vim: ts=2:sw=2:sts=2
+-->
+
