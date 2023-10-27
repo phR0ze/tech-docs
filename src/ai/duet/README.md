@@ -9,6 +9,11 @@
   * Working hard to reduce LLM halucinations
 
 ## Overview
+Purpose is to reduce toil on:
+* Constant context switching due to information siloes
+* Tedious researching and slow learning
+* Difficulty understanding code bases and APIs
+* Wasted time doing repetitive tasks
 
 ### Duet with Workspace
 ***What's next: Redefining productivity with Google Workspace***
@@ -57,9 +62,11 @@ Integrates with vscode
 * Install for vscode
   https://cloud.google.com/code/docs/vscode/install#install
 
-  * [1:01:40 Keynote] Refactor code from C++ to Golang
+  * General purpose
     * Open duet prompt
     * Write request in natural language
+      * "What is the command to list files in a cloud storage bucket?"
+      * "Summarize in two sentences"
   * Code generation
     * Write prompt in comment
     * Click the drop down prompt and it will generate it for you

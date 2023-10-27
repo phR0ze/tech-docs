@@ -42,6 +42,11 @@
     - [Github](development/version_control/github/README.md)
     - [Gitlab](development/version_control/gitlab/README.md)
 
+- [Cloud](cloud/README.md)
+
+- [Multimedia](multimedia/README.md)
+  - [MKV](multimedia/mkv/README.md)
+
 - [Networking](networking/README.md)
   - [Istio](networking/istio/README.md)
 
