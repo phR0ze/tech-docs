@@ -2,6 +2,9 @@
 <img align="left" width="48" height="48" src="../../../data/images/logo_256x256.png">
 
 ### Quick links
+* [Configuration](#Configuration)
+  * [goformat](#goformat)
+    * [indent spaces](#indent-spaces)
 * [Relational databases](#relational-databases)
   * [Getting started](#getting-started)
     * [Freeing resources](#freeing-resources)
@@ -9,6 +12,27 @@
     * [Consuming connections](#consuming-connections)
     * [Transactions](#transactions)
     * [Deadlock with Transactions](#deadlock-with-transactions)
+
+# Configuration
+
+## goformat
+Typically these days most devs use VSCode and the `gopls` language server which automatically calls 
+teh `gofmt` option to format your code. The only issue is that `gofmt` automatically uses tabs 
+instead of spaces.
+
+**References**
+* [goformat by mbenkmann](https://github.com/mbenkmann/goformat)
+* [gopls format setting](https://github.com/golang/vscode-go/blob/master/docs/settings.md#goformattool)
+
+### indent spaces
+Visual Studio Code has its own tab and space settings that I prefer to goformats. So we need to 
+align the two. `go fmt` provides hooks for editors and version control systems that allow for 
+overrides when autoformat it applied.
+
+***-r option is a space delimited set of overrides***
+```
+goformat -r "indent=4"
+```
 
 # Relational databases
 Golang provides a standard library `database/sql` package to access relational databases.
