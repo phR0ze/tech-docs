@@ -43,6 +43,8 @@
     - [Gitlab](development/version_control/gitlab/README.md)
 
 - [Cloud](cloud/README.md)
+  - [Google Cloud Platform](cloud/google_cloud_platform/README.md)
+    - [Cloud Run](cloud/google_cloud_platform/cloud_run/README.md)
 
 - [Multimedia](multimedia/README.md)
   - [MKV](multimedia/mkv/README.md)
@@ -50,7 +52,9 @@
 - [Networking](networking/README.md)
   - [Istio](networking/istio/README.md)
 
-- [Office](office/README.md)
+- [Productivity](productivity/README.md)
+  - [Office](productivity/office/README.md)
+  - [Workspace](productivity/workspace/README.md)
 
 - [Virtualization](virtualization/README.md)
   - [Podman](virtualization/podman/README.md)
