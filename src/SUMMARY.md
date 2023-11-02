@@ -52,6 +52,8 @@
     - [Cloud Run](cloud/google_cloud_platform/cloud_run/README.md)
 
 - [Multimedia](multimedia/README.md)
+  - [CAD](multimedia/cad/README.md)
+    - [FreeCAD](multimedia/cad/freecad/README.md)
   - [MKV](multimedia/mkv/README.md)
 
 - [Networking](networking/README.md)
