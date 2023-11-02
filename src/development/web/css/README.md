@@ -1,8 +1,5 @@
-CSS
-====================================================================================================
-<img align="left" width="48" height="48" src="../../../art/logo_256x256.png">
+<img align="left" width="48" height="48" src="../../../data/images/logo_256x256.png"> CSS
 Cascading Style Sheets
-<br><br>
 
 ### Quick links
 * [.. up dir](..)
