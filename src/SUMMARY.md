@@ -57,6 +57,9 @@
   - [MKV](multimedia/mkv/README.md)
 
 - [Networking](networking/README.md)
+  - [Blueman](networking/blueman/README.md)
+  - [Firefox](networking/firefox/README.md)
+  - [Privoxy](networking/privoxy/README.md)
   - [Istio](networking/istio/README.md)
 
 - [Productivity](productivity/README.md)
