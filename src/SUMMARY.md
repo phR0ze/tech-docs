@@ -8,6 +8,7 @@
 
 - [Development](development/README.md)
   - [Android](development/android/README.md)
+    - [Emulator](development/android/emulator/README.md)
   - [CI/CD](development/cicd/README.md)
     - [Cloud Build](development/cicd/cloud_build/README.md)
     - [Github Actions](development/cicd/github_actions/README.md)
@@ -25,6 +26,7 @@
     - [Golang](development/languages/golang/README.md)
     - [Ruby](development/languages/ruby/README.md)
     - [Rust](development/languages/rust/README.md)
+      - [Android](development/languages/rust/android/README.md)
       - [Async](development/languages/rust/async/README.md)
         - [Tokio](development/languages/rust/async/tokio/README.md)
       - [Concurrancy](development/languages/rust/concurrancy/README.md)

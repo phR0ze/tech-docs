@@ -1,11 +1,8 @@
+<img align="left" width="48" height="48" src="../../../../../data/images/logo_256x256.png">
 Actix
-====================================================================================================
-<img align="left" width="48" height="48" src="../../../art/logo_256x256.png">
 Actix development research
-<br><br>
 
 ### Quick links
-* [.. up dir](..)
 
 # Getting Started
 [Actix getting started guide](https://actix.rs/docs/getting-started/)
