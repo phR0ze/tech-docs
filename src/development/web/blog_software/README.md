@@ -1,13 +1,9 @@
-WordPress
-====================================================================================================
-<img align="left" width="48" height="48" src="../../../art/logo_256x256.png">
-WordPress development research
+<img align="left" width="48" height="48" src="../../../art/logo_256x256.png"> Blog Software
 
 ### Quick links
-* [.. up dir](..)
-* [Overview](#overview)
+* [WordPress](#wordpress)
 
-# Overview
+# Wordpress
 WordPress is the oldest and most widely used content management system for blogging out there. Its 
 plugin system makes it highly configurable to suite any purpose.
 
