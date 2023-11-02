@@ -66,6 +66,11 @@
   - [Office](productivity/office/README.md)
   - [Workspace](productivity/workspace/README.md)
 
+- [System](system/README.md)
+  - [Distros](system/distros/README.md)
+  - [Flatpak](system/flatpak/README.md)
+  - [Wine](system/wine/README.md)
+
 - [Virtualization](virtualization/README.md)
   - [Podman](virtualization/podman/README.md)
   - [QEMU](virtualization/qemu/README.md)
