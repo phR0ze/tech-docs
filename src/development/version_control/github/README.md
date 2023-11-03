@@ -1,6 +1,7 @@
 # Github
 
 ### Quick links
+* [API](#api)
 * [CLI](#cli)
 * [Container Registry](#container-registry)
 * [Github Pages](#github-pages)
@@ -8,6 +9,21 @@
 * [Security](#security)
   * [Public key](#public-key)
   * [Codeowners](#codeowners)
+
+## API
+
+### Get release by tag name
+[Github docs](https://docs.github.com/en/free-pro-team@latest/rest/releases/releases?apiVersion=2022-11-28#get-a-release-by-tag-name)
+
+You get get a release's details including the release id from the release tags endpoint.
+```bash
+$ gh api /repos/OWNER/REPO/releases/tags/TAG | jq -r '.assets[] | select(.name == "$ASSET") | .name'
+```
+
+### Check if release asset exists
+[Github Release API](https://docs.github.com/en/rest/releases/assets?apiVersion=2022-11-28)
+
+The get API requires an asset id to download it, thus
 
 ## CLI
 In more complicated projects you'll want to automate github operations like posting PRs, assigning
