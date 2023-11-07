@@ -69,6 +69,9 @@
   - [Workspace](productivity/workspace/README.md)
 
 - [System](system/README.md)
+  - [Desktop Environments](system/desktop_environments/README.md)
+    - [System 76](system/desktop_environments/system_76/README.md)
+    - [XFCE](system/desktop_environments/xfce/README.md)
   - [Distros](system/distros/README.md)
   - [Flatpak](system/flatpak/README.md)
   - [Wine](system/wine/README.md)

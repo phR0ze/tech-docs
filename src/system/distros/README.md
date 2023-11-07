@@ -1,16 +1,12 @@
-distro comparison
-====================================================================================================
-<img align="left" width="48" height="48" src="../../../art/logo_256x256.png">
+# Distro comparison
 Reviewing the various Linux distros that have caught my eye and the components they are composed
 from.
-<br><br>
 
 All of the Distros below are being reviewed in a VirtualBox VM with 4GB of RAM and (2)
 `Intel E5-2637 Cores`. Obviously this will be highly subjective and serves more as a reference for
 myself.
 
 ### Quick links
-* [.. up dir](..)
 * [Arch Linux Distros](#arch-linux-distros)
   * [Arco Linux - Openbox](#arco-linux-openbox)
   * [Hefftor Linux](#hefftor-linux)
@@ -24,24 +20,10 @@ myself.
     * [Betterlockscreen](#betterlockscreen)
     * [i3lock-color](#i3lock-color)
     * [i3lock](#i3lock)
-* [Desktop Environments](#desktop-evironments)
-  * [Performance](#performance)
-    * [XFCE vs LXDE](#xfce-vs-lxde)
-    * [XFCE vs KDE Plasma](#xfce-vs-kde-plasma)
-  * [Budgie Desktop](#budgie-desktop)
-  * [Cinnamon Desktop](#cinnamon-desktop)
-  * [Deepin Desktop](#deepin-desktop)
-  * [KDE Plasma Desktop](#plasma-desktop)
-  * [Lumina Desktop](#lumina-desktop)
-  * [LXDE Desktop](#lxde-desktop)
-  * [LXQt Desktop](#lxqt-desktop)
-    * [LXQt splash](#lxqt-splash)
-  * [MATE Desktop](#mate-desktop)
-  * [XFCE Desktop](#xfce-desktop)
 
-# Arch Linux Distros <a name="arch-linux-distros"/></a>
+# Arch Linux Distros
 
-## Arco Linux - Openbox <a name="arco-linux-openbox"/></a>
+## Arco Linux - Openbox
 **Review**
 * The ArcoLinuxB version as is a live environment you can install from
 * Booting from it gives a minimal Arch Linux type menu then it boots to live and launches Calamares
@@ -105,7 +87,7 @@ myself.
 * Has a delayed bootloader page
 * Display manager login is set to tiny resolution by default
 
-## Hefftor Linux <a name="hefftor-linux"/></a>
+## Hefftor Linux
 [Hefftor Linux](https://hefftorlinux.net/) popped up on my radar when I was searching for a better
 lock screen. Apparently Brad Hefferman made his own GUI tool for the `Betterlockscreen` scripts which
 got me curious about what hes was working on. His screen shots look really neat.
@@ -134,17 +116,17 @@ got me curious about what hes was working on. His screen shots look really neat.
   * Custom DPI: 96
   * Terminal font `Hack`
 
-# Desktop Components <a name="desktop-components"/></a>
+# Desktop Components
 
-## Window managers <a name="window-managers"/></a>
+## Window managers
 
-### XFWM vs Openbox <a name="xfwm-vs-openbox"/></a>
+### XFWM vs Openbox
 * Both wrote in C
 * Openbox is standalone
 * XFWM is part of a DE
 * XFWM has a compositor built in for true transparency
 
-## Logout screens <a name="logout-screens"/></a>
+## Logout screens
 Most linux desktop environments have their own integrated logout functionality which is much the same
 providing a small window with a list of buttons with small text on them for the various logout
 functions. Some may offer configurability as to the commands but many do not.
@@ -152,11 +134,11 @@ functions. Some may offer configurability as to the commands but many do not.
 I much prefer large icons and large text in a splash overlay that completely covers the screen. To
 date I've only found a few but `oblogout` seems to have been the first.
 
-### arcolinux-logout<a name="arcolinux-logout"/></a>
+### arcolinux-logout
 [ArcoLinux-logout](https://aur.archlinux.org/packages/arcolinux-logout/) appears to be a clone of
 `oblogout` and provides much the same options.
 
-### oblogout <a name="oblogout"/></a>
+### oblogout
 [Oblogout](https://aur.archlinux.org/packages/oblogout/) has been my go to in this area providing:
 * Simple set of widgets overlayed in all white with icons for common controls
   * Logout, Shutdown, Reboot, Hibernate etc...
@@ -166,7 +148,7 @@ date I've only found a few but `oblogout` seems to have been the first.
 It has since been moved out of main line into the AUR as its not being actively maintained and is
 using python2 dependencies `python2-pillow` and `python2-dbus`
 
-## Lock screens <a name="lock-screens"/></a>
+## Lock screens
 After reviewing a few lock screen applications I've realized that the features I'd really want
 ideally in a lock screen app are:
 
@@ -179,7 +161,7 @@ ideally in a lock screen app are:
 
 This is really a combination of the traditional lockscreen and wallpaper applications
 
-### Betterlockscreen <a name="betterlockscreen"/></a>
+### Betterlockscreen
 [Betterlockscreen](https://github.com/betterlockscreen/betterlockscreen) wraps `i3lock-color` using a
 caching mechanism to apply all affects to a chosen image then cache it and have `i3lock-color`
 display it so there isn't any delay while applying affects dynamically.
@@ -192,7 +174,7 @@ wallpaper in sync.
 After research I found [ArcoLinux's project work](https://github.com/arcolinux/arcolinux-betterlockscreen)
 on this to provide a GUI to make this easier.
 
-### i3lock-fancy <a name="i3lock-fancy"/></a>
+### i3lock-fancy
 [i3lock-fancy](https://github.com/meskarune/i3lock-fancy#static-image) is a wrapper script around the
 venderable `i3lock-color` project. The script dynamically takes a screen shot and applies affects
 than calls i3lock-color.
@@ -204,7 +186,7 @@ $ convert /path/to/background.png -font Audiowide -pointsize 50 -fill white -gra
 $ i3lock -i newimage.png
 ```
 
-### i3lock-color <a name="i3lock-color"/></a>
+### i3lock-color
 [i3lock-color](https://github.com/Raymo111/i3lock-color) is the most popular i3lock fork providing a
 number of enhancments:
 
@@ -214,7 +196,7 @@ number of enhancments:
 * Positioning the various UI elements
 * Changing the ring radius and thickness as well as text size
 
-### i3lock <a name="i3lock"/></a>
+### i3lock
 [i3lock](https://github.com/i3/i3lock) is a simple screen locker that is independent of any desktop
 environment and can be used standalone. Its a great idea but many have found it too spartan and has
 spawned a number of forks with various feature enhancements.
@@ -224,46 +206,46 @@ Features:
 * uses PAM and therefor has all PAM integrations
 * shows simple circle that offers a little animation when password is entered
 
-### Cinnamon-screensaver <a name="cinnamon-screensaver"/></a>
+### Cinnamon-screensaver
 Cinnamon-screensaver was my favorite for some time providing a simple image with a bluring layer and
 the current time and date and would offer password entry when activated. However due to its numerous
 cinnamon desktop dependencies I've abandoned it.
 
-## Window Manager <a name="window-manager"/></a>
+## Window Manager
 ***Window Managers*** used by Desktop Environments usually provide:
 * Window placment on the screen
 * Window decorations
 * Workspace or virtual desktops
 
-## Desktop Manager <a name="desktop-manager"/></a>
+## Desktop Manager
 ***Desktop Managers*** used by Desktop Enviroments usually provide:
 * Desktop Wallpaper
 * Desktop root window menu
 * Desktop application and file manager icons
 
-## Panel <a name="panel"/></a>
+## Panel
 ***Panels*** used by Desktop Environments usually provide:
 * Switching between open windows
 * Launch applications
 * Switch workspaces
 * Menu plugins to browse applications or directories
 
-## Session Manager <a name="session-manager"/></a>
+## Session Manager
 ***Session Managers*** used by Desktop Environments usually provide:
 * Controls for login
 * Power managment
 * Multiple login sessions
 
-## Application Finder <a name="application-finder"/></a>
+## Application Finder
 ***Application Finders*** used by Desktop Environments usually provide:
 * View of the applications installed in categories
 
-## File Manager <a name="file-manager"/></a>
+## File Manager
 ***File Managers*** usec by Desktop Environments usually provide:
 * File management
 * Unique utilities like bulk renamer
 
-## Settings Manager <a name="settings-manager"/></a>
+## Settings Manager
 ***Settings Managers*** used by Desktop Environments usually provide:
 * Tools to control various settings
 * Keyboard shortcuts
@@ -280,7 +262,7 @@ cinnamon desktop dependencies I've abandoned it.
 * PDF Viewer
 * Multi-monitor management
 
-## Desktop features <a name="desktop-features"/></a>
+## Desktop features
 One of the core paradigms in the Desktop Environment is the visible desktop surface and your
 interactions with it. Sometimes these features are abscent from a particular desktop environment,
 handled by a standalone appliation or simply a feature of a larger application.
@@ -289,181 +271,8 @@ handled by a standalone appliation or simply a feature of a larger application.
 * Desktop application launcher icons
 * Desktop file management folder icons
 
-## Desktop settings <a name="desktop-settings"/></a>
+## Desktop settings
 Another typical desktop environment feature is 
-
-
-# Desktop Environments <a name="desktop-environments"/></a>
-To compare the different ***Desktop Environments*** I'll first attempt to break down their features
-into common groups I can compare and contrast.
-
-|             | Display Mngr | Window Mngr | Desktop Mngr | Panel | Session Mngr | App Finder | File Mngr | Settings |
-| ----------- | ------------ | ----------- | ------------ | ----- | ------------ | ---------- | --------- | -------- |
-| Budgie      |              |             |              |       |              |            |           |          |
-| Cinnamon    |              |             |              |       |              |            |           |          |
-| Deepin      |              |             |              |       |              |            |           |          |
-| GNOME       |              |             |              |       |              |            |           |          |
-| KDE Plasma  |              |             |              |       |              |            |           |          |
-| LXDE        |              |             |              |       |              |            |           |          |
-| LXQt        |              |             |              |       |              |            |           |          |
-| MATE        |              |             |              |       |              |            |           |          |
-| XFCE        |              |             |              |       |              |            |           |          |
-
-## Performance <a name="performance"/></a>
-Performance comes down to the amount of resources consumed by the desktop environment that is then
-not available for actual user applications. 
-
-### XFCE vs LXDE <a name="xfce-vs-lxde"/></a>
-
-### XFCE vs KDE Plasma <a name="xfce-vs-kde-plasma"/></a>
-According to [Jason Evangelho](https://www.forbes.com/sites/jasonevangelho/2019/10/23/bold-prediction-kde-will-steal-the-lightweight-linux-desktop-crown-in-2020/#5562672f26d2) the latest version of `KDE Plasma 5.17` are
-approaching a similar usage as XFCE, which has long been heralded for its low resource usage, with
-`KDE Plasma 5.17` using `~503MB` and `XFCE` using `525MB`. Another test using a more feature rich
-build puts `XFCE => 949MB` and `KDE => 957MB`
-
-# Budgie Desktop <a name="budgie-desktop"/></a>
-The [Budgie Desktop]() is developed independently for Solus Linux. I'll be evaluating is via the
-[Ubuntu Budgie](https://ubuntubudgie.org/) distro.
-
-# Cinnamon Desktop <a name="cinnamon-desktop"/></a>
-The [Cinnamon Desktop](https://en.wikipedia.org/wiki/Cinnamon_(desktop_environment) is a fork of
-`GNOME 2`. I'm evaluating it via the [Linux Mint](https://linuxmint.com/) distro.
-
-# Deepin Desktop <a name="deepin-desktop"/></a>
-
-# KDE Plasma Desktop <a name="kde-plasma-desktop"/></a>
-Evaluating via [Kubuntu](https://kubuntu.org/) distro.
-
-
-# Lumina Desktop <a name="lumina-desktop"/></a>
-
-# LXDE Desktop <a name="lxde-desktop"/></a>
-LXQt is the continuation of LXDE
-
-# LXQt Desktop <a name="lxqt-desktop"/></a>
-[LXQt](https://github.com/lxqt/lxqt/wiki) is a lightweight Qt desktop environment that still aims to
-have a modern look and feel. I'm evaluating it via the [Lubuntu](https://lubuntu.me/) distro.
-
-Resources:
-* [LXQt - Arch Wiki](https://wiki.archlinux.org/title/LXQt)
-
-## LXQt splash <a name="lxqt-splash"/></a>
-<img src="../docs/images/lxqt/splash.jpg">
-
-## LXQt display manager <a name="lxqt-display-manager"/></a>
-<img src="../docs/images/lxqt/display-manager.jpg">
-
-## LXQt power management <a name="lxqt-power-management"/></a>
-<img src="../docs/images/lxqt/power-management.jpg">
-
-## LXQt lock screen <a name="lxqt-lock-screen"/></a>
-The lock screen turned into a screen saver once it set for awhile
-<img src="../docs/images/lxqt/lock-screen.jpg">
-<img src="../docs/images/lxqt/lock-screen2.jpg">
-
-## LXQt accessories <a name="lxqt-accessories"/></a>
-**FeatherPad - simple notepad clone**
-<img src="../docs/images/lxqt/accessories-featherpad.jpg">
-
-**KCalc - simple calculator**
-<img src="../docs/images/lxqt/accessories-kcalc.jpg">
-
-**LXQt Archiver - derived from File Roller of Gnome**
-<img src="../docs/images/lxqt/accessories-lxqt-file-archiver.jpg">
-
-**QtPass - basic UI frontend to pass unix password manager**
-<img src="../docs/images/lxqt/accessories-qtpass.jpg">
-
-  * PCManFM-Qt File Manager
-  * TeXInfo
-  * Vim
-  * compton
-  * nobleNote
-  * picom
-
-**LXQt Image Viewer - simple imager viewer slightly more advanced than gpicview**
-<img src="../docs/images/lxqt/graphics-image-viewer.jpg">
-
-* Graphics
-  * LXImage
-  * LibreOffice Draw
-  * ScreenGrab
-  * Skanlite
-* Internet
-  * BlueDevil Send File
-  * BlueDevil Wizard
-  * Firefox
-  * Quassel IRC
-  * Transmission (Qt)
-  * Trojita
-* Office
-  * LibreOffice
-  * LibreOffice Calc
-  * LibreOffice Draw
-  * LibreOffice Impress
-  * LibreOffice Match
-  * LibreOffice Writer
-  * Trojita
-  * qpdfview
-* Sound & Video
-  * K3b
-  * PulseAudio Volume Control
-  * VLC
-* System Tools
-  * BlueDevil Send File
-  * BlueDevil Wizard
-  * Discover
-  * Fcitx
-  * Htop
-  * KDE Partition Manager 
-  * Muon Package Manager 
-  * QTerminal
-  * QTerminal drop down
-  * Startup Disk Creator
-  * qps
-* Preferences
-  * LXQt settings
-  * Additional Drivers
-  * Advanced Network Configuration
-  * Alternatives Configurator
-  * Apply Full Upgrade
-  * Fcitx Configuration
-  * Input Method
-  * Printers
-  * Screensaver
-* About LXQt
-* Leave
-  * Hibernate
-  * Leave
-  * Logout
-  * Reboot
-  * Shutdown
-  * Suspend
-* Lock Screen
-
-## PCManFM-Qt <a name="pcmanfm-qt"/></a>
-
-* File Manager
-* Desktop wallpaper
-* Desktop folder browsing icons
-* Desktop Application Launcher Icons
-* Right click for desktop preferences and 
-
-## Power Control <a name="power-control"/></a>
-
-## Volume Control <a name="volume-control"/></a>
-
-## Removable Media <a name="removable-media"/></a>
-
-# MATE Desktop <a name="mate-desktop"/></a>
-The [MATE Desktop](https://mate-desktop.com/) is a fork of `GNOME 2`. I'm evaluating it via the
-[Ubuntu MATE](https://ubuntu-mate.org/) distro.
-
-# XFCE Desktop <a name="xfce-desktop"/></a>
-[XFCE](https://www.xfce.org/about) is a lightweight GTK desktop environment. I'm evaluating it via
-the [XUbuntu](https://xubuntu.org/download) distro.
-
-* GTK+ toolkit
 
 <!-- 
 vim: ts=2:sw=2:sts=2
