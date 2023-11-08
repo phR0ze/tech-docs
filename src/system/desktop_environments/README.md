@@ -1,6 +1,5 @@
 # Desktop Environments
 
-
 ### Quick links
 * [Performance](#performance)
   * [XFCE vs LXDE](#xfce-vs-lxde)
@@ -20,17 +19,19 @@
 To compare the different ***Desktop Environments*** I'll first attempt to break down their features
 into common groups I can compare and contrast.
 
-|             | Display Mngr | Window Mngr | Desktop Mngr | Panel | Session Mngr | App Finder | File Mngr | Settings |
-| ----------- | ------------ | ----------- | ------------ | ----- | ------------ | ---------- | --------- | -------- |
-| Budgie      |              |             |              |       |              |            |           |          |
-| Cinnamon    |              |             |              |       |              |            |           |          |
-| Deepin      |              |             |              |       |              |            |           |          |
-| GNOME       |              |             |              |       |              |            |           |          |
-| KDE Plasma  |              |             |              |       |              |            |           |          |
-| LXDE        |              |             |              |       |              |            |           |          |
-| LXQt        |              |             |              |       |              |            |           |          |
-| MATE        |              |             |              |       |              |            |           |          |
-| XFCE        |              |             |              |       |              |            |           |          |
+|                | Display Mngr | Window Mngr | Desktop Mngr | Panel | Session Mngr | App Finder | File Mngr | Settings |
+| -------------- | ------------ | ----------- | ------------ | ----- | ------------ | ---------- | --------- | -------- |
+| Budgie         |              |             |              |       |              |            |           |          |
+| Cinnamon       |              |             |              |       |              |            |           |          |
+| Deepin         |              |             |              |       |              |            |           |          |
+| Englightenment |              |             |              |       |              |            |           |          |
+| GNOME          |              |             |              |       |              |            |           |          |
+| Pantheon       |              |             |              |       |              |            |           |          |
+| Plasma         |              |             |              |       |              |            |           |          |
+| LXDE           |              |             |              |       |              |            |           |          |
+| LXQt           |              |             |              |       |              |            |           |          |
+| MATE           |              |             |              |       |              |            |           |          |
+| XFCE           |              |             |              |       |              |            |           |          |
 
 ## Performance
 Performance comes down to the amount of resources consumed by the desktop environment that is then
@@ -45,8 +46,47 @@ approaching a similar usage as XFCE, which has long been heralded for its low re
 build puts `XFCE => 949MB` and `KDE => 957MB`
 
 # Budgie Desktop
-The [Budgie Desktop]() is developed independently for Solus Linux. I'll be evaluating is via the
-[Ubuntu Budgie](https://ubuntubudgie.org/) distro.
+The [Budgie Desktop](https://docs.buddiesofbudgie.org) is developed independently from a specific 
+Linux distribution but can be found easily on NixOS, Ubuntu, Arch Linux, Fedora and Solus. I'm 
+evaluating it using the NixOS distro.
+
+You can also install it manually with:
+```
+services.xserver.enable = true;
+services.xserver.desktopManager.budgie.enable = true;
+services.xserver.displayManager.lightdm.enable = true;
+```
+
+## Apps
+* Document viewer: Atril
+* Image viewer: Eye of MATE
+
+## Desktop Icons
+* Decent looking desktop icons with clean right click `Open in Terminal` option
+
+## File Manager
+* Nemo
+* Looks very clean and intuitive
+* Sidebar similar to windows with `My Computer`, `Devices` and `Network` options, but nice
+
+## Login Manager
+Seems to be using lightdm I think
+
+* Simple but elegant login screen
+
+## Panels
+* Budgie Menu shows you all your installed applications, neatly organized into categories to improve 
+discoverability, and with lightning fast application searching.
+
+## Screen Shot
+* Budgie screen shot
+* Shows preview of captured image before saving
+* Pretty simple but elegant and modern looking
+  * Same features as XFCE
+
+## Theme
+* Nice looking high contrast dark and white theme
+
 
 # Cinnamon Desktop
 The [Cinnamon Desktop](https://en.wikipedia.org/wiki/Cinnamon_(desktop_environment) is a fork of
