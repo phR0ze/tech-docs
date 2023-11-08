@@ -59,10 +59,19 @@
   - [MKV](multimedia/mkv/README.md)
 
 - [Networking](networking/README.md)
+  - [File Sharing](networking/file_sharing/README.md)
+  - [Mesh technology](networking/mesh_technology/README.md)
+    - [Istio](networking/mesh_technology/istio/README.md)
+  - [Network configuration](networking/network_configuration/README.md)
+    - [DNS](networking/network_configuration/dns/README.md)
+    - [Network managers](networking/network_configuration/network_managers/README.md)
+      - [NetworkNanager](networking/network_configuration/network_managers/networkmanager/README.md)
+      - [systemd-networkd](networking/network_configuration/network_managers/systemd_networkd/README.md)
   - [Blueman](networking/blueman/README.md)
   - [Firefox](networking/firefox/README.md)
   - [Privoxy](networking/privoxy/README.md)
-  - [Istio](networking/istio/README.md)
+  - [Remoting](networking/remoting/README.md)
+  - [VPNs](networking/vpns/README.md)
 
 - [Productivity](productivity/README.md)
   - [Office](productivity/office/README.md)
@@ -73,6 +82,7 @@
     - [System 76](system/desktop_environments/system_76/README.md)
     - [XFCE](system/desktop_environments/xfce/README.md)
   - [Distros](system/distros/README.md)
+    - [NixOS](system/distros/nixos/README.md)
   - [Flatpak](system/flatpak/README.md)
   - [Wine](system/wine/README.md)
 
