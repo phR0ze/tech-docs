@@ -1,6 +1,6 @@
 # Summary
 
-[Introduction](README.md)
+[Tech Docs](README.md)
 
 - [AI](ai/README.md)
   - [Copilot](ai/copilot/README.md)
@@ -26,6 +26,7 @@
     - [Golang](development/languages/golang/README.md)
     - [Ruby](development/languages/ruby/README.md)
     - [Rust](development/languages/rust/README.md)
+      - [Apps](development/languages/rust/apps/README.md)
       - [Android](development/languages/rust/android/README.md)
       - [Async](development/languages/rust/async/README.md)
         - [Tokio](development/languages/rust/async/tokio/README.md)
@@ -48,6 +49,8 @@
   - [Web](development/web/README.md)
     - [CSS](development/web/css/README.md)
     - [Blog software](development/web/blog_software/README.md)
+  - [UI](development/ui/README.md)
+    - [Cross-platform](development/ui/cross_platform/README.md)
 
 - [Cloud](cloud/README.md)
   - [Google Cloud Platform](cloud/google_cloud_platform/README.md)
@@ -84,16 +87,18 @@
   - [Distros](system/distros/README.md)
     - [NixOS](system/distros/nixos/README.md)
   - [Flatpak](system/flatpak/README.md)
+  - [Terminal](system/terminal/README.md)
+    - [Terminal Emulators](system/terminal/terminal_emulators/README.md)
+    - [Terminal Window Manager](system/terminal/terminal_window_manager/README.md)
   - [Wine](system/wine/README.md)
+  - [Window Managers](system/window_managers/README.md)
+    - [i3](system/window_managers/i3/README.md)
 
 - [Virtualization](virtualization/README.md)
   - [Podman](virtualization/podman/README.md)
   - [QEMU](virtualization/qemu/README.md)
 
-# Reference Guide
-
 --------
-[Backlog]()
 
 <!-- 
 vim: ts=2:sw=2:sts=2
