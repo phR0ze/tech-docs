@@ -87,6 +87,7 @@
   - [Distros](system/distros/README.md)
     - [NixOS](system/distros/nixos/README.md)
   - [Flatpak](system/flatpak/README.md)
+  - [Suckless](system/suckless/README.md)
   - [Terminal](system/terminal/README.md)
     - [Terminal Emulators](system/terminal/terminal_emulators/README.md)
     - [Terminal Window Manager](system/terminal/terminal_window_manager/README.md)
