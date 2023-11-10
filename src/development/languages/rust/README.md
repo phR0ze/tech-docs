@@ -1,4 +1,4 @@
-<img align="left" width="48" height="48" src="../../../data/images/logo_256x256.png"> Rust
+# Rust
 Rust is a systems programming language that aims to offer both performance and safety. It provides
 the low-level control of C, but also enforces memory and thread safety. Rust applications compile
 directly into machine code, allowing for highly optimized code and better performance. Rust is being

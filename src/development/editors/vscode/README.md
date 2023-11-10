@@ -188,6 +188,26 @@ terminal.
    "terminal.integrated.fontSize": 16
    ```
 
+# Language Servers
+The VS Code team at Microsoft proposed the language server protocol to allow for language developers 
+to be able to provide support for their language in a generic way that could then be leveraged by any 
+Integrated Development Environment or Editor. 
+
+The editor (client) spawns the background process (server) and keeps handles to the STDIN and STDOUT 
+pipes, which are used to communicate via JSON. For example when the `Go to Definition` function the 
+editor sends a JSON request through STDIN asking the language server to find the definition of 
+whatever is currently at the cursor position. The server receives the request, performs the work to 
+find the definition location and then returns that as JSON to the editor via STDOUT. The editor 
+receives the response and translates it into the action that needs to occur (i.e. jumping to the 
+right file at the right position where the definitioni exists.
+
+![language server example](../../../data/images/ruby-lsb-shopify.webp)
+
+Standardizing the request and response formats using JSON breaks the coupling between the editor and 
+the implementation of programming language freatures. The layer that translates developer actions 
+into JSON requests and JSON responses into behavior (the client layer) is only coupled with the 
+editor it's implemented for usually via a plugin or extension.
+
 # Troubleshooting
 
 ## Remove All Extensions
