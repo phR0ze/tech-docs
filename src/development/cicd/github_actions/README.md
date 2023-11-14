@@ -1,5 +1,4 @@
 # Github Actions
-<img align="left" width="40" height="40" src="../../../data/images/logo_256x256.png">
 
 Actions is a completely free feature for github open source projects. Actions has the advantage of
 being 100% programmatically driven which is a slick feature.
