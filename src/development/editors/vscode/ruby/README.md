@@ -23,6 +23,46 @@
    4. Search for Ruby and select `Ruby LSP` on the left
    5. Select `Ruby Version Manager` drop down and pick `rbenv`
 
+vscode config:
+```json
+    "[ruby]": {
+        "editor.defaultFormatter": "Shopify.ruby-lsp",
+        "editor.formatOnSave": true,
+        "editor.formatOnType": true,
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        "files.trimFinalNewlines": true,
+        "editor.rulers": [
+            120
+        ],
+        "editor.semanticHighlighting.enabled": true
+    },
+    "rubyLsp.enabledFeatures": {
+        "codeActions": true,
+        "diagnostics": true,
+        "documentHighlights": true,
+        "documentLink": true,
+        "documentSymbols": true,
+        "foldingRanges": true,
+        "formatting": true,
+        "hover": true,
+        "inlayHint": true,
+        "onTypeFormatting": true,
+        "selectionRanges": true,
+        "semanticHighlighting": true,
+        "completion": true,
+        "codeLens": true,
+        "definition": true,
+        "workspaceSymbol": true,
+        "references": true
+    },
+    "rubyLsp.pullDiagnosticsOn": "save",
+    "rubyLsp.rubyVersionManager": "rbenv",
+    "rubyLsp.formatter": "rubocop",
+```
+
 ### Debug Ruby
 https://dev.to/dnamsons/ruby-debugging-in-vscode-3bkj
 
