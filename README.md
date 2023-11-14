@@ -1,10 +1,7 @@
-<img align="left" width="48" height="48" src="images/logo_256x256.png">tech docs
-====================================================================================================
+# tech docs
 Documenting general tech and Arch Linux flavored linuxes 
 
 ### Quick links
-* [Development](development)
-
 * [Apps to use](#apps-to-use)
 * [Bash](#bash)
   * [heredoc](#heredoc)

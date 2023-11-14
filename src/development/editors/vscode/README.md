@@ -24,30 +24,48 @@ $ sudo pacman -U visual-studio-code-bin-1.8.1-3x86_64.pkg.tar.xz
 ```
 
 # Install Extensions
+Note: you can list all your installed extensions with `code --list-extensions`
+
 1. Launch `code`
 
 2. Click the button on the left that looks like an extension icon
 
 3. Install General extensions:
-   | Name                 | Identifier                            |
-   | -------------------- | ------------------------------------- |
-   | Vim                  | `vscodevim.vim`                       |
-   | VSCode Great Icons   | `emmanuelbeziat.vscode-great-icons`   |
-   | Code Runner          | `formulahendry.code-runner`           |
-   | Better TOML          | `bungcip.better-toml`                 |
-   | Docker               | `ms-azuretools.vscode-docker`         |
+   | Name                     | Identifier                            |
+   | ------------------------ | ------------------------------------- |
+   | Even Better TOML         | `tamasfe.even-better-toml`            |
+   | Code Runner              | `formulahendry.code-runner`           |
+   | Color Picker             | `anseki.vscode-color`                 |
+   | Copilot                  | `GitHub.copilot`                      |
+   | Copilot Chat             | `GitHub.copilot-chat`                 |
+   | Dev Containers           | `ms-vscode-remote.remote-containers`  |
+   | Dioxus                   | `DioxusLabs.dioxus`                   |
+   | Docker                   | `ms-azuretools.vscode-docker`         |
+   | Github Markdown Preview  | `bierner.github-markdown-preview`     |
+   | Github Pull Request      | `GitHub.vscode-pull-request-github`   |
+   | Rainbow CSV              | `mechatroner.rainbow-csv`             |
+   | SQL Tools                | `mtxr.sqltools`                       |
+   | SQL Tools Driver MySQL   | `mtxr.sqltools-driver-mysql`          |
+   | Vim                      | `vscodevim.vim`                       |
+   | VSCode Great Icons       | `emmanuelbeziat.vscode-great-icons`   |
 
 4. Install Golang extensions
-   | Name                 | Identifier                            |
-   | -------------------- | ------------------------------------- |
-   | Go                   | `golang.go`                           |
+   | Name                     | Identifier                            |
+   | ------------------------ | ------------------------------------- |
+   | Go                       | `golang.go`                           |
 
-5. Install Rust extensions
-   | Name                 | Identifier                            |
-   | -------------------- | ------------------------------------- |
-   | rust-analyzer        | `matklad.rust-analyzer`               |
-   | CodeLLDB             | `vadimcn.vscode-lldb`                 |
-   | crates               | `serayuzgur.crates`                   |
+5. Install Ruby extensions
+   | Name                     | Identifier                            |
+   | ------------------------ | ------------------------------------- |
+   | Ruby                     | `Shopify.ruby-extensions-pack`        |
+   | Rubo Cop                 | `rubocop.vscode-rubocop`              |
+
+6. Install Rust extensions
+   | Name                     | Identifier                            |
+   | ------------------------ | ------------------------------------- |
+   | rust-analyzer            | `rust-lang.rust-analyzer`             |
+   | CodeLLDB                 | `vadimcn.vscode-lldb`                 |
+   | Crates                   | `serayuzgur.crates`                   |
 
 # Keyboard Shortcuts
 Hit `Ctrl+Shift+p` and search for keyboard then choose `Preferences: Open Keyboard Shortcuts`
