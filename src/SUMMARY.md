@@ -25,6 +25,8 @@
       - [Rust](development/editors/vscode/rust/README.md)
   - [Languages](development/languages/README.md)
     - [Golang](development/languages/golang/README.md)
+    - [Markdown](development/languages/markdown/README.md)
+      - [Mermaid](development/languages/markdown/mermaid/README.md)
     - [Ruby](development/languages/ruby/README.md)
     - [Rust](development/languages/rust/README.md)
       - [Apps](development/languages/rust/apps/README.md)
