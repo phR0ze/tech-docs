@@ -84,6 +84,10 @@
   - [Office](productivity/office/README.md)
   - [Workspace](productivity/workspace/README.md)
 
+- [Security](security/README.md)
+  - [MFA](security/mfa/README.md)
+  - [Password Managers](security/password_managers/README.md)
+
 - [System](system/README.md)
   - [Desktop Environments](system/desktop_environments/README.md)
     - [System 76](system/desktop_environments/system_76/README.md)
