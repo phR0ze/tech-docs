@@ -4,6 +4,7 @@
 Documenting my learning experience with Android
 
 ### Quick links
+* [AGDK](#agdk)
 * [Android Studio](#android-studio)
   * [Install Android Studio](#install-android-studio)
   * [Update Android Studio](#update-android-studio)
@@ -41,6 +42,26 @@ Documenting my learning experience with Android
   * [Request storage permissions](#request-storage-permissions)
   * [Storage Access Framework](#storage-access-framework)
 * [Kotlin](#kotlin)
+
+# AGDK
+Official Android Game Develeopment kit provides
+* Game Activity
+  * Simplifies interop between native code and Java world
+* Game Text Input
+  * Simple API to show and hide software keyboard input
+  * Get and Set text
+* Game Controller
+  * Easy to use C API
+  * Callbacks for detecting controller connections/disconnections
+  * Device information, input data
+* Frame Pacing API
+* High Performance Audio
+* Memory Advice API Beta
+
+**Features**
+* Get the Game libs as AAR packages from Jetpack
+
+
 
 # Android Studio
 
