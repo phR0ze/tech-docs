@@ -3,40 +3,35 @@
 Researching Rust on Android. I'd really like to see a full Rust app on Android.
 
 ### Quick links
-* [Overview](#overview)
-
-## Research
-* Cargo NDK
-* Cargo mobile
-* Cargo ndk
+* [Tooling](#tooling)
+  * [Winit](#winit)
+  * [Android Activity](#android-activity)
+  * [xbuild](#xbuild)
+* [Retained UI](#retained-ui)
 
 **Resources**
+* [Android Rust projects](https://blog.traverseresearch.nl/building-pure-rust-apps-for-android-d1e388b431b8)
+* [UniFFI](https://sal.dev/android/intro-rust-android-uniffi/)
 * [Flapigen](https://github.com/Dushistov/flapigen-rs)
 * [Android source with Rust](https://source.android.com/docs/setup/build/rust/building-rust-modules/overview)
+* [Crossbow cross platform gameing in Rust](https://github.com/dodorare/crossbow)
 
-* 99.9% of the code is in Rust/wasm32
-* iOS/Android just provide a minimal "shell" for loading a webview + providing some bindings to native APIs
+## Tooling
 
-1. create a webview
-2. load wasm in the webview
-3. setup native <-> webview <-> rust/wasm communication
-
-# Projects
-
-## Component
-
-### cargo apk
-Deprecated in favor of [xbuild](#xbuild)
-
-### ndk
-Effort to expost the NDK to the Rust world use [android-activity](#android-activity) instead
-
-**References**
-* [Rust ndk bindings github](https://github.com/rust-mobile/ndk)
+### Winit
+Cross-platform Window handling library in pure Rust. Consumes the `android-activity` for 
+crossplatform windowing.
 
 **Notes**
-* `ndk-sys` is the raw FFI bindings to the NDK
-* `ndk` is the safe abstraction of the bindings
+* Create windows
+* Handle events like window resizing, key presses, mouse movement
+* Depends on platform-specific providers for showing something on the screen
+* X11 and Wayland support
+* Don't specify dependencies allow winit to do it for you
+  * Instead consume the API re-exported by winit at `winit::platform::android::activity::*`
+
+**Android**
+* Android backend builds and exposes types from the ndk crate
 
 ### android-activity
 `android-activity` provides a way to load your crate as a `cdylib` library via the `onCreate` method 
@@ -46,6 +41,13 @@ native thread.
 
 This is a refactored continuation of the [ndk](#ndk) work from the rust-mobile community. This 
 encapsulates the former work done in the `ndk`, `ndk-glue`, `ndk-macro` projects.
+
+Android apps are not like your average commandline executable, instead they are always associated 
+with a physical window, a so called ***Activity*** in Android terminology. The `NativeActivity` loads 
+your Rust code and is where it resides, allowing apps to be created without any Java code/classes at 
+all. It serves as a bridge between Android's app lifecycle and your Rust code forwarding events 
+through callbacks. This integration defines how an app starts up and moves to back and foreground 
+while users navigate their phone.
 
 **Refrences**
 * [Android activity github](https://github.com/rust-mobile/android-activity)
@@ -59,25 +61,12 @@ encapsulates the former work done in the `ndk`, `ndk-glue`, `ndk-macro` projects
   * GameActivity apps are expected to build all three parts of of the app into one library
 * `NativeActivity` - deprecated older integration
 
-### Winit
-Cross-platform Window handling library in pure Rust.
-
-**Notes**
-* Create windows
-* Handle events like window resizing, key presses, mouse movement
-* Depends on platform-specific providers for showing something on the screen
-* X11 and Wayland support
-* Don't specify dependencies allow winit to do it for you
-  * Instead consume the API re-exported by winit at `winit::platform::android::activity::*`
-
-**Android**
-* Android backend builds and exposes types from the ndk crate
-
 ### xbuild
-Rust cross compile automation assistance for mobile
+Rust cross compile automation assistance for mobile. Supports Rust native and Flutter
 
 **References**
 * [rust xbuild github](https://github.com/rust-mobile/xbuild)
+* [Cargo Apk vs xbuild](https://blog.traverseresearch.nl/building-pure-rust-apps-for-android-d1e388b431b8)
 
 Note: if you get a `error: failed to run custom build command for glib-sys v0.14.0` you need to 
 install the `gtk3-dev` package.
@@ -147,12 +136,19 @@ either the platform's WebView or experimentally with Blitz WGPU renderer.
 
 **References**
 * [iOS mobile example](https://github.com/DioxusLabs/example-projects/tree/master/ios_demo)
+* [xbuild Dioxus](https://altimetrikpoland.medium.com/writing-multi-platform-gui-app-in-rust-f54aba3e97b8)
 
 * Looking for contributers
 * Currently only iOS is officially supported
 * Blitz WGPU renderer via Vello
   * CSS is handled via lightningcss
   * Layout is handled with Taffy
+
+### Slint
+Has some initial work and toy apps but not ready for prime tine
+
+* Uses the `skia` renderer for GPU acceleration and native looking text rendering
+* 
 
 ### Flutter RS
 

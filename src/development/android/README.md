@@ -61,8 +61,6 @@ Official Android Game Develeopment kit provides
 **Features**
 * Get the Game libs as AAR packages from Jetpack
 
-
-
 # Android Studio
 
 ## Install Android Studio
