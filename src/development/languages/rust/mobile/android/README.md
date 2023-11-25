@@ -15,6 +15,8 @@ Researching Rust on Android. I'd really like to see a full Rust app on Android.
 * [Flapigen](https://github.com/Dushistov/flapigen-rs)
 * [Android source with Rust](https://source.android.com/docs/setup/build/rust/building-rust-modules/overview)
 * [Crossbow cross platform gameing in Rust](https://github.com/dodorare/crossbow)
+* [Publish Android Bevy App](https://www.nikl.me/blog/2023/github_workflow_to_publish_android_app/)
+* [Buid Rust app for Android](https://gendignoux.com/blog/2022/10/24/rust-library-android.html)
 
 ## Tooling
 
@@ -62,7 +64,9 @@ while users navigate their phone.
 * `NativeActivity` - deprecated older integration
 
 ### xbuild
-Rust cross compile automation assistance for mobile. Supports Rust native and Flutter
+Rust cross compile automation assistance for mobile. Supports Rust native and Flutter. I was able to 
+create a new project with `x new <project>` and build and install it to an Android emulator and it 
+worked!
 
 **References**
 * [rust xbuild github](https://github.com/rust-mobile/xbuild)
@@ -71,9 +75,14 @@ Rust cross compile automation assistance for mobile. Supports Rust native and Fl
 Note: if you get a `error: failed to run custom build command for glib-sys v0.14.0` you need to 
 install the `gtk3-dev` package.
 
-1. Install
+1. First ensure you [install the Android SDK and Emulator](../../../android/emulator/README.md)
+   
+1. Install `cargo install xbuild`. Release `0.2.0` had errors. Worked around it by compiling master `268939a`
    ```bash
-   $ cargo install xbuild
+   $ git clone https://github.com/rust-mobile/xbuild
+   $ cd xbuild
+   $ cargo build --release
+   $ mv target/release/x ~/.cargo/bin
    ```
 2. Rust doctor will examine your system and check for missing tools
    ```bash
@@ -109,23 +118,39 @@ install the `gtk3-dev` package.
    ---------------------------linux----------------------------
    mksquashfs           4.5.1               /usr/bin/mksquashfs
    ```
-3. List connected devices
+3. Create a new test project and build it
+   ```bash
+   $ x new foobar
+   $ cd foobar
+   $ x build
+   ```
+4. List connected devices
    ```bash
    $ x devices
-   host                                              Linux               linux x64           Arch Linux 5.16.10-arch1-1
-   adb:16ee50bc                                      FP4                 android arm64       Android 11 (API 30)
-   imd:55abbd4b70af4353bdea2595bbddcac4a2b7891a      David’s iPhone      ios arm64           iPhone OS 15.3.1
+   host                                              Linux               linux x64           cyberlinux 6.6.2-arch1-1
+   adb:emulator-5554                                 generic_x86_64_arm64android x64         Android 11 (API 30)
    ```
-4. Build or run on device
+5. Build or run on device
    ```bash
-   $ x build --device adb:16ee50bc
+   $ x build --device adb:emulator-5554
    [1/3] Fetch precompiled artifacts
    info: component 'rust-std' for target 'aarch64-linux-android' is up to date
-   [1/3] Fetch precompiled artifacts [72ms]
-   [2/3] Build rust
+   Android.ndk.tar.zst [54s] ███████████████████████████████ 66.73 MiB/66.73 MiB 📥 downloadedDownloading `platforms;android-33`
+   Extracting `platforms;android-33`
+   [1/3] Fetch precompiled artifacts [103419ms]
+   [2/3] Build rust `template`
+       Downloaded phf_macros v0.8.0
+       ...
        Finished dev [unoptimized + debuginfo] target(s) in 0.11s
+
    [2/3] Build rust [143ms]
    [3/3] Create apk [958ms]
+   ```
+   * xbuild automatically installed `~/.android/platforms/android-33`  
+   * xbuild created `foobar/target/x/debug/android/template.apk`  
+6. Install apk
+   ```bash
+   $ adb install ~/Projects/temp/foobar/target/x/debug/android/template.apk
    ```
 
 ## Retained UI
