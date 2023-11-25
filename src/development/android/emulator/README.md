@@ -13,62 +13,54 @@ The Android Emulator is actually a downstream project from QEMU adding the abili
 devices.
 
 ### Install Emulator
+Android tooling uses JAVA 17 as of 2023.11.19
+
 1. Install android dependencies
    ```bash
-   $ sudo pacman -S android-tools android-udev jre11-openjdk-headless jdk11-openjdk
+   $ sudo pacman -S android-tools android-udev jre17-openjdk-headless jdk17-openjdk kotlin gradle
+   $ export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
    ```
 2. Download the commandline tools
    1. Navigate to https://developer.android.com/studio
    2. Scroll down to the botto section and click the linux zip for the commandline tools
    3. Accept the terms and agreements
-   4. Extract the contents of `commandlinetools-linux-10406996_latest.zip` to `~/android/sdk`
-   5. Move extracted file `mv cmdline-tools ~/android/sdk/tools`
-3. Set the android home location
+   4. Extract the contents of `commandlinetools-linux-10406996_latest.zip`
+   5. Move extracted dir `mv cmdline-tools ~/.android/cmdline-tools/latest`
+   6. Set the android SDK home location
+      ```bash
+      $ PATH=$PATH:$HOME/.android/cmdline-tools/latest/bin
+      $ export ANDROID_HOME=~/.android
+      $ export ANDROID_SDK_HOME=$HOME
+      $ export ANDROID_SDK_ROOT=$ANDROID_HOME
+      ```
+3. Install the emulator; ends up in `~/.android/emulator`
    ```bash
-   $ export ANDROID_HOME=~/android/sdk
-   $ export ANDROID_SDK_ROOT=$ANDROID_HOME
+   $ sdkmanager emulator
+   $ PATH=$PATH:$HOME/.android/emulator
    ```
-
-
-
-2. Install android emulator
+4. Install tooling for specific [Android API](https://apilevels.com/)
    ```bash
-   $ yay -Ga android-emulator
-   $ cd android-emulator
-   $ makepkg -s
-   $ sudo pacman -U android-emulator-32.1.15-1-x86_64.pkg.tar.zst
+   $ sdkmanager "platforms;android-30"
+   $ sdkmanager "build-tools;30.0.3"
+   $ sdkmanager "system-images;android-30;google_apis;x86_64"
    ```
-3. Install android sdk to get the `avdmanager` and `sdkmanager`
+5. Create an AVD emulator device
    ```bash
-   $ yay -Ga android-sdk
-   $ cd android-sdk
-   $ makepkg -s
-   $ sudo pacman -U android-sdk-26.1.1-2-x86_64.pkg.tar.zst
-   $ PATH=$PATH:/opt/android-sdk/tools/bin
-   ```
-4. Install android platform tools
-   ```bash
-   $ yay -Ga android-sdk-platform-tools
-   $ cd android-sdk-platform-tools
-   $ makepkg -s
-   $ sudo pacman -U android-sdk-platform-tools-34.0.5-2-x86_64.pkg.tar.zst
-   ```
-5. Install android 11 SDK 30 platform
-   ```bash
-   $ yay -Ga android-platform-30
-   $ cd android-platform-30
-   $ makepkg -s
-   $ sudo pacman -U android-platform-30-30_r03-1-any.pkg.tar.zst
-   ```
-6. Create an AVD emulator device
-   ```bash
-   $ avdmanager create avd --name android30 --package "system-images;android-30;google_apis;x86_64"
+   $ avdmanager list device | grep pixel_4
+   $ avdmanager create avd --name android30 --package "system-images;android-30;google_apis;x86_64" --device pixel_4_xl
    ```
 
 ### Start Emulator
-```bash
-$ emulator -avd Pixel_4a_API_30
-```
+1. List out available virtual devices from both tools
+   ```bash
+   $ avdmanager list avd
+   $ emulator -list-avds
+   ```
+
+2. Start your virtual device
+   ```bash
+   $ emulator -avd android30
+   ```
 
 <!-- 
 vim: ts=2:sw=2:sts=2

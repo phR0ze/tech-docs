@@ -55,6 +55,7 @@
     - [Blog software](development/web/blog_software/README.md)
   - [UI](development/ui/README.md)
     - [Cross-platform](development/ui/cross_platform/README.md)
+      - [Flutter](development/ui/cross_platform/flutter/README.md)
 
 - [Cloud](cloud/README.md)
   - [Google Cloud Platform](cloud/google_cloud_platform/README.md)
