@@ -1,5 +1,4 @@
 # NeoVim
-<img align="left" width="48" height="48" src="../../../../data/images/logo_256x256.png">
 NeoVim is a fork of Vim aiming to improve user experience and plugin implementation.
 
 ### Quick links
@@ -11,11 +10,12 @@ NeoVim is a fork of Vim aiming to improve user experience and plugin implementat
   * [Install vim-plug](#install-vim-plug)
   * [Install plugins](#install-plugins)
   * [Plugins](#plugins)
+* [Ctrl+tab](#ctrl+tab)
 * [Command Syntax](#command-syntax)
 
-## Getting started <a name="getting-started"></a>
+## Getting started
 
-### Install NeoVim <a name="install-neovim"></a>
+### Install NeoVim
 Unfortunately NeoVim's QT UI is far inferior to GVim which is what I used to use. Typically however 
 I simply use the shell version of neovim or Visual Studio Code with the Vim plugin when in a UI. As 
 a fall back in lite configurations I'll use `geany`.
@@ -23,29 +23,29 @@ a fall back in lite configurations I'll use `geany`.
 $ sudo pacman -S neovim
 ```
 
-### Migrating to NeoVim <a name="migrating-to-neovim"></a>
+### Migrating to NeoVim
 On install of `cyberlinux` I've setup a link `ln -sf /usr/bin/nvim /usr/bin/vim` so I don't need to 
 change any other configuration.
 
 Simply copy your `~/.vimrc` to `~/.config/nvim/init.vim` as a starting point
 
-## Config Locations <a name="config-locations"></a>
+## Config Locations
 * ***Config file location:*** `~/.config/nvim/init.vim`
 * ***Global user config file location:*** `/etc/xdg/nvim/sysinit.vim`
 * ***Global default config file location:*** `/usr/share/nvim/sysinit.vim`
 * ***Data directory for swap files:*** `~/.local/share/nvim`
 
-# vim-plug <a name="vim-plug"></a>
+## vim-plug
 [vim-plug](https://github.com/junegunn/vim-plug) is a minimalist vim plugin manager with super fast
 parallel installation/update. It is the most popular one right now as well.
 
-## Install vim-plug <a name="install-vim-plug"></a>
+### Install vim-plug
 ```bash
 $ curl -fLo ~/.config/nvim/autoload/plug.vim --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 ```
 
-## Install plugins <a name="install-plugins"></a>
+### Install plugins
 ```
 $ nvim ~/.config/nvim/init.vim
 :PlugInstall
@@ -53,10 +53,11 @@ $ nvim ~/.config/nvim/init.vim
 :q
 ```
 
-## Plugins <a name="plugins"></a>
+## Plugins
 Vim plugins in the `vim-plug` world are just github repositories
 
-### Utilities <a name="utilities"></a>
+### Utilities
+```
   # Utilities
   aserebryakov/vim-todo-lists         # Manage TODOs
   #Plug  yegappan/mru
@@ -167,8 +168,21 @@ Vim plugins in the `vim-plug` world are just github repositories
   # Colorize last to ensure overriding
   phR0ze/vim-colorize                # Colorize various plugins
 )
+```
 
-# Commad Syntax <a name="command-syntax"></a>
+## Command Syntax
+
+## Ctrl+tab
+```
+" Buffer controls
+" Tab for next buffer, Shift+Tab for previous buffer
+" <leader>b will list all buffers with names
+" <leader>d will close the current buffer
+nnoremap  <silent>   <tab>  :if &modifiable && !&readonly && &modified <cr> :write<cr> :endif<cr>:bnext<cr>
+nnoremap  <silent> <s-tab>  :if &modifiable && !&readonly && &modified <cr> :write<cr> :endif<cr>:bprevious<cr>
+nnoremap <leader>b :buffers<cr>:b<space> 
+nnoremap <leader>d :bdelete<cr>
+```
 
 <!-- 
 vim: ts=2:sw=2:sts=2
