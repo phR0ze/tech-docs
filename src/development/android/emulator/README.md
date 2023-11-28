@@ -8,12 +8,17 @@ devices.
 * [Android SDK folder structure](https://medium.com/michael-wallace/how-to-install-android-sdk-and-setup-avd-emulator-without-android-studio-aeb55c014264)
 * [Android Emulator without Android Studio](https://medium.com/@yohan.ardiansyah90/how-to-run-android-emulator-for-development-without-android-studio-f0e73682af3a)
 
+### Quick links
+* [Install Emulator](#install-emulator)
+* [Start Emulator](#start-emulator)
+* [Vulkan graphics](#vulkan-graphics)
+
 ## Install Emulator
 Android tooling uses JAVA 17 as of 2023.11.19
 
 1. Install android dependencies
    ```bash
-   $ sudo pacman -S android-tools android-udev jre17-openjdk-headless jdk17-openjdk kotlin gradle
+   $ sudo pacman -S protobuf android-tools android-udev jre17-openjdk-headless jdk17-openjdk kotlin gradle
    $ export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
    ```
 2. Download the commandline tools
@@ -58,6 +63,20 @@ Android tooling uses JAVA 17 as of 2023.11.19
    ```bash
    $ emulator -avd android30
    ```
+
+## Delete Emulator
+```bash
+$ avdmanager delete avd -n android30
+```
+
+## Vulkan graphics
+Vulkan is a modern cross-platform 3D graphics API designed to minimize abstraction between device 
+graphics hardware and your game. Vulkan is the primary low-level graphics API on Android replacing 
+OpenGL ES. All Android 10 (API level 29) and higher devices support Vulkan 1.1 which is 85% of the 
+market.
+
+**References**
+* [Vulkan Android docs](https://developer.android.com/games/develop/use-vulkan)
 
 <!-- 
 vim: ts=2:sw=2:sts=2

@@ -93,7 +93,7 @@ References:
    ```shell
    $ yay -Ga android-studio
    $ cd android-studio; makepkg -s
-   $ sudo pacman -U android-studio-2021.1.1.23-1-x86_64.pkg.tar.zst
+   $ sudo pacman -U android-studio-2022.3.1.22-1-x86_64.pkg.tar.zst
    ```
 
 5. First run configuration  
