@@ -17,11 +17,15 @@ source [content URL](https://stackoverflow.blog/2022/02/21/why-flutter-is-the-mo
 * [Setup Flutter on Arch Linux](#setup-flutter-on-arch-linux)
 * [Flutter with Android Studio](#flutter-with-android-studio)
   * [Configure Flutter project in Android Studio](#configure-flutter-project-in-android-studio)
-* [Flutter without Android Studio](#flutter-without-android-studio)
+* [Flutter commandline](#flutter-commandline)
   * [Create new project](#create-new-project)
   * [Build for Desktop](#build-for-desktop)
 * [Flutter Patterns](#flutter-patterns)
-  * [Splash Screen](#splash-screen)
+  * [Display Image](#display-image)
+  * [Launch Screen](#launch-screen)
+  * [Responsive](#responsive)
+* [Flutter platform](#flutter-platform)
+  * [pubspec](#pubspec)
 
 ## Overview
 Flutter is a layered system comprising the framework, the engine, and platform-specific embedders. 
@@ -47,6 +51,8 @@ reducing development time.
 * [Awesome Flame](https://github.com/flame-engine/awesome-flame)
 * [Flutter docs](https://flutter.dev/docs)
 * [Flutter cookbook](https://docs.flutter.dev/cookbook)
+* [Dart pad with Flutter](https://dartpad.dev/?id=e7076b40fb17a0fa899f9f7a154a02e8)
+* [Pub dev - Dart and Flutter package repo](https://pub.dev/)
 
 **Benefits**
 * Cross-platform Android, iOS, WASM, Windows, MacOS, Linux
@@ -70,13 +76,11 @@ reducing development time.
 * Have to learn Dart
 
 ## Setup Flutter on Arch Linux
-
-**References**
-* [Arch Linux getting started with flutter](https://dev.to/nabbisen/flutter-3-on-arch-linux-getting-started-fc0)
+Reference: [getting started with Flutter on Arch Linux](https://dev.to/nabbisen/flutter-3-on-arch-linux-getting-started-fc0)
 
 1. Install [android tooling](../../../android/emulator)
 
-2. Install [android studio](../../../android)
+2. Install [android studio](../../../android/index.html#android-studio)
    1. Install the `Flutter` plugin from the `File >Settings... > Plugins` menu
    2. Install the `Dart` plugin from the `File >Settings... > Plugins` menu
 
@@ -85,7 +89,7 @@ reducing development time.
    $ sudo pacman -S dart clang cmake ninja base-devel
    ```
 
-4. Install Flutter 3.0
+4. Install Flutter latest
    ```bash
    $ yay -GA flutter
    $ cd flutter
@@ -101,6 +105,8 @@ reducing development time.
    ```
 
 ## Flutter with Android Studio
+Warning: I'm not recommending this path as I find Android Studio to be slow and clunky. The VS Code 
+path is a much better experience.
 
 ### Configure Flutter project in Android Studio
 1. Click the `New Flutter Project`
@@ -111,11 +117,40 @@ reducing development time.
 
 6. Create a new emulator in the IDE and click the `Run` button for an android build
 
-## Flutter without Android Studio
+## Flutter with VS Code
+1. [Install and configure VS Code](../../../editors/vscode)
+2. Install the `Flutter` extension
+
+### Run with VS Code
+This will build and deploy your app to the device you have selected and keep it in a hot-reload mode 
+such that any changes to your app will be updated in the target device when you save your changes.
+
+Note it is possible to run the emulator directly from VS Code but for some reason this put it in a 
+bad state where VS Code wasn't able to connect and I had to delete it and create a new one and start 
+over and run it via the terminal instead.
+
+1. Start the emulator in the terminal
+   ```bash
+   $ emulator -avd android30
+   ```
+
+2. Run the code in the target device with the debuggerr for hot-reloading
+   1. In the top right hand corner of your `main.dart` file hit the button for `Start Debugging` or press `F5`. 
+   2. Every time you save your changes it will be hot-reloaded on the target device
+
+### VS Code Refactor
+The refactor capabilities of the Flutter plugin are top-notch. Selecting widgets and activating 
+refactor allows you to quickly wrap widgets in other widgets to allow for rapid layout configuration 
+changes or extract code into their own widgets for rapid development.
+
+## Flutter commandline
 
 ### Create new project
 ```bash
 $ flutter create <project-name>
+
+# Overrides
+# flutter create --project-name my_app --org dev.flutter --android-language java --ios-language objc my_app
 ```
 
 ### Run with Flutter commandline
@@ -157,12 +192,163 @@ Flutter uses GTK for Linux
    * `data` contains the application's data assets, such as fonts or images 
    * `lib` contains the required .so library files
 
-## Flutter Patterns
+### Build and install for Android
+1. Build release
+   ```bash
+   $ flutter build apk --release
+   ``` 
 
-### Splash Screen
-Splash screens, a.k.a launch screens, provide a simple initial experience while your app loads. They 
+2. Install to connected device
+   ```bash
+   $ flutter install --release
+   ``` 
+
+### Project creation
+* ***Create a new project with specific platform support***
+  * `flutter create --platforms=linux,android <project-name>`
+
+* ***Add specific platform support to an existing project***
+  * `flutter create --platforms=linux .`
+
+## Flutter Patterns
+* ***Custom Widgets*** are a best practice for reusability
+* ***Pass Widgets*** widgets as parameters to other widgets is a standard practice
+* Keep state as close to the area of concern as possible
+  * Keep it in the widget if that is all that needs it
+  * Keep it at the lowest level in the widget tree that ensures it lives long enough to be useful
+
+### Build methods
+In Flutter when a parent widget receives a callback and updates its internal state it will then 
+trigger a rebuild which will then rebuild all the widgets below it if they have changed. The 
+framework does this by comparing the newly built widgets with the previously built widgets and only 
+applying the differences to the underlying RenderObject.
+
+### Custom Widgets
+Reduce your widgets to only accept what they use as parameters not all app state.
+
+### Launch Screen
+Launch screens, a.k.a splash screens, provide a simple initial experience while your app loads. They 
 set the stage for your application, while allowing time for the app engine to load and your app to 
 initialize.
+
+**References**
+* [Flutter docs - Splash screen](https://docs.flutter.dev/platform-integration/android/splash-screen)
+
+## Flutter platform
+Every app has a `main()` which runs your root widget. Every widget has a `build` which must return a 
+widget or tree of widgets so that Flutter nows what to draw. Widgets can be nested as desired.
+
+**References**
+* [Flutter UI docs](https://docs.flutter.dev/ui)
+* [Material 3 demo](https://flutter.github.io/samples/web/material_3_demo/)
+* [Material 3 docs](https://docs.flutter.dev/ui/widgets/material)
+* [Material 3 Icons](https://fonts.google.com/icons)
+
+### pubspec
+The `pubspec.yaml` in the root of your Flutter project is the main project file tracking dependencies 
+and configuration for your project
+
+### static vs final vs const
+* ***static*** means a member is available on the class itself instead of on instances of the class
+* ***final*** means single-assignment i.e. it must be initialized and cannot be changed
+* ***const*** means that the object can be determined completely at compile time and frozen
+
+### Basic widgets
+* ***Text*** styled text
+
+### Display an Image
+The ***Image*** class renders an image to the screen. Flutter supports: JPEG, PNG, Animated GIF, 
+Animated WebP, BMP, and WBMP. In order to render the images to the screen Flutter needs to cache them 
+as raw images so a lot of memory may be required. You can work around this by setting the custom 
+decode size to limit how much memory is consumed by the cache.
+
+* [Flutter Image class docs](https://api.flutter.dev/flutter/widgets/Image-class.html) 
+* [Easy image viewer on pub.dev](https://pub.dev/packages/easy_image_viewer)
+* [File picker example](https://www.geeksforgeeks.org/flutter-pick-and-open-files-from-storage/)
+
+**Images from assets**
+```dart
+Image.asset(
+  'assets/images/dash.jpg'
+)
+```
+Image assets will automatically show the correct image for the devices pixel density
+
+**Images from file**
+```dart
+Image.file(
+  '/path/to/dash.jpg'
+)
+```
+
+**Images from network**
+```dart
+Image.network(
+  'http://example.com/dash.jpg'
+)
+```
+Flutter will automatically download and cache the image. You can use the `loadingBuilder` function to 
+show loading progress while being downloaded
+
+**Images from memory as byte arrays**
+```dart
+Image.memory(
+  myUint8List,
+)
+```
+
+
+### Layout
+
+* ***BoxDecoration*** lets you decorate the `Container` widget
+* ***Column*** takes any number of children and puts them in a column from top to bottom
+* ***Container*** lets you create a rectangular visual element that can be decorated
+* ***Expanded*** wrapper to be used inside other widgets to greedily expand to fill available space
+* ***Row*** takes any number of children and puts them in a row from left to right
+* ***Scaffold*** 
+* ***SafeArea*** defines space that should be visible beyond the camera and options menus etc...
+* ***Stack*** lets you place widgets on top of each other in paint order
+* ***Placeholder()*** fantastic idea for building out layouts without any content yet
+* ***Positioned*** can be used on children of a `Stack` to position them relative to it
+
+### Navigation
+
+The `NavigationRail` provides a left side navigation menu that can be:
+* `extended` to show icon and label in a larger screen setting
+* `selectedIndex` provides option to choose which button is the default selection
+* `onDestinationSelected` callback when buttons are pressed
+
+### State
+Flutter uses `StatefulWidgets` to generate `State` objects, which are then used to hold state. 
+Widgets and State objects have different life cycles. Widgets are used for presentation and are 
+frequently destroyed and recreated with changes while State is persisted between calls to the 
+`build()` method.
+
+* ***ChangeNotifier*** creates state and dependencies can watch for notifications and rebuild
+
+### Themes
+You can choose any color with `Color.fromRGB0(0, 255, 0, 1.0)` or `Color(0xFF00FF00)`. Flutter uses 
+an app wide Theme that all widgets respect to provide a matching suite of colors.
+
+**Set Theme Color Scheme** with the `seedColor`
+```dart
+theme: ThemeData(
+  useMaterial3: true,
+  colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+),
+```
+
+**Set text to medium**
+```dart
+final style = theme.textTheme.displayMedium!.copyWith(
+  color: theme.colorScheme.onPrimary,
+);
+```
+
+**Get current theme**
+```dart
+final theme = Theme.of(context);
+```
 
 ## Rust Integration
 

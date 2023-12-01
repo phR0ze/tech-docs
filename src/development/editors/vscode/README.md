@@ -1,5 +1,4 @@
 # VSCode
-<img align="left" width="48" height="48" src="../../../../data/images/logo_256x256.png">
 Develop with Visual Studio Code
 
 ### Quick links
@@ -31,6 +30,7 @@ Note: you can list all your installed extensions with `code --list-extensions`
 2. Click the button on the left that looks like an extension icon
 
 3. Install General extensions:
+
    | Name                     | Identifier                            |
    | ------------------------ | ------------------------------------- |
    | Even Better TOML         | `tamasfe.even-better-toml`            |
@@ -50,17 +50,20 @@ Note: you can list all your installed extensions with `code --list-extensions`
    | VSCode Great Icons       | `emmanuelbeziat.vscode-great-icons`   |
 
 4. Install Golang extensions
+
    | Name                     | Identifier                            |
    | ------------------------ | ------------------------------------- |
    | Go                       | `golang.go`                           |
 
 5. Install Ruby extensions
+
    | Name                     | Identifier                            |
    | ------------------------ | ------------------------------------- |
    | Ruby                     | `Shopify.ruby-extensions-pack`        |
    | Rubo Cop                 | `rubocop.vscode-rubocop`              |
 
 6. Install Rust extensions
+
    | Name                     | Identifier                            |
    | ------------------------ | ------------------------------------- |
    | rust-analyzer            | `rust-lang.rust-analyzer`             |
