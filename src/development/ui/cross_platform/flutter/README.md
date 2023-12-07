@@ -24,8 +24,23 @@ source [content URL](https://stackoverflow.blog/2022/02/21/why-flutter-is-the-mo
   * [Display Image](#display-image)
   * [Launch Screen](#launch-screen)
   * [Responsive](#responsive)
+  * [Build methods](#build-methods)
+  * [Custom Widgets](#custom-widgets)
+  * [Launch Screen](#launch-screen)
 * [Flutter platform](#flutter-platform)
   * [pubspec](#pubspec)
+  * [Basic widgets](#basic-widgets)
+  * [Display an Image](#display-an-image)
+  * [Future Builder](#future-builder)
+  * [Gestures](#gestures)
+  * [Layout](#layout)
+  * [Navigation](#navigation)
+  * [State](#state)
+  * [Slivers](#slivers)
+  * [Themes](#themes)
+* [Dart](#dart)
+  * [Parameters](#parameters)
+  * [static vs final vs const](#static-vs-final-vs-const)
 
 ## Overview
 Flutter is a layered system comprising the framework, the engine, and platform-specific embedders. 
@@ -150,7 +165,7 @@ changes or extract code into their own widgets for rapid development.
 $ flutter create <project-name>
 
 # Overrides
-# flutter create --project-name my_app --org dev.flutter --android-language java --ios-language objc my_app
+# flutter create --platforms=linux,android <project-name>
 ```
 
 ### Run with Flutter commandline
@@ -234,6 +249,46 @@ initialize.
 **References**
 * [Flutter docs - Splash screen](https://docs.flutter.dev/platform-integration/android/splash-screen)
 
+### Responsive
+Flutter apps might appear on screens of many different sizes. Ideally you want your app to be both 
+***adaptive*** and ***responsive***. Flutter's primary means of handling responsiveness is to use the 
+`LayoutBuilder` which will redraw the UI whever the size constraints change providing the ability for 
+things like:
+
+```dart
+child: Layoutbuilder(
+  builder: (context, constraints) {
+    if (constraints.maxWidth > 1200) {
+      return UltraWideLayout();
+    } else if (constraints.maxWidth > 600) {
+      return WideLayout();
+    } else {
+      return NarrowLayout();
+    }
+```
+
+```dart
+if (Theme.of(ctx).platform == TargetPlatform.iOS) {
+  // Alternatively you can use dart:io.Platform
+}
+```
+
+The constraint sizes are device neutral meaning they are supposed to be the same thing on every 
+screen and it doesn't matter resolution, density etc...
+
+***Responsive***  
+Typically, a responsive app has had its layout tuned for the available screen size. Often this means 
+re-laying out the UI if the user resizes the window, or changes the device's orientation.
+
+***Adaptive***  
+Adaptive apps can adapt to the device's platform capabilities such as different kinds of input 
+devices e.g. keyboard and mouse vs touch.
+
+**References**
+* [Flutter docs - responsive app](https://docs.flutter.dev/ui/layout/responsive/adaptive-responsive)
+* [Building adaptive apps](https://docs.flutter.dev/ui/layout/responsive/building-adaptive-apps)
+
+
 ## Flutter platform
 Every app has a `main()` which runs your root widget. Every widget has a `build` which must return a 
 widget or tree of widgets so that Flutter nows what to draw. Widgets can be nested as desired.
@@ -247,11 +302,6 @@ widget or tree of widgets so that Flutter nows what to draw. Widgets can be nest
 ### pubspec
 The `pubspec.yaml` in the root of your Flutter project is the main project file tracking dependencies 
 and configuration for your project
-
-### static vs final vs const
-* ***static*** means a member is available on the class itself instead of on instances of the class
-* ***final*** means single-assignment i.e. it must be initialized and cannot be changed
-* ***const*** means that the object can be determined completely at compile time and frozen
 
 ### Basic widgets
 * ***Text*** styled text
@@ -297,6 +347,21 @@ Image.memory(
 )
 ```
 
+### Future Builder
+The `FutureBuilder` widget will take a future and handle the different states of the future i.e. 
+completed, failed and waiting.
+
+### Gestures
+By using the built in widgets to handle gestures rather than directly with the gesture detecter you 
+get built in animations as well.
+
+![Flutter Gestures](../../../../data/images/flutter-gestures-mind-map.png)
+
+**References**
+* [Choose the right gesture widgets](https://blog.logrocket.com/choosing-the-right-gestures-for-your-flutter-project/)
+* [Vertical Drag](https://blog.logrocket.com/handling-gestures-flutter-gesturedetector/)
+
+* ***Dismissible*** allows for flicking an item left or right to dismiss, think delete or archive
 
 ### Layout
 
@@ -304,19 +369,52 @@ Image.memory(
 * ***Column*** takes any number of children and puts them in a column from top to bottom
 * ***Container*** lets you create a rectangular visual element that can be decorated
 * ***Expanded*** wrapper to be used inside other widgets to greedily expand to fill available space
+* ***LayoutBuilder*** common parent to trigger rebuilds if screen size orientation or size changes
 * ***Row*** takes any number of children and puts them in a row from left to right
-* ***Scaffold*** 
+* ***Scaffold*** per screen/page it provides basic material styling and layout components
 * ***SafeArea*** defines space that should be visible beyond the camera and options menus etc...
 * ***Stack*** lets you place widgets on top of each other in paint order
 * ***Placeholder()*** fantastic idea for building out layouts without any content yet
 * ***Positioned*** can be used on children of a `Stack` to position them relative to it
 
 ### Navigation
+Flutter's Material 3 implementation provides several navigation options:
+* ***AppBar*** - advanced navigation and actions bar at top
+* ***BottomAppBar*** -  advanced navigation and actions bar at bottom
+* ***BottomNavigationBar*** - advanced navigation and actions bar at bottom
+* ***NavigationBar*** - simple switching between primary destinations
+* ***NavigationDrawer*** - lkj
+* ***NavigationRail*** - bar on the side of the screen that can optionally expand to include labels
+* ***TabBar*** - lkj
+
+**References**
+* [Material 3 Navigation](https://docs.flutter.dev/ui/widgets/material#Navigation)
+* [Navigation basics - Flutter docs](https://docs.flutter.dev/cookbook/navigation/navigation-basics)
 
 The `NavigationRail` provides a left side navigation menu that can be:
 * `extended` to show icon and label in a larger screen setting
 * `selectedIndex` provides option to choose which button is the default selection
 * `onDestinationSelected` callback when buttons are pressed
+
+**Routes** are a natural part of the navigation conversation. Each route is just a widget that we 
+load as a new screen using the `Navigator.push` method.
+
+**Push a new route**
+```dart
+onPressed: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => const SecondRoute()),
+  );
+}
+```
+
+**Return to the prior route**
+```dart
+onPressed: () {
+  Navigator.pop(context);
+}
+```
 
 ### State
 Flutter uses `StatefulWidgets` to generate `State` objects, which are then used to hold state. 
@@ -325,6 +423,29 @@ frequently destroyed and recreated with changes while State is persisted between
 `build()` method.
 
 * ***ChangeNotifier*** creates state and dependencies can watch for notifications and rebuild
+
+### Slivers
+A sliver is a portion of a scrollable area inside a CustomScrollView that can be configured 
+accordingly to behave in a certain way. Using slivers we can create a plethora of different scrolling 
+effects. Slivers lazy build their views when the widgets come into the viewport. This makes it ideal 
+for showing a great number of children without worrying about memory issues.
+
+**References**
+* [Slivers - Log Rocket](https://blog.logrocket.com/building-custom-flutter-scrollview/)
+
+***CustomScrollView***  
+A widget that uses multiple Slivers rather than just one. 
+
+**Slivers that can go inside CustomScrollView**
+* `SliverAppBar` - creates a collapsible app bar by setting both the `flexibleSpace` and `expandedHeight`
+* `SliverToBoxAdapter` - sliver that allows you to wrap non-sliver widgets inside a CustomScroolView
+* `SliverGrid` - sliver that displays a 2D array
+* `SliverFixedExtentList` - like SliverList but guarantees all items will remain the same size
+* `SliverList` - sliver that renders a list in a linear array along the scroll view's main axis.
+  * `SliverChildListDelegate` - specifies a fixed list of children that are created all at once
+  * `SliverChildBuilderDelegate` - specifies how to build them lazily
+* `SliverOpacity` - sliver makes its sliver child partially transparent
+* `SliverPadding` - sliver that creates empty space around another sliver
 
 ### Themes
 You can choose any color with `Color.fromRGB0(0, 255, 0, 1.0)` or `Color(0xFF00FF00)`. Flutter uses 
@@ -349,6 +470,24 @@ final style = theme.textTheme.displayMedium!.copyWith(
 ```dart
 final theme = Theme.of(context);
 ```
+
+## Dart
+
+### Parameters
+* [Dart functions docs](https://dart.dev/language/functions)
+
+The parameters of a class constructor or fucntion are required by default.
+```dart
+class Test {
+  final String x;
+  Test(this.x);
+}
+```
+
+### static vs final vs const
+* ***static*** means a member is available on the class itself instead of on instances of the class
+* ***final*** means single-assignment i.e. it must be initialized and cannot be changed
+* ***const*** means that the object can be determined completely at compile time and frozen
 
 ## Rust Integration
 
