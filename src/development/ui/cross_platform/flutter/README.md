@@ -18,7 +18,7 @@ source [content URL](https://stackoverflow.blog/2022/02/21/why-flutter-is-the-mo
 * [Flutter with Android Studio](#flutter-with-android-studio)
   * [Configure Flutter project in Android Studio](#configure-flutter-project-in-android-studio)
 * [Flutter commandline](#flutter-commandline)
-  * [Create new project](#create-new-project)
+  * [Create project](#create-project)
   * [Build for Desktop](#build-for-desktop)
 * [Flutter Patterns](#flutter-patterns)
   * [Display Image](#display-image)
@@ -35,6 +35,7 @@ source [content URL](https://stackoverflow.blog/2022/02/21/why-flutter-is-the-mo
   * [Gestures](#gestures)
   * [Layout](#layout)
   * [Navigation](#navigation)
+  * [Keyboard Input](#keyboard-input)
   * [State](#state)
   * [Slivers](#slivers)
   * [Themes](#themes)
@@ -57,10 +58,12 @@ reducing development time.
 ![Flutter Architecture](../../../../data/images/flutter-arch.webp)
 
 **References**
+* [Flutter samples](https://github.com/flutter/samples/tree/main)
 * [Flutter Awesome](https://flutterawesome.com/)
 * [Flutter multi-platform](https://flutter.dev/multi-platform)
 * [Flutter Folio Example App site](https://flutter.gskinner.com/folio/)
 * [Flutter Folio Example App Github](https://github.com/gskinnerTeam/flutter-folio)
+* [Flutter plugins for desktop](https://github.com/google/flutter-desktop-embedding)
 * [Flutter 3.16 update](https://dev.to/svprdga/flutter-316-released-android-impeller-preview-game-toolkit-updates-ios-extensions-and-more-1c7n)
 * [Flame - Flutter Based Game Engine](https://pub.dev/packages/flame)
 * [Awesome Flame](https://github.com/flame-engine/awesome-flame)
@@ -160,7 +163,7 @@ changes or extract code into their own widgets for rapid development.
 
 ## Flutter commandline
 
-### Create new project
+### Create project
 ```bash
 $ flutter create <project-name>
 
@@ -416,11 +419,18 @@ onPressed: () {
 }
 ```
 
+### Keyboard input
+
+
+
 ### State
 Flutter uses `StatefulWidgets` to generate `State` objects, which are then used to hold state. 
 Widgets and State objects have different life cycles. Widgets are used for presentation and are 
 frequently destroyed and recreated with changes while State is persisted between calls to the 
 `build()` method.
+
+**References**
+* [State Management - Flutter docs](https://docs.flutter.dev/data-and-backend/state-mgmt/intro)
 
 * ***ChangeNotifier*** creates state and dependencies can watch for notifications and rebuild
 
