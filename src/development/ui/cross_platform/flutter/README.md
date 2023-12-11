@@ -17,6 +17,8 @@ source [content URL](https://stackoverflow.blog/2022/02/21/why-flutter-is-the-mo
 * [Setup Flutter on Arch Linux](#setup-flutter-on-arch-linux)
 * [Flutter with Android Studio](#flutter-with-android-studio)
   * [Configure Flutter project in Android Studio](#configure-flutter-project-in-android-studio)
+* [Flutter applications](#flutter-applications)
+  * [AuthPass](#auth-pass)
 * [Flutter commandline](#flutter-commandline)
   * [Create project](#create-project)
   * [Build for Desktop](#build-for-desktop)
@@ -30,15 +32,19 @@ source [content URL](https://stackoverflow.blog/2022/02/21/why-flutter-is-the-mo
 * [Flutter platform](#flutter-platform)
   * [pubspec](#pubspec)
   * [Basic widgets](#basic-widgets)
+  * [Dependencies](#dependencies)
   * [Display an Image](#display-an-image)
   * [Future Builder](#future-builder)
   * [Gestures](#gestures)
   * [Layout](#layout)
-  * [Navigation](#navigation)
   * [Keyboard Input](#keyboard-input)
+  * [Navigation](#navigation)
+  * [Packages](#packages)
+  * [Persist configuration](#persist-configuration)
   * [State](#state)
   * [Slivers](#slivers)
   * [Themes](#themes)
+  * [Window decorations](#window-decorations)
 * [Dart](#dart)
   * [Parameters](#parameters)
   * [static vs final vs const](#static-vs-final-vs-const)
@@ -160,6 +166,15 @@ over and run it via the terminal instead.
 The refactor capabilities of the Flutter plugin are top-notch. Selecting widgets and activating 
 refactor allows you to quickly wrap widgets in other widgets to allow for rapid layout configuration 
 changes or extract code into their own widgets for rapid development.
+
+## Flutter applications
+
+### AuthPass
+[AuthPass](https://authpass.app/) is a Free and Open Source password manager for Android, iOS, macOS, 
+Linux and Windows that is compatible with KeePass.
+
+**References**
+* [authpass - Github](https://github.com/authpass/authpass)
 
 ## Flutter commandline
 
@@ -309,6 +324,16 @@ and configuration for your project
 ### Basic widgets
 * ***Text*** styled text
 
+### Dependencies
+Flutter/dart dependencies can be specified by git repo as well
+```yaml
+dependencies:
+  window_manager:
+    git:
+      url: https://github.com/leanflutter/window_manager.git
+      ref: main
+```
+
 ### Display an Image
 The ***Image*** class renders an image to the screen. Flutter supports: JPEG, PNG, Animated GIF, 
 Animated WebP, BMP, and WBMP. In order to render the images to the screen Flutter needs to cache them 
@@ -380,6 +405,8 @@ get built in animations as well.
 * ***Placeholder()*** fantastic idea for building out layouts without any content yet
 * ***Positioned*** can be used on children of a `Stack` to position them relative to it
 
+### Keyboard input
+
 ### Navigation
 Flutter's Material 3 implementation provides several navigation options:
 * ***AppBar*** - advanced navigation and actions bar at top
@@ -419,9 +446,76 @@ onPressed: () {
 }
 ```
 
-### Keyboard input
+### Packages
+**Flutter favorites**
+* [`battery_plus`](https://pub.dev/packages/battery_plus)
+* [`device_info_plus`](https://pub.dev/packages/device_info_plus)
+* [`flame`](https://pub.dev/packages/flame)
+* [`fluent_ui`](https://pub.dev/packages/fluent_ui)
+* [`flutter_local_notifications`](https://pub.dev/packages/flutter_local_notifications)
+* [`flutter_rust_bridge`](https://pub.dev/packages/flutter_rust_bridge)
+* [`go_router`](https://pub.dev/packages/go_router)
+* [`json_serializable`](https://pub.dev/packages/json_serializable)
+* [`path_provider`](https://pub.dev/packages/path_provider)
+* [`provider`](https://pub.dev/packages/provider)
+* [`url_launcher`](https://pub.dev/packages/url_launcher)
 
+[Most liked packages](https://pub.dev/packages?q=platform%3Alinux&sort=like)
+* [`dio`](https://pub.dev/packages/dio) 
 
+[material.io](https://pub.dev/publishers/material.io/packages)
+* [`adaptive_breakpoints`](https://pub.dev/packages/adaptive_breakpoints)
+* [`adaptive_components`](https://pub.dev/packages/adaptive_components)
+* [`adaptive_navigation`](https://pub.dev/packages/adaptive_navigation)
+* [`dynamic_color`](https://pub.dev/packages/dynamic_color)
+* [`google_fonts`](https://pub.dev/packages/google_fonts)
+
+[google.dev packages](https://pub.dev/publishers/google.dev/packages)
+* [`googleapis_auth`](https://pub.dev/packages/googleapis_auth)
+* [`file`](https://pub.dev/packages/file)
+  * A pluggable, mockable file system abstraction for Dart with local and in-memory files
+* [`quiver`](https://pub.dev/packages/quiver)
+  * Utilities for making core Dart libaries easier and more convenient
+  * e.g. `isBlank` checks if a string is null, empty or made of whitespace characters
+* [`retry`](https://pub.dev/packages/retry)
+
+[gskinner](https://pub.dev/publishers/gskinner.com/packages)
+* [`flutter_animate`](https://pub.dev/packages/flutter_animate)
+* [`universal_platform`](https://pub.dev/packages/universal_platform)
+
+### Persist configuration
+Persisting data can be done in a variety of ways in Flutter. I'm looking for:
+* Standard Linux convention `~/.config/<app>.yaml` convention
+* Automatically convert into a singleton class in the app
+
+**Potential Solution**
+1. Use `xdg_directories` and/or `path_provider` to handle pathing
+2. Use `global_configuation` singleton pattern
+3. Use `cli_config` yaml support concept
+
+**Package possibilities**
+* [`xdg_directories`](https://pub.dev/packages/xdg_directories)
+  * Provide access to Linux home, data and cache dirs
+* [`path_provider`](https://pub.dev/packages/path_provider)
+  * Basically just rolling your own `shared_preferences`
+  * Cross platform access to temp dir, app dir, docs dir, cache dir, downloads
+  * `getApplicationDocumentsDirectory()` is a directory in Android that the OS created for your app
+  * `getTemporaryDirectory()` for data that doesn't need to outlive the current session
+  * Use `dart:io` to read/write files directly with these paths
+  * [Reading/Writing files](https://docs.flutter.dev/cookbook/persistence/reading-writing-files)
+  * [Global Configuration](https://pub.dev/packages/global_configuration)
+    * Seems to have done this but combined it with a singleton inside the app when loaded
+    * Uses a JSON file as its storage mechanism. I'd prefer YAML or TOML
+    * Supports network configuration
+* [`cli_config`](https://github.com/dart-lang/tools/tree/main/pkgs/cli_config)
+  * Dart team created and supported for all platforms except Web
+  * Command line args => Environment vars => JSON or YAML config file support
+  * Odd command line argument definition `-Dsome_key=some_value`
+  * Does allow for an optional path though so really mostly fits my needs
+* [`shared_preferences`](https://pub.dev/packages/shared_preferences)
+  * Interesting idea, stores simple key values in file `shared_preferences.json` in app support path
+  * not sure what that resoves to on linux but doesn't fit conventions as is for sure
+  * Could be modified to fit linux conventions though without much effort, although I'd use yaml
 
 ### State
 Flutter uses `StatefulWidgets` to generate `State` objects, which are then used to hold state. 
@@ -431,8 +525,27 @@ frequently destroyed and recreated with changes while State is persisted between
 
 **References**
 * [State Management - Flutter docs](https://docs.flutter.dev/data-and-backend/state-mgmt/intro)
+* [Provider vs BLoC](https://www.miquido.com/blog/flutter-architecture-provider-vs-bloc/)
+* [Provider vs BLoC - Medium](https://medium.com/@dihsar/bloc-vs-provider-in-flutter-a-comprehensive-comparison-fbd0f6c41e50)
 
 * ***ChangeNotifier*** creates state and dependencies can watch for notifications and rebuild
+
+**Provider vs BLoC**  
+Both are populare state management libraries. ***Provider*** provides the current data model to the 
+place where we currently need it, it contains some data and notifies observers when a change occurs. 
+In the Flutter SDK, this type is called a ***ChangeNotifier***. For this notifier to work we need the 
+***ChangeNotifierProvider*** which provides observed objects for all its descendants. ***BLoC*** 
+a.k.a. Business Logic Components is a Flutter architecture similar which tries more closely to mimic 
+the common Android paradigm of MVP or MVVM. It provides separation of the presentation layer from the 
+business logic rules.
+
+Provider's pattern is to create a new class extending the ChangeNotifier and capture your data as 
+class fields and allows for class methods to interact with the data in a custom way. BLoC's pattern 
+is based on events. You define the events that your screens will produce then you define the BLoC 
+objects that take the events. Because of BLoC's granular nature you can more granularly control the 
+updates to your app wiget tree thus speeding up your whole app. BLoC offers more control and is more 
+complex to use. Idustry concensus is to use Provider unless you need more complexity and performance 
+and then use BLoC which is more verbose requiring more boiler plate code.
 
 ### Slivers
 A sliver is a portion of a scrollable area inside a CustomScrollView that can be configured 
@@ -480,6 +593,49 @@ final style = theme.textTheme.displayMedium!.copyWith(
 ```dart
 final theme = Theme.of(context);
 ```
+
+### Window decorations
+the `bitsdojo_window` package provides support for creating your own window decorations. The bits 
+window package has an interesting side affect. Because it is hiding the initial window and only 
+showing it once it is draw you get a very smooth window creation that doesn't start at a default size 
+then visibly get transformed into the desired size. Instead this all happens hidden then is smoothly 
+displayed when ready.
+
+1. Create a new project
+   ```bash
+   $ flutter create --platforms=linux bitsdojo_windowing
+   $ cd bitsdojo_windowing
+   $ flutter pub add bitsdojo_window
+   ```
+2. Remove system window decorations
+   1. Edit `linux/my_application.cc`
+   2. Add to the top of the file `#include <bitsdojo_window_linux/bitsdojo_window_plugin.h>`
+   3. Find the `gtk_window_set_default_size(window, 1280, 720);` line and add the following before
+      ```
+      auto bdw = bitsdojo_window_from(window);            // <-- add this line
+      bdw->setCustomFrame(true);                          // <-- add this line
+      //gtk_window_set_default_size(window, 1280, 720);   // <-- comment this line
+      ```
+3. Make your main function in `main.dart` look like
+   ```dart
+   void main() {
+     runApp(const MyApp());
+
+     doWhenWindowReady(() {
+       const initialSize = Size(600, 450);
+       appWindow.minSize = initialSize;
+       appWindow.size = initialSize;
+       appWindow.alignment = Alignment.center;
+       appWindow.title = "Custom title"
+       appWindow.show();
+     });
+   }
+   ```
+4. Set custom window title
+   ```dart
+       appWindow.show();
+   ```
+
 
 ## Dart
 
