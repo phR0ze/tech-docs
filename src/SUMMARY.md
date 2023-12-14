@@ -60,6 +60,7 @@
         - [Plugins](development/ui/cross_platform/flutter/plugins/README.md)
         - [Fluent UI](development/ui/cross_platform/flutter/fluent_ui/README.md)
         - [macOS UI](development/ui/cross_platform/flutter/macos_ui/README.md)
+        - [State Management](development/ui/cross_platform/flutter/state_management/README.md)
 
 - [Cloud](cloud/README.md)
   - [Google Cloud Platform](cloud/google_cloud_platform/README.md)
@@ -109,6 +110,7 @@
     - [i3](system/window_managers/i3/README.md)
 
 - [Virtualization](virtualization/README.md)
+  - [Kubernetes](virtualization/kubernetes/README.md)
   - [Podman](virtualization/podman/README.md)
   - [QEMU](virtualization/qemu/README.md)
 
