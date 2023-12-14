@@ -513,6 +513,7 @@ Persisting data can be done in a variety of ways in Flutter. I'm looking for:
   * Odd command line argument definition `-Dsome_key=some_value`
   * Does allow for an optional path though so really mostly fits my needs
 * [`shared_preferences`](https://pub.dev/packages/shared_preferences)
+  * [Shared Preferences - LogRocket](https://blog.logrocket.com/using-sharedpreferences-in-flutter-to-store-data-locally/)
   * Interesting idea, stores simple key values in file `shared_preferences.json` in app support path
   * not sure what that resoves to on linux but doesn't fit conventions as is for sure
   * Could be modified to fit linux conventions though without much effort, although I'd use yaml
