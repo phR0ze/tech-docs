@@ -104,12 +104,24 @@ The primary wins with Riverpod are that it:
 * state management is achieved through `Provider - a Flutter integrated state managment solution`.
 * less overhead with event definitions
 * has more intuitive naming
+* AsyncValue is freakin awesome
 
 **References**
+* [Riverpod #1 Introduction](https://codewithandrea.com/articles/flutter-app-architecture-riverpod-introduction/)
+* [Riverpod #2 Data mutation](https://codewithandrea.com/articles/data-mutations-riverpod/)
+* [Riverpod - Code with Andrea](https://codewithandrea.com/tags/riverpod/)
 * [Riverpod - codewithandrea](https://codewithandrea.com/articles/flutter-state-management-riverpod/)
 * [FutureProvider fixes FutureBuilder](https://pub.dev/documentation/riverpod/latest/riverpod/FutureProvider-class.html)
 * [Riverpod 2 changes](https://medium.com/@ahmedtahaelelemy/riverpod-2-a-comprehensive-overview-and-comparison-with-legacy-providers-e413e61fe53b)
 * [Riverpod examples](https://dev.to/nikki_eke/master-riverpod-even-if-you-are-a-flutter-newbie-2m34)
+* [AsyncValue is Awesome](https://codewithandrea.com/articles/flutter-use-async-value-not-future-stream-builder/)
+* [Riverpod Caching and Providers](https://codewithandrea.com/articles/flutter-riverpod-data-caching-providers-lifecycle/)
+
+**General notes**
+* All providers are lazy loaded during the `ref.watch` call.
+* Use `ref.watch()` to get values and rebuild when changes occur
+* Use `ref.read()` for one time reads/writes where you don't want rebuilds
+* Use `ref.listen()` to get a callback that is executed when the provider changes
 
 ### Todo app example
 1. Create a new project
@@ -183,6 +195,9 @@ class MyHomePage extends StatelessWidget {
 ```
 
 ### ConsumerWidget
+`ConsumerWidget` is a good replacement for `StatelessWidget` with convenient access to state from 
+providers.
+
 Allows for custom user widgets with built in provider support for injecting data into that widget. 
 This is less performant as it rebuilds the entire widget. Using the `Consumer` pattern around just 
 the piece that you want rebuilt is more performant although less maybe less aesthetically pleasing. 
@@ -213,6 +228,11 @@ class MyHomePage extends ConsumerWidget {
 }
 ```
 
+### ConsumerStatefulWidget
+`ConsumerStatefulWidget` is a good replacement for `StatefullWidget` with convenient access to state from 
+providers.
+
+
 ### Providers
 **Providers**
 * not widgets, but rather plain Dart objects
@@ -227,6 +247,16 @@ class MyHomePage extends ConsumerWidget {
 * allows you to optimize your wiget rebuilding through granular triggers
 * provides a caching layer for async data
 * makes your code more testable
+
+**Summary when to use**
+1. `Provider` - immutable state you never change but just want access to
+2. `StateProvider` - legacy
+3. `StateNotifierProvider` - legacy
+4. `FutureProvider` - perform and cache async API calls; used with `AsyncValue`
+5. `StreamProvider` - like future but for a stream
+6. `ChangeNotifierProvider` - legacy
+7. `NotifierProvider` - 
+8. `AsyncNotifierProvider` - like future provider but for updates as well
 
 ### Provider
 This is great for accessing immutable objects
@@ -276,6 +306,32 @@ Widget build(BuildContext context, WidgetRef ref) {
 }
 ```
 
+**Another example**
+```dart
+// Load the todos from persistent storage
+final todosProvider = FutureProvider<List<Todo>>((ref) async {
+  return Future.delayed(const Duration(seconds: 2), () {
+    return const [
+      Todo(
+        id: '1',
+        title: 'Example Todo 1',
+        description: 'Description 1',
+      ),
+      Todo(
+        id: '2',
+        title: 'Example Todo 2',
+        description: 'Description 2',
+      ),
+      Todo(
+        id: '3',
+        title: 'Example Todo 3',
+        description: 'Description 3',
+      ),
+    ];
+  });
+});
+```
+
 ### StreamProvider
 
 **Example**
@@ -307,14 +363,40 @@ class ItemWidget extends ConsumerWidget {
 
 ### NotifierProvider
 This is the replacement for the now deprecated `StateProvider`. The new provider:
-* allows for encapsulation of logic for updating the state
-* can be extended with additional methods and properties
-* only rebuilds the widgets that are listening to the specific state change
+* allows for encapsulation of logic for updating the state in a more advanced way
+* only rebuilds the widgets that are listening to the specific state change i.e. more performant
+
+
 
 ### AsyncNotifierProvider
-This is the replacment for the now deprecated `StateNotifierProvider`
+This is the replacment for the now deprecated `StateNotifierProvider`:
+* when doing async work inside a notifier we can set the state more than once to cover all cases
+* new version provides async initialization
+* `build` method override is the initialization method
 
-### ChangeNotifierProvider
+```dart
+// 1. add the necessary imports
+import 'dart:async';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+// 2. extend [AsyncNotifier]
+class AuthController extends AsyncNotifier<void> {
+  // 3. override the [build] method to return a [FutureOr]
+  @override
+  FutureOr<void> build() {
+    // 4. return a value (or do nothing if the return type is void)
+  }
+
+  Future<void> signInAnonymously() async {
+    // 5. read the repository using ref
+    final authRepository = ref.read(authRepositoryProvider);
+    // 6. set the loading state
+    state = const AsyncLoading();
+    // 7. sign in and update the state (data or error)
+    state = await AsyncValue.guard(authRepository.signInAnonymously);
+  }
+}
+```
 
 ### Riverpod annotation
 The `@riverpod` annotation will convert the annotated function into a provider generating the 
