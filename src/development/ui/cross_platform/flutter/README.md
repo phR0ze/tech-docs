@@ -30,6 +30,7 @@ source [content URL](https://stackoverflow.blog/2022/02/21/why-flutter-is-the-mo
   * [Custom Widgets](#custom-widgets)
   * [Launch Screen](#launch-screen)
 * [Flutter platform](#flutter-platform)
+  * [Project ID](#project-id)
   * [pubspec](#pubspec)
   * [Basic widgets](#basic-widgets)
   * [Dependencies](#dependencies)
@@ -316,6 +317,17 @@ widget or tree of widgets so that Flutter nows what to draw. Widgets can be nest
 * [Material 3 demo](https://flutter.github.io/samples/web/material_3_demo/)
 * [Material 3 docs](https://docs.flutter.dev/ui/widgets/material)
 * [Material 3 Icons](https://fonts.google.com/icons)
+
+### Project ID
+When using the package `path_provider` and other tools for resolving paths on disk etc... that use 
+your project name as an identifier it will default to something like `com.example.riverpod_moview`. 
+You can change this for the different platforms with:
+
+* Linux
+  * Edit `linux/CMakeLists.txt`
+  * Change `set(APPLICATION_ID "com.example.riverpod_movies")`
+  * to `set(APPLICATION_ID "riverpod_movies")`
+  * This makes `getApplicationSupportDirectory` resolve to `/home/<user>/.local/share/riverpod_movies`
 
 ### pubspec
 The `pubspec.yaml` in the root of your Flutter project is the main project file tracking dependencies 
