@@ -18,6 +18,9 @@ In Dart and thus Flutter the fundamental tool for code generation is [Build](htt
 Freezed is a code-generation package that helps you to create data classes quickly and avoid the 
 tedious boiler plate necessary for best practices.
 
+**References**
+* [Data modeling with Freezed](https://dev.to/carlomigueldy/data-modeling-with-flutter-using-freezed-package-4p69)
+
 ### Get started with Freezed
 Note: don't make the mistake of naming your test project `freezed` as this will cause the flutter 
 dependency resolution to break as it thinks freezed is dependent on itself.
@@ -58,14 +61,13 @@ dependency resolution to break as it thinks freezed is dependent on itself.
      }) = _Person;
    
      // Provides JSON code generation for toMap and fromMap methods
-     factory Person.fromJson(Map<String, Object?> json)
-         => _$PersonFromJson(json);
+     factory Person.fromJson(Map<String, Object?> json) => _$PersonFromJson(json);
    }
    ```
 
 5. Run the builder
    ```bash
-   $ dart run build_runner build
+   $ dart run build_runner build --delete-conflicting-outputs
    ```
 
 ### What what just happened
@@ -77,6 +79,27 @@ dependency resolution to break as it thinks freezed is dependent on itself.
 5. The `class Person with _$Person {` defines the name of our class Person as per usual then 
    defines a mixin class to include as part of the Person class. This allows freezed to generate 
    code for the Person class that we can then use in our application.
+
+Freezed will then generate
+* `toString()` method
+* `==` operator
+* `hashCode` getter
+* `copyWith()` method for immutable creation
+* `toJson()` method
+
+### Add a default value in the constructor
+```dart
+const factory MyClass({
+  required String name,
+  @Default(false) bool isPremium,
+}) = _MyClass
+```
+
+Rebuild after additions with
+```bash
+# i.e delete the existing files first then generate new
+$ dart run build_runner build --delete-conflicting-outputs
+```
 
 ## Build
 There are a number of other packages associated with Dart's build tooling.
