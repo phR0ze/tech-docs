@@ -1,6 +1,8 @@
 # tech docs
 Documenting general tech and Arch Linux flavored linuxes 
 
+How to grep: `grep -riI --exclude-dir="book" "internet archive"`
+
 ### Quick links
 * [Apps to use](#apps-to-use)
 * [Bash](#bash)

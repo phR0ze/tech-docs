@@ -10,62 +10,428 @@ solves the shortcoming of the 1.0 project providing the follwing aggregate set o
 ### Quick links
 * [Overview](#overview)
   * [General points](#general-points)
+  * [Getting Started](#getting-started)
+* [Use Cases](#use-cases)
+  * [Request data without side effects](#request-data-without-side-effects)
+  * [Request data with side effects](#request-data-with-side-effects)
+  * [Handle Stream or Future directly](#handle-stream-or-future-directly)
+  * [Combining providers](#combining-providers)
+  * [Consume statelessly](#consume-statelessly)
+  * [Consume statefully](#consume-statefully)
+  * [Consume with arguments](#consume-with-arguments)
 * [Repository design pattern](#repository-design-pattern)
   * [Repository](#repository)
-  * [Wrap immutable repo functions with FutureProvider](#wrap-immutable-repo-functions-with-futureprovider)
   * [Wrap mutable repo functions with NotifierProvider](#wrap-mutable-repo-functions-with-notifierprovider)
   * [Combine providers](#combine-providers)
-* [Consuming a provider](#consuming-a-provider)
-  * [ConsumerWidget](#consumerwidget)
-  * [ConsumerStatefulWidget](#consumerstatefulwidget)
 * [Code Generation](#code-generation)
   * [Riverpod annotation](#riverpod-annotation)
   * [Riverpod auto dispose](#riverpod-auto-dispose)
-  * [Functional code generation](#functional-code-generation)
-  * [Class Based code generation](#class-based-code-generation)
+  * [Functional form code generation](#functional-form-code-generation)
+  * [Class Based form code generation](#class-based-form-code-generation)
 
 ### References
-* [Riverpod #1 Introduction](https://codewithandrea.com/articles/flutter-app-architecture-riverpod-introduction/)
-* [Riverpod #3 Data mutation](https://codewithandrea.com/articles/data-mutations-riverpod/)
-* [Riverpod - Code with Andrea](https://codewithandrea.com/tags/riverpod/)
-* [Riverpod - codewithandrea](https://codewithandrea.com/articles/flutter-state-management-riverpod/)
-* [FutureProvider fixes FutureBuilder](https://pub.dev/documentation/riverpod/latest/riverpod/FutureProvider-class.html)
-* [Riverpod 2 changes](https://medium.com/@ahmedtahaelelemy/riverpod-2-a-comprehensive-overview-and-comparison-with-legacy-providers-e413e61fe53b)
+* [Combining requests](https://riverpod.dev/docs/essentials/combining_requests)
+* [Listening to a Stream](https://riverpod.dev/docs/essentials/websockets_sync#listening-to-a-stream)
+* [onDispose and addListener](https://riverpod.dev/docs/essentials/websockets_sync#listenable-objects-considerations)
 * [Riverpod examples](https://dev.to/nikki_eke/master-riverpod-even-if-you-are-a-flutter-newbie-2m34)
-* [AsyncValue is Awesome](https://codewithandrea.com/articles/flutter-use-async-value-not-future-stream-builder/)
-* [Riverpod Caching and Providers](https://codewithandrea.com/articles/flutter-riverpod-data-caching-providers-lifecycle/)
 * [Code With Andrea examples](https://github.com/bizz84/flutter_example_apps)
 
 ## Overview
 
 ### General points
-* Providers provide global access and caching
-* Providers are not widgets, but rather plain Dart objects defined outside the widget tree as globals
-* Providers allow for global access from any widget
-* Providers replace other design patterns such as:
-  * Singletons
-  * Service locators
-  * Dependency injection
-  * Inherited widgets
-* Providers allow you to optimize your wiget rebuilding through granular triggers
-* Buisness logic should be placed inside your providers
-* Provider provide a caching layer for async data
-* All providers are lazy loaded during the `ref.watch` call.
+* Providers
+  * provide global access and caching
+    * subsequent reads simply returns the cached response
+  * are plain Dart objects defined outside the widget tree
+  * replace other design patterns like
+    * Singletons, Service locators, dependency injection and inherited widgets
+    * Flutter's FutureBuilder
+  * allow you to optimize your wiget rebuilding through granular triggers
+  * are lazy loaded during the `ref.watch` call.
+  * should contain your business logic
+  * provide access to all provides via the `ref` param
+  * ability to override UI droping with `@Riverpod(keepAlive: true)`
+  * handle errors making them available to the UI in the `errors`
 * Use `ref.watch()` to get values and rebuild when changes occur
 * Use `ref.read()` for one time reads/writes where you don't want rebuilds
 * Use `ref.listen()` to get a callback that is executed when the provider changes
 
-### When to use which provider
-* `Provider` - immutable state you never change but just want access to
-* `FutureProvider` - immutable perform and cache async API calls; used with `AsyncValue`
-* `StreamProvider` - like future but for a stream
-* `NotifierProvider` - mutable form
-* `AsyncNotifierProvider` - mutable form
+### Getting Started
+1. Create a new project
+   ```bash
+   $ flutter create --platform=linux,android riverpod_todo
+   ```
 
-**Deprecated**
-* `StateProvider`
-* `StateNotifierProvider`
-* `ChangeNotifierProvider`
+2. Add the riverpod packages
+   ```bash
+   $ flutter pub add flutter_riverpod
+   $ flutter pub add riverpod_annotation
+   $ flutter pub add dev:riverpod_generator
+   $ flutter pub add dev:build_runner
+   $ flutter pub add dev:custom_lint
+   $ flutter pub add dev:riverpod_lint
+   ```
+
+3. Add supporting packages
+   ```bash
+   $ flutter pub add json_annotation
+   $ flutter pub add freezed_annotation
+   $ flutter pub add dev:freezed
+   $ flutter pub add dev:json_serializable
+   ```
+
+4. Add the river pod import and wrap the app with a `ProvideScope`
+   ```dart
+   import 'package:flutter_riverpod/flutter_riverpod.dart';
+   
+   void main() {
+     runApp(const ProviderScope(child: MyApp()));
+   }
+   ```
+
+## Use Cases
+I've found Riverpod's documentation to be confusing due to the multiple different versions and styles 
+of the code and spotty documentation for each. The author's original versions had users writing and 
+chosing specific provider types for different use cases, but then later converted to a code 
+generation style that doesn't require a user to know the provider types. I've found it is much 
+more intuitive to just use the code generation to define a provider that handles your use case and 
+not worry about what the specific provider is called internally.
+
+### Request data without side effects
+Use the functional provider form for static data or asynchronous operations that don't need to modify 
+the state or handle other side effects and instead only need to cache the state. The provider will 
+not be executed until the first UI pass calling a `ref.watch` or other ref function. Subsequent reads 
+will use the cached response. This gives you `global access` and `caching` to avoid costly IO bound 
+requests.
+
+**References**
+* [Riverpod cache network response](https://riverpod.dev/docs/essentials/first_request)
+
+**Example use cases**
+* GET an async non-pagignated network resource 
+  * e.g. the current weather for a given city
+
+***Perform async request and cache response***  
+```dart
+@riverpod
+Future<Activity> activity(ActivityRef ref) async {
+  // Using package:http, we fetch a random activity from the Bored API.
+  final response = await http.get(Uri.https('boredapi.com', '/api/activity'));
+
+  // Using dart:convert, we then decode the JSON payload into a Map data structure.
+  final json = jsonDecode(response.body) as Map<String, dynamic>;
+
+  // Finally, we convert the Map into an Activity instance.
+  return Activity.fromJson(json);
+}
+```
+
+***Perform sync request and cache response***  
+Key difference here is you just leave off the `async` notation and return a non future.
+```dart
+@riverpod
+int synchronousExample(SynchronousExampleRef ref) {
+  return 0;
+}
+```
+
+***Handle provider arguments***  
+Caching now happens per argument used like a key for the cached result. Requires that the parameters 
+have a consistent equality implementation.
+```dart
+// We can add arguments directly to the function
+@riverpod
+Future<Activity> activity(ActivityRef ref, String activityType) async {
+  return fetchActivity();
+}
+```
+
+### Request data with side effects
+Use the class based provider form, a.k.a `Notifier`, for requesting data that needs additional 
+complexity to mutate the state after the fact or perform other related operations via custom methods.
+
+**References**
+* [Riverpod side-effects - docs](https://riverpod.dev/docs/essentials/side_effects)
+
+**Example use cases**
+* GET an async pagignated network resource
+  * e.g. requires mutating the internal state to add an additional page
+
+* public methods can be consumed with `ref.read(yourProvider.notifier).yourMethod()`
+  * use `ref.read` to perform mutation and `ref.watch` to respond to response
+* `build` method is responsible for the inital state of your provider
+  * class based providers should not have a constructor
+* ensure your local cache matches the API response by updating locally
+  * the UI will have the most up-to-date state possible in this way
+* `ref.invalidateSelf();` will cause the `build` to be called again and notify listeners
+
+***Update local cache with API response***
+```dart
+@riverpod
+class TodoList extends _$TodoList {
+  @override
+  Future<List<Todo>> build() async => [/* ... */];
+
+  Future<void> addTodo(Todo todo) async {
+    // We don't care about the API response
+    await http.post(
+      Uri.https('your_api.com', '/todos'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(todo.toJson()),
+    );
+
+    // We can then manually update the local cache. For this, we'll need to obtain the previous state.
+    // Caution: The previous state may still be loading or in error state.
+    // To gracefully handle this use `this.future` instead `this.state`, which would enable awaiting 
+    // the loading state, and throw an error if the state is in error state.
+    final previousState = await future;
+
+    // We can then update the state, by creating a new state object.
+    // This will notify all listeners.
+    state = AsyncData([...previousState, todo]);
+  }
+}
+```
+
+***Handle provider arguments***  
+Caching now happens per argument used like a key for the cached result. Requires that the parameters 
+have a consistent equality implementation.
+```dart
+@riverpod
+class ActivityNotifier2 extends _$ActivityNotifier2 {
+  /// Notifier arguments are specified on the build method.
+  @override
+  Future<Activity> build(String activityType) async {
+    // Arguments are also available with "this.<argumentName>"
+    print(this.activityType);
+
+    // TODO: perform a network request to fetch an activity
+    return fetchActivity();
+  }
+}
+```
+
+### Handle Stream or Future directly
+AsyncValue is nice if you want to replace your entire page with a loading indicator or an error 
+message. However if you'd like to handle the errors inline and allow for displaying the existing 
+cached data instead one way is to simply bypass the AsyncValue and handle the Future or Stream 
+directly with the Flutter FutureBuilder. Alternately you can bypass AsyncValue by watching the 
+provider's future directly which is arguably more useful as you can then use either behavior as 
+needed.
+
+***Bypass the AsyncValue and listen directly to the future***
+```dart
+@riverpod
+Future<List<String>> restaurantsNearMe(RestaurantsNearMeRef ref) async {
+  final location = await ref.watch(locationProvider.future);
+  ...
+}
+```
+
+***Have the provider return the raw value***
+```dart
+@riverpod
+Raw<Stream<int>> rawStream(RawStreamRef ref) {
+  // "Raw" is a typedef. No need to wrap the return
+  // value in a "Raw" constructor.
+  return const Stream<int>.empty();
+}
+
+class Consumer extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    Stream<int> stream = ref.watch(rawStreamProvider);
+    return StreamBuilder<int>(
+      stream: stream,
+      builder: (context, snapshot) {
+        return Text('${snapshot.data}');
+      },
+    );
+  }
+}
+```
+
+### Combining providers
+By using a `ref.watch` inside our provider's `build` method we can cause it to be invalidated and 
+rebuilt in the next frame or read. `ref.watch` is the preferred way to do this. When doing so you'll 
+want to await the actual future of the provider rather than deal with the AsyncValue.
+
+When the listened provider changes and our request recomputes, the previous state is kept until the 
+new request completes. It is possible to emit state updates during the re-computation to signal the 
+UI to show incremental updates.
+
+* Note the `ref.watch(otherProvider.future)` which uses's the provider's future directly
+* Its bad practice to call `ref.watch` inside non `build` method
+
+***Functional variant***
+```dart
+part 'example.g.dart'
+
+@riverpod
+Future<Activity> example(ExampleRef ref) async {
+  final otherValue = await ref.watch(otherProvider.future);
+  return 0;
+}
+```
+
+***Class variant***
+```dart
+part 'example.g.dart'
+
+@riverpod
+class Example extends _$Example {
+  @override
+  Future<Activity> build() async {
+    final otherValue = await ref.watch(otherProvider.future);
+
+    return 0;
+  }
+}
+```
+
+### Listen to provider changes manually
+Sometimes `ref.watch` doesn't offer enough flexibility. That is where `ref.listen` might be of help.
+
+* It is safe to use `ref.listen` in the build phase
+
+***Listen to a provider***
+```dart
+@riverpod
+int example(ExampleRef ref) {
+  ref.listen(otherProvider, (previous, next) {
+    print('Changed from: $previous, next: $next');
+  });
+  return 0;
+}
+```
+
+### Consume directly 
+AsyncValue is nice if you want to replace your entire page with a loading indicator or an error 
+message. However if you'd like to handle the errors inline and allow for displaying the existing 
+cached data instead one way is to simply bypass the AsyncValue and handle the Future or Stream 
+directly. 
+
+```dart
+class Home extends ConsumerWidget {
+  const Home({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AsyncValue<Activity> activity = ref.watch(activityProvider);
+    return Center(
+      child: if 
+        AsyncData(:final value) => Text('Activity: ${value.activity}'),
+        AsyncError() => const Text('Oops, something unexpected happened'),
+        _ => const CircularProgressIndicator(),
+      },
+    );
+  }
+}
+```
+
+### Consume statelessly
+You can consume an async response in the UI by watching, i.e. `ref.watch`, a provider then handling 
+the `AsyncValue` response which has 3 different states.
+
+**ConsumerWidget example**  
+`ConsumerWidget` allows for a cleaner simpler way to build in provider access to your widgets. If 
+implemented incorrectly though it can be less performant as it rebuilds the entire widget. You could 
+use the `Consumer` pattern around just the piece that you want rebuilt as is more performant to 
+target just a section of your UI. However best practice in the Flutter world is to create granular 
+widgets which would mean that `ConsumerWidget` would be a perfect fit and just as performant.
+
+* Read the activityProvider. This will start the network request if it wasn't already started.
+* By using `ref.watch`, this widget will rebuild whenever the the activityProvider updates.
+* This can happen when:
+  * The response goes from "loading" to "data/error"
+  * The request was refreshed
+  * The result was modified locally (such as when performing side-effects)
+* We could alternatively use `if (activity.isLoading) { ... } else if (...)`
+
+***Consume async response AsyncValue with switch***
+```dart
+class Home extends ConsumerWidget {
+  const Home({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AsyncValue<Activity> activity = ref.watch(activityProvider);
+    return Center(
+      child: switch (activity) {
+        AsyncData(:final value) => Text('Activity: ${value.activity}'),
+        AsyncError() => const Text('Oops, something unexpected happened'),
+        _ => const CircularProgressIndicator(),
+      },
+    );
+  }
+}
+```
+
+***Consume sync response directly***  
+One side effect of a synchronouse watch is that if the function throws and exception it won't get 
+caught and handled as a AsyncValue and will be re-thrown in stead.
+```dart
+Consumer(
+  builder: (context, ref, child) {
+    // The value is not wrapped in an "AsyncValue"
+    int value = ref.watch(synchronousExampleProvider);
+
+    return Text('$value');
+  },
+);
+```
+
+### Consume statefully
+Use the `ConsumerStatefulWidget` to provide standard Flutter StatefulWidget capabilities married with 
+a Consumer for provider access. `ref` is not passed as a parameter in this form but is a property of 
+`ConsumerState`.
+
+```dart
+class Home extends ConsumerStatefulWidget {
+  const Home({super.key});
+
+  @override
+  ConsumerState<Home> createState() => _HomeState();
+}
+
+class _HomeState extends ConsumerState<Home> {
+  @override
+  void initState() {
+    super.initState();
+
+    ref.listenManual(activityProvider, (previous, next) {
+      // TODO show a snackbar/dialog
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final AsyncValue<Activity> activity = ref.watch(activityProvider);
+    return Center(/* ... */);
+  }
+}
+```
+
+### Consume with arguments
+Provider becomes a function that you pass the arguments in to 
+
+```dart
+return Consumer(
+  builder: (context, ref, child) {
+    final recreational = ref.watch(activityProvider('recreational'));
+    final cooking = ref.watch(activityProvider('cooking'));
+
+    // We can then render both activities.
+    // Both requests will happen in parallel and correctly be cached.
+    return Column(
+      children: [
+        Text(recreational.valueOrNull?.activity ?? ''),
+        Text(cooking.valueOrNull?.activity ?? ''),
+      ],
+    );
+  },
+);
+```
 
 ## Repository Design Pattern
 Frequently applications need external resources on local devices or over the network. To interact 
@@ -110,271 +476,6 @@ to react to changes in the UI in a very targeted way with the minimal amount of 
 
 **References**
 * [River pod basics - docs](https://riverpod.dev/docs/essentials/first_request)
-
-### Wrap immutable repo functions with FutureProvider
-By wrapping a repository function in a future provider we get `global access` to the data and 
-`caching` to avoid costly IO bound duplicated calls.
-
-* the function will not be executed until the UI reads the provider at least once
-  * subsequent reads simply returns the cached response
-* `ref` param passed in provides access to all other registered providers
-* the name of the function determines the type of provider used
-* functional form is the same as the class based form without custom methods for side effects
-* if the UI navigate away from the page that is using the provider the cache will be dropped
-* Riverpod handles any errors making them available to the UI in the `errors`
-
-**Functional form for async FutureProvider**  
-For an async external operation use a return type of `Future<Activity>` where `Activity` is your 
-model object type and add the `async` specifier to the function which will then use the 
-`FutureProvider` type under the hood. The following code creats the provider `activityProvider`.
-```dart
-@riverpod
-Future<Activity> activity(ActivityRef ref) async {
-  // Using package:http, we fetch a random activity from the Bored API.
-  final response = await http.get(Uri.https('boredapi.com', '/api/activity'));
-
-  // Using dart:convert, we then decode the JSON payload into a Map data structure.
-  final json = jsonDecode(response.body) as Map<String, dynamic>;
-
-  // Finally, we convert the Map into an Activity instance.
-  return Activity.fromJson(json);
-}
-```
-
-### Wrap mutable repo functions with NotifierProvider
-Notifiers are the mutable providers. Use them to expose the Repo's mutable functions allowing for 
-updating the local cache and the remote resource to keep them both in-sync.
-
-* public methods can be consumed with `ref.read(yourProvider.notifier).yourMethod()`
-  * use `ref.read` to perform mutation
-* notifiers should not have public properties beyond the built in state
-* `build` method is responsible for the inital state of your provider
-  * do not put logic in the constructor of your notifier it should be in the `build` method
-* ensure your local cache matches the API response by updating locally
-  * the UI will have the most up-to-date state possible in this way
-
-**References**
-* [Riverpod side-effects - docs](https://riverpod.dev/docs/essentials/side_effects)
-
-***Update local cache with API response***
-```dart
-@riverpod
-class TodoList extends _$TodoList {
-  @override
-  Future<List<Todo>> build() async => [/* ... */];
-
-  Future<void> addTodo(Todo todo) async {
-    // The POST request will return a List<Todo> matching the new application state
-    final response = await http.post(
-      Uri.https('your_api.com', '/todos'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(todo.toJson()),
-    );
-
-    // We decode the API response and convert it to a List<Todo>
-    List<Todo> newTodos = (jsonDecode(response.body) as List)
-        .cast<Map<String, Object?>>()
-        .map(Todo.fromJson)
-        .toList();
-
-    // We update the local cache to match the new state.
-    // This will notify all listeners.
-    state = AsyncData(newTodos);
-  }
-}
-```
-
-***Force rebuild of local cache***
-```dart
-@riverpod
-class TodoList extends _$TodoList {
-  @override
-  Future<List<Todo>> build() async => [/* ... */];
-
-  Future<void> addTodo(Todo todo) async {
-    // We don't care about the API response
-    await http.post(
-      Uri.https('your_api.com', '/todos'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(todo.toJson()),
-    );
-
-    // Once the post request is done, we can mark the local cache as dirty.
-    // This will cause "build" on our notifier to asynchronously be called again,
-    // and will notify listeners when doing so.
-    ref.invalidateSelf();
-
-    // (Optional) We can then wait for the new state to be computed.
-    // This ensures "addTodo" does not complete until the new state is available.
-    await future;
-  }
-}
-```
-
-***Manual update of local cache***
-```dart
-@riverpod
-class TodoList extends _$TodoList {
-  @override
-  Future<List<Todo>> build() async => [/* ... */];
-
-  Future<void> addTodo(Todo todo) async {
-    // We don't care about the API response
-    await http.post(
-      Uri.https('your_api.com', '/todos'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(todo.toJson()),
-    );
-
-    // We can then manually update the local cache. For this, we'll need to
-    // obtain the previous state.
-    // Caution: The previous state may still be loading or in error state.
-    // A graceful way of handling this would be to read `this.future` instead
-    // of `this.state`, which would enable awaiting the loading state, and
-    // throw an error if the state is in error state.
-    final previousState = await future;
-
-    // We can then update the state, by creating a new state object.
-    // This will notify all listeners.
-    state = AsyncData([...previousState, todo]);
-  }
-}
-```
-
-### Combine providers
-By using a `ref.watch` inside our provider's `build` method we can cause it to be invalidated and 
-rebuilt in the next frame or read.
-
-**References**
-* [Combining requests - docs](https://riverpod.dev/docs/essentials/combining_requests)
-
-## Consuming a provider
-To consume a provider in the UI requires handling the provider's different states. Riverpod's 
-`AsyncValue` handles futures nicely providing loading, error and data states that the UI can then 
-react to.
-
-* Widgets can listen to as many providers as they want, just add a `ref.watch`
-* `ConsumerWidget` allows for a cleaner simpler way to build in provider access to your widgets. If 
-  implemented incorrectly though it can be less performant as it rebuilds the entire widget. You could
-  use the `Consumer` pattern around just the piece that you want rebuilt as is more performant 
-  to target just a section of your UI. However best practice in the Flutter world is to create 
-  granular widgets which would mean that `ConsumerWidget` would be a perfect fit and just as 
-  performant.
-
-### ConsumerWidget
-* Read the activityProvider. This will start the network request if it wasn't already started.
-* By using `ref.watch`, this widget will rebuild whenever the the activityProvider updates.
-* This can happen when:
-  * The response goes from "loading" to "data/error"
-  * The request was refreshed
-  * The result was modified locally (such as when performing side-effects)
-* We could alternatively use `if (activity.isLoading) { ... } else if (...)`
-
-```dart
-class Home extends ConsumerWidget {
-  const Home({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<Activity> activity = ref.watch(activityProvider);
-    return Center(
-      child: switch (activity) {
-        AsyncData(:final value) => Text('Activity: ${value.activity}'),
-        AsyncError() => const Text('Oops, something unexpected happened'),
-        _ => const CircularProgressIndicator(),
-      },
-    );
-  }
-}
-```
-
-### ConsumerStatefulWidget
-* `ref` is not passed as a parameter in this form but is a property of `ConsumerState`
-
-```dart
-class Home extends ConsumerStatefulWidget {
-  const Home({super.key});
-
-  @override
-  ConsumerState<Home> createState() => _HomeState();
-}
-
-class _HomeState extends ConsumerState<Home> {
-  @override
-  void initState() {
-    super.initState();
-
-    ref.listenManual(activityProvider, (previous, next) {
-      // TODO show a snackbar/dialog
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final AsyncValue<Activity> activity = ref.watch(activityProvider);
-    return Center(/* ... */);
-  }
-}
-```
-
-***Watch Future for state change***
-```dart
-class Example extends ConsumerStatefulWidget {
-  const Example({super.key});
-
-  @override
-  ConsumerState<Example> createState() => _ExampleState();
-}
-
-class _ExampleState extends ConsumerState<Example> {
-  // The pending addTodo operation. Or null if none is pending.
-  Future<void>? _pendingAddTodo;
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-      // We listen to the pending operation, to update the UI accordingly.
-      future: _pendingAddTodo,
-      builder: (context, snapshot) {
-        // Compute whether there is an error state or not.
-        // The connectionState check is here to handle when the operation is retried.
-        final isErrored = snapshot.hasError &&
-            snapshot.connectionState != ConnectionState.waiting;
-
-        return Row(
-          children: [
-            ElevatedButton(
-              style: ButtonStyle(
-                // If there is an error, we show the button in red
-                backgroundColor: MaterialStateProperty.all(
-                  isErrored ? Colors.red : null,
-                ),
-              ),
-              onPressed: () {
-                // We keep the future returned by addTodo in a variable
-                final future = ref
-                    .read(todoListProvider.notifier)
-                    .addTodo(Todo(description: 'This is a new todo'));
-
-                // We store that future in the local state
-                setState(() {
-                  _pendingAddTodo = future;
-                });
-              },
-              child: const Text('Add todo'),
-            ),
-            // The operation is pending, let's show a progress indicator
-            if (snapshot.connectionState == ConnectionState.waiting) ...[
-              const SizedBox(width: 8),
-              const CircularProgressIndicator(),
-            ]
-          ],
-        );
-      },
-    );
-  }
-}
-```
 
 ## Code Generation
 Riverpod syntax is a bit unwieldy when writing it by hand. To combat this code generation was 
@@ -471,188 +572,6 @@ class Example extends _$Example {
   // Add methods to mutate the state
 }
 ```
-
-### Step by step
-1. Setup a new project
-   1. Create the new project
-      ```bash
-      $ flutter create --platform=linux,android riverpod_todo
-      ```
-
-   2. Add the riverpod packages
-      ```bash
-      $ flutter pub add flutter_riverpod
-      $ flutter pub add riverpod_annotation
-      $ flutter pub add dev:riverpod_generator
-      $ flutter pub add dev:build_runner
-      $ flutter pub add dev:custom_lint
-      $ flutter pub add dev:riverpod_lint
-      ```
-
-   3. Add supporting packages
-      ```bash
-      $ flutter pub add json_annotation
-      $ flutter pub add freezed_annotation
-      $ flutter pub add dev:freezed
-      $ flutter pub add dev:json_serializable
-      ```
-
-4. Add the river pod import and wrap the app with a `ProvideScope`
-   ```dart
-   import 'package:flutter_riverpod/flutter_riverpod.dart';
-   
-   void main() {
-     runApp(const ProviderScope(
-       child: MyApp(),
-     ));
-   }
-   ```
-
-5. Define your repo api interface as an abstract class
-   ```dart
-   abstract class MovieRepoApi {
-     Future<List<TMDBMovie>> searchMovies({required int page, String query = ''});
-     Future<List<TMDBMovie>> nowPlayingMovies({required int page});
-     Future<TMDBMovie> movie({required int movieId});
-   }
-   ```
-
-6. Implement your repo api interface
-   ```dart
-   class MovieRepo implements MovieRepoApi {
-     MoviesRepo({required this.client, required this.apiKey});
-     final Dio client;
-     final String apiKey;
-
-     Future<List<TMDBMovie>> searchMovies({required int page, String query = ''});
-     Future<List<TMDBMovie>> nowPlayingMovies({required int page});
-     Future<TMDBMovie> movie({required int movieId});
-   }
-   ```
-
-6. Create a separate global function provider to make it the repo accessible to the full app
-   ```dart
-   part 'movies_repo.g.dart';
-   
-   @riverpod
-   MoviesRepo moviesRepo(MoviesRepoRef ref) => MoviesRepo(
-         client: ref.watch(dioProvider), // the provider we defined above
-         apiKey: Env.tmdbApiKey, // a constant defined elsewhere
-       );
-   ```
-
-
-## Todo app example
-1. Create a new project
-   * `flutter create --platform=linux,android riverpod_todo`
-2. Add the river pod package
-   ```bash
-   $ flutter pub add flutter_riverpod
-   $ flutter pub add riverpod_annotation
-   $ flutter pub add dev:riverpod_generator
-   $ flutter pub add dev:build_runner
-   $ flutter pub add dev:custom_lint
-   $ flutter pub add dev:riverpod_lint
-   ```
-3. Add the river pod import and wrap the app with a `ProvideScope`
-   ```dart
-   import 'package:flutter_riverpod/flutter_riverpod.dart';
-   
-   void main() {
-     runApp(const ProviderScope(
-       child: MyApp(),
-     ));
-   }
-   ```
-4. Add your model objects
-   1. Add the supporting packages
-      ```bash
-      $ flutter pub add freezed_annotation
-      $ flutter pub add json_annotation
-      $ flutter pub add dev:build_runner
-      $ flutter pub add dev:freezed
-      $ flutter pub add dev:json_serializable
-      ```
-   2. Add `model/todo.dart`
-      ```dart
-      import 'package:freezed_annotation/freezed_annotation.dart';
-      
-      part 'todo.freezed.dart';
-      part 'todo.g.dart';
-      
-      @freezed
-      class Todo with _$Todo {
-        const factory Todo({
-          required String id,
-          required String title,
-          required String description,
-          @Default(false) bool isCompleted,
-          @Default(false) bool isCanceled,
-        }) = _Todo;
-      
-        factory Todo.fromJson(Map<String, dynamic> json) => _$TodoFromJson(json);
-      }
-      ```
-   3. Generate the model code with freezed
-      ```bash
-      $ dart run build_runner build --delete-conflicting-outputs
-      ```
-4. Create your riverpod provider e.g.
-   1. Define your riverpod provider
-      ```dart
-      import 'package:riverpod_annotation/riverpod_annotation.dart';
-      import '../model/todo.dart';
-      
-      // Generated riverpod code for todosProvider
-      part 'todos.g.dart';
-      
-      // Defines todosProvider notifier to make it writable
-      @riverpod
-      class Todos extends _$Todos {
-        // Define the initial value for the provider
-        @override
-        Future<List<Todo>> build() async {
-          return Future.delayed(const Duration(seconds: 2), () {
-            return const [
-              Todo(
-                id: '1',
-                title: 'Example Todo 1',
-                description: 'Description 1',
-              ),
-              Todo(
-                id: '2',
-                title: 'Example Todo 2',
-                description: 'Description 2',
-              ),
-              Todo(
-                id: '3',
-                title: 'Example Todo 3',
-                description: 'Description 3',
-              ),
-            ];
-          });
-        }
-      }
-      ```
-   2. Now generate it
-      ```bash
-      $ dart run build_runner build --delete-conflicting-outputs
-      ```
-5. Create a consumer widget and watch the providers
-   ```dart
-   class SomeWidget extends ConsumerWidget {
-     @override
-     Widget build(BuildContext context, WidgetRef ref) {
-
-       // Watch provider for changes
-       var asyncValue = ref.watch(todosProvider);
-       ...
-       // Or add a new entry to the state without triggering rebuild
-       ref.read(todosProvider.notifier).add(todo);
-       ...
-     }
-   }
-   ```
 
 <!-- 
 vim: ts=2:sw=2:sts=2

@@ -10,6 +10,8 @@ devices.
 
 ### Quick links
 * [Install Emulator](#install-emulator)
+  * [Install Android 7 API 24](#install-android-7-api-24)
+  * [Install Android 11 API 30](#install-android-11-api-30)
 * [Start Emulator](#start-emulator)
 * [Vulkan graphics](#vulkan-graphics)
 
@@ -40,13 +42,30 @@ Android tooling uses JAVA 17 as of 2023.11.19
    $ sdkmanager emulator
    $ PATH=$PATH:$HOME/.android/emulator
    ```
-4. Install tooling for specific [Android API](https://apilevels.com/)
+
+### Install Android 7 API 24
+1. Install tooling for specific [Android API](https://apilevels.com/)
+   ```bash
+   $ sdkmanager "platforms;android-24"
+   $ sdkmanager "build-tools;24.0.3"
+   $ sdkmanager "system-images;android-24;google_apis;x86_64"
+   ```
+
+2. Create an AVD emulator device
+   ```bash
+   $ avdmanager list device | grep pixel_4
+   $ avdmanager create avd --name android24 --package "system-images;android-24;google_apis;x86_64" --device pixel_4_xl
+   ```
+
+### Install Android API 30
+1. Install tooling for specific [Android API](https://apilevels.com/)
    ```bash
    $ sdkmanager "platforms;android-30"
    $ sdkmanager "build-tools;30.0.3"
    $ sdkmanager "system-images;android-30;google_apis;x86_64"
    ```
-5. Create an AVD emulator device
+
+2. Create an AVD emulator device
    ```bash
    $ avdmanager list device | grep pixel_4
    $ avdmanager create avd --name android30 --package "system-images;android-30;google_apis;x86_64" --device pixel_4_xl

@@ -37,10 +37,6 @@ Documenting my learning experience with Android
     * [Load Glide](#load-glide)
   * [Picasso](#picasso)
     * [Add Picasso](#add-picasso)
-* [Storage Access](#storage-access)
-  * [Opt out of Android 11 API 30 scoped storage access](#opt-out-of-android-11-api-30-scoped-storage-access)
-  * [Request storage permissions](#request-storage-permissions)
-  * [Storage Access Framework](#storage-access-framework)
 * [Kotlin](#kotlin)
 
 # AGDK
@@ -445,89 +441,6 @@ Adding a dependency to your project can be done by
    ```
    android.enableJetifier=true
    ```
-
-# Storage Access
-As of `Android 11 (API 30)` [Google Play restricts](https://developer.android.com/training/data-storage/manage-all-files#all-files-access-google-play) the use of `All files access` permission `MANAGE_EXTERNAL_STORAGE`. If you app
-does not require acces to the `MANAGE_EXTERNAL_STORAGE` permission, you must remove it from
-your app's manifest in order to successfully publish your app. 
-
-**References:**
-* [Use Android 10, API 29 to opt out](https://developer.android.com/training/data-storage/use-cases#opt-out-in-production-app)
-* [Handle media files](https://developer.android.com/training/data-storage/use-cases)
-* https://developer.android.com/training/data-storage/shared/documents-files#grant-access-directory
-* https://github.com/android/storage-samples/tree/main/ActionOpenDocumentTree
-* [Storage Access Framework](https://medium.com/swlh/sample-for-android-storage-access-framework-aka-scoped-storage-for-basic-use-cases-3ee4fee404fc)
-* [Manage all files on a storage device](https://developer.android.com/training/data-storage/manage-all-files)
-
-## Legacy External Storage
-
-### Opt out of Android 11 API 30 scoped storage access
-You can opt out of the API 30 all files access restrictions by targetting Android 10 API 29 or lower 
-and setting the `requestLegacyExternalStorage="true"` flag.
-
-Note: `targetSdk` is the highest SDK version your app is known to work with while `compileSdk` is the 
-version your compiling with which doesn't have a runtime impact only compile time checks.
-
-1. Edit `app/manifests/AndroiManifest.xml` and add
-```xml
-<manifest ... >
-  <application
-    android:requestLegacyExternalStorage="true"
-    ...
-  </application>
-</manifest>
-```
-
-2. Edit `build.properties` and set `minSdk` to `24` for Android 7 minimum
-3. Edit `build.properties` and set `targetSdk` to `29` for Android 10 maximum
-4. Click `Sync Now` in the top right section
-
-### Request storage permissions
-[Request app permissions](https://developer.android.com/training/permissions/requesting)
-Since API 23 you have to request permission at runtime to get access to device capabilities and have 
-remained similar enough to use the same approach up until Android 10 API 29 if you use the opt out 
-flag.
-
-* [Declare hardware as optional](https://developer.android.com/training/permissions/declaring#hardware-optional)
-* [Determine hardware availability](https://developer.android.com/training/permissions/declaring#determine-hardware-availability)
-
-1. In `app/manifests/AndroidManifest.xml` declare the permissions needed
-```XML
-<manifest ... >
-   <uses-permission-sdk-23 android:name="android.permission.CAMERA"/>
-   <uses-permission-sdk-23
-     android:name="android.permission.READ_EXTERNAL_STORAGE"
-     android:maxSdkVersion="29" />
-   <uses-permission-sdk-23
-     android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-     android:maxSdkVersion="29" />
-  <application
-  ...
-  </application>
-  <uses-feature android:name="android.hardware.camera" android:required="false"/>
-</manifest>
-```
-2. Navigate to `File >Project Structure... >Dependencies >app` and add the following dependencies
-   * `androidx.activity` version `1.2.0` or later
-   * `androidx.fragment` version `1.3.0` or later
-
-## Storage Access Framework
-Because of the security restrictions in Android 10 and higher we can no longer depend on standard 
-storage permissions to grant access to all file types i.e text files are notably excluded. In order 
-to gain access to all file types including text files we need to make use of the `Storage Access 
-Framework` to request a directory from the user that we can then fully manage. The directory the
-user chooses needs to be something other than `root` and the `Download` directory.
-
-### Grant access to a directory's contents
-The Android team determined that they could improve security by making an application ask the user 
-which directory it can manage using the `ACTION_OPEN_DOCUMENT_TREE` intent action introduced in `API 21`.
-In API 30 further restrictions were made to exclude
-* `root`
-* `Download`
-* Anything in `Android/data`
-* Anything in `Android/obb`
-
-WARNING: accessing many files through the document tree is known to be slow
 
 # Kotlin
 * `val test: Any` type `Any` allows for expressions to return different types
