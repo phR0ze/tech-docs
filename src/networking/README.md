@@ -52,6 +52,12 @@ sudo iptables -A OUTPUT -p tcp --dport 443 -j DROP
 
 # Internet Archive
 
+## Advanced searching
+Often public domain media will show up in the internet archive and you can find it with the advanced 
+search capabilities.
+
+1. Navigate to [https://archive.org/advancedsearch.php](https://archive.org/advancedsearch.php)
+
 ## wget bulk downloads
 [Internet Archive blog source](https://blog.archive.org/2012/04/26/downloading-in-bulk-using-wget/)
 

@@ -1,10 +1,15 @@
 # Flutter
-
 Flutter is Google’s free, open-source software development kit (SDK) for cross-platform mobile 
 application development. Using a single platform-agnostic codebase, Flutter helps developers build 
 high-performance, scalable applications with attractive and functional user interfaces for Android or 
 IOS. Flutter relies on a library of pre-made widgets that make it simple for even people with limited 
-programming or development experience to launch their own mobile applications quickly.
+programming or development experience to launch their own mobile applications quickly. Flutter’s 
+suitability for cross-platform development goes beyond code portability. Unlike other cross-platform 
+frameworks such as React Native and Xamarin, Flutter-built user interfaces (UI) are also 
+platform-agnostic because Flutter’s Skia rendering engine does not require any platform-specific 
+UI components. All desired UI components have been rebuilt in Flutter and are readily available thus 
+reducing development time. Most notably though is Flutter's use of modern declarative UI design 
+bringing mobile app development out of the Java dark ages into something fresh and clean.
 
 Created by Google in 2015 and officially launched in 2018, Flutter has quickly become the toolkit of 
 choice for developers. According to Statista, Flutter has recently surpassed React Native to become 
@@ -12,55 +17,10 @@ the number one mobile app development framework.
 
 source [content URL](https://stackoverflow.blog/2022/02/21/why-flutter-is-the-most-popular-cross-platform-mobile-sdk/)
 
-### Quick links
-* [Overview](#overview)
-* [Setup Flutter on Arch Linux](#setup-flutter-on-arch-linux)
-* [Flutter with Android Studio](#flutter-with-android-studio)
-  * [Configure Flutter project in Android Studio](#configure-flutter-project-in-android-studio)
-* [Flutter applications](#flutter-applications)
-  * [AuthPass](#auth-pass)
-* [Flutter commandline](#flutter-commandline)
-  * [Create project](#create-project)
-  * [Build for Desktop](#build-for-desktop)
-* [Flutter Patterns](#flutter-patterns)
-  * [Display Image](#display-image)
-  * [Launch Screen](#launch-screen)
-  * [Responsive](#responsive)
-  * [Build methods](#build-methods)
-  * [Custom Widgets](#custom-widgets)
-  * [Launch Screen](#launch-screen)
-* [Flutter platform](#flutter-platform)
-  * [Project ID](#project-id)
-  * [pubspec](#pubspec)
-  * [Basic widgets](#basic-widgets)
-  * [Dependencies](#dependencies)
-  * [Display an Image](#display-an-image)
-  * [Future Builder](#future-builder)
-  * [Gestures](#gestures)
-  * [Layout](#layout)
-  * [Keyboard Input](#keyboard-input)
-  * [Navigation](#navigation)
-  * [Packages](#packages)
-  * [Persist configuration](#persist-configuration)
-  * [State](#state)
-  * [Slivers](#slivers)
-  * [Themes](#themes)
-  * [Window decorations](#window-decorations)
-* [Dart](#dart)
-  * [Parameters](#parameters)
-  * [static vs final vs const](#static-vs-final-vs-const)
-
-## Overview
-Flutter is a layered system comprising the framework, the engine, and platform-specific embedders. 
-Flutter applications are built using Google’s Dart object-oriented programming language. The Flutter 
-engine itself is written primarily in C/C++. And the Skia library is the backbone of Flutter’s 
-graphics capabilities on desktop platforms while Impeller handles graphics for iOS and Android.
-
-Flutter’s suitability for cross-platform development goes beyond code portability. Unlike other 
-cross-platform frameworks such as React Native and Xamarin, Flutter-built user interfaces (UI) are 
-also platform-agnostic because Flutter’s Skia rendering engine does not require any platform-specific 
-UI components. All desired UI components have been rebuilt in Flutter and are readily available thus 
-reducing development time.
+Flutter employs a layered system comprising the framework, the engine, and platform-specific embedders. 
+While Flutter applications are built using Google’s Dart object-oriented programming language. The 
+Flutter engine itself and the Skia library, which is the backbone of Flutter’s graphics capabilities, 
+are written primarily in C/C++.
 
 ![Flutter Architecture](../../../../data/images/flutter-arch.webp)
 
@@ -98,9 +58,62 @@ reducing development time.
 **Negatives**
 * Flutter apps include all necessary code for widgets and don't rely on platform making binaries bigger
 * Still relatively new platform
-* Have to learn Dart
+* Uses Dart which is slow and single threaded
 
-## Setup Flutter on Arch Linux
+### Quick links
+* [Getting Started](#getting-started)
+  * [Setup Flutter on Arch Linux](#setup-flutter-on-arch-linux)
+  * [Create a new Flutter project](#create-a-new-flutter-project)
+  * [Run on Android Emulator](#run-on-android-emulator)
+* [Publish app](#publish-app)
+  * [Build release](#build-release)
+* [Flutter app examples](#flutter-app-examples)
+  * [AuthPass](#auth-pass)
+* [Flutter Patterns](#flutter-patterns)
+  * [Android permissions](#android-permissions)
+  * [Display Image](#display-image)
+  * [Launch Screen](#launch-screen)
+  * [Responsive](#responsive)
+  * [Build methods](#build-methods)
+  * [Custom Widgets](#custom-widgets)
+  * [Launch Screen](#launch-screen)
+* [Flutter platform](#flutter-platform)
+  * [Project ID](#project-id)
+  * [pubspec](#pubspec)
+  * [Basic widgets](#basic-widgets)
+  * [Dependencies](#dependencies)
+  * [Display an Image](#display-an-image)
+  * [Future Builder](#future-builder)
+  * [Gestures](#gestures)
+  * [Layout](#layout)
+  * [Keyboard Input](#keyboard-input)
+  * [MediaQuery](#mediaquery)
+  * [Navigation](#navigation)
+  * [Packages](#packages)
+  * [Persist configuration](#persist-configuration)
+  * [State](#state)
+  * [Slivers](#slivers)
+  * [Themes](#themes)
+  * [Window decorations](#window-decorations)
+* [Scrolling](#scrolling)
+  * [Efficient scrolling](#efficient-scrolling)
+  * [Infinite scrolling easy](#infinite-scrolling-easy)
+  * [Infinite scrolling with scroll controller](#infinite-scrolling-with-scroll-controller)
+  * [Fancy scrolling](#fancy-scrolling)
+  * [Resume position](#resume-position)
+* [Dart](#dart)
+  * [Parameters](#parameters)
+  * [static vs final vs const](#static-vs-final-vs-const)
+
+## Getting Started
+In my opinion the best approach to Flutter application development uses the flutter cli for creating 
+and interacting with your project and a desktop environment to run and test your application and 
+finally the Android emulator as a standalone component to run and test your Android version of the 
+application.
+
+Note: the Android Studio path is slow, clunky and overly complicated IMO.
+
+### Setup Flutter on Arch Linux
 Reference: [getting started with Flutter on Arch Linux](https://dev.to/nabbisen/flutter-3-on-arch-linux-getting-started-fc0)
 
 1. Install [android tooling](../../../android/emulator)
@@ -129,46 +142,95 @@ Reference: [getting started with Flutter on Arch Linux](https://dev.to/nabbisen/
    $ flutter doctor --android-licenses
    ```
 
-## Flutter with Android Studio
-Warning: I'm not recommending this path as I find Android Studio to be slow and clunky. The VS Code 
-path is a much better experience.
-
-### Configure Flutter project in Android Studio
-1. Click the `New Flutter Project`
-2. Select the `Flutter` entry on the left then set the `Fluter_SDK path` to `/opt/flutter`
-3. Click the `Next` on the flutter view
-4. Name the project e.g. `cross_platform_example` then click `Create`
-5. Wait a min for the project template to be downloaded and populated
-
-6. Create a new emulator in the IDE and click the `Run` button for an android build
-
-## Flutter with VS Code
+### Create a new Flutter project
 1. [Install and configure VS Code](../../../editors/vscode)
-2. Install the `Flutter` extension
 
-### Run with VS Code
-This will build and deploy your app to the device you have selected and keep it in a hot-reload mode 
-such that any changes to your app will be updated in the target device when you save your changes.
+2. Create your project using the Flutter CLI
+   ```bash
+   $ flutter create --platforms=linux,android <project-name>
+   ```
 
-Note it is possible to run the emulator directly from VS Code but for some reason this put it in a 
-bad state where VS Code wasn't able to connect and I had to delete it and create a new one and start 
-over and run it via the terminal instead.
+3. Load the project in VSCode then
 
-1. Start the emulator in the terminal
+4. Install the Flutter extensions:
+   | Name                     | Identifier                            |
+   | ------------------------ | ------------------------------------- |
+   | Remove Comments          | `rioj7.vscode-remove-comments`        |
+   | Dart                     | `dart-code.dart-code`                 |
+   | Flutter                  | `dart-code.flutter`                   |
+   | Flutter riverpod Helpers | `evils.vscode-flutter-riverpod-helper`|
+   | The Riverpod Extension   | `houssembousmaha.ri`                  |
+
+5. Add the riverpod packages using the Flutter CLI
+   ```bash
+   $ flutter pub add flutter_riverpod
+   $ flutter pub add riverpod_annotation
+   $ flutter pub add dev:riverpod_generator
+   $ flutter pub add dev:build_runner
+   $ flutter pub add dev:custom_lint
+   $ flutter pub add dev:riverpod_lint
+   ```
+
+6. Add supporting packages using the Flutter CLI
+   ```bash
+   $ flutter pub add json_annotation
+   $ flutter pub add freezed_annotation
+   $ flutter pub add dev:freezed
+   $ flutter pub add dev:json_serializable
+   ```
+
+7. Add the river pod import and wrap the app with a `ProvideScope` in your `main.dart`
+   1. Remove comments from your `main.dart` by selecting everythin then hitting `Ctrl+Shift+P` and 
+      entering `Comments: Remove All Comments` and pressing enter.
+   ```dart
+   import 'package:flutter_riverpod/flutter_riverpod.dart';
+   
+   void main() {
+     runApp(const ProviderScope(child: MyApp()));
+   }
+   ```
+
+8. Run the new app locally on your Linux box
+   1. Open the `main.dart`
+   2. Hit `F5`
+
+### Run on Android Emulator
+Althought the Android Emulator works as a Standalone service I found it slow and often froze up when 
+starting it back up after using it once before; something with the saved state maybe. At any rate I 
+had the most success developing locally with Linux and then creating a new Android emulator each time 
+I wanted to try it out on Android.
+
+1. Create an Android virtual device
+   ```bash
+   $ avdmanager create avd --name android30 --package "system-images;android-30;google_apis;x86_64" --device pixel_4_xl
+   ```
+
+2. Start your Android virtual device
    ```bash
    $ emulator -avd android30
    ```
 
-2. Run the code in the target device with the debuggerr for hot-reloading
-   1. In the top right hand corner of your `main.dart` file hit the button for `Start Debugging` or press `F5`. 
-   2. Every time you save your changes it will be hot-reloaded on the target device
+3. In the lower right of VSCode choose the target device option and choose `android30`
+   * Every time you save your changes it will be hot-reloaded on the target device
 
-### VS Code Refactor
-The refactor capabilities of the Flutter plugin are top-notch. Selecting widgets and activating 
-refactor allows you to quickly wrap widgets in other widgets to allow for rapid layout configuration 
-changes or extract code into their own widgets for rapid development.
+4. Delete your Android virtual device when done
+   ```bash
+   $ avdmanager delete avd -n android30
+   ```
 
-## Flutter applications
+## Publish app
+
+### Build release
+
+## Flutter packages
+
+### Smooth Page Indicator
+[Smooth Page Indicator](https://pub.dev/packages/smooth_page_indicator)
+* Assume animated page indicator for scrolling images
+
+### 
+
+## Flutter app examples
 
 ### AuthPass
 [AuthPass](https://authpass.app/) is a Free and Open Source password manager for Android, iOS, macOS, 
@@ -177,79 +239,88 @@ Linux and Windows that is compatible with KeePass.
 **References**
 * [authpass - Github](https://github.com/authpass/authpass)
 
-## Flutter commandline
-
-### Create project
-```bash
-$ flutter create <project-name>
-
-# Overrides
-# flutter create --platforms=linux,android <project-name>
-```
-
-### Run with Flutter commandline
-Running an application directly with Flutter in this way will provide an interactive terminal for 
-updating and managing your application including hot-reloads, hot-restarts and links to pull up debug 
-tools in the browser for interacting with the Dart VM that is used during debug builds.
-
-1. Launch app on Desktop with the Dart VM via Flutter
-   ```bash
-   $ flutter run -d linux
-   ```
-
-2. Launch app on Emulator with the Dart VM via Flutter
-   1. Start the emulator
-      ```bash
-      $ emulator -avd android30
-      ```
-   2. List out the available devices
-      ```bash
-      $ adb devices
-      List of devices attached
-      emulator-5554	device
-      ```
-   3. Run on the emulator
-      ```bash
-      $ flutter run -d emulator-5554
-      ```
-
-2. Press `r` to hot-reload your app after changes
-
-### Build for Desktop
-Flutter uses GTK for Linux
-
-1. Build for linux Desktop
-   ```bash
-   $ flutter build linux --release
-   ```
-2. Binary will end up in `build/linux/x64/release/bundle`
-   * `data` contains the application's data assets, such as fonts or images 
-   * `lib` contains the required .so library files
-
-### Build and install for Android
-1. Build release
-   ```bash
-   $ flutter build apk --release
-   ``` 
-
-2. Install to connected device
-   ```bash
-   $ flutter install --release
-   ``` 
-
-### Project creation
-* ***Create a new project with specific platform support***
-  * `flutter create --platforms=linux,android <project-name>`
-
-* ***Add specific platform support to an existing project***
-  * `flutter create --platforms=linux .`
-
 ## Flutter Patterns
 * ***Custom Widgets*** are a best practice for reusability
 * ***Pass Widgets*** widgets as parameters to other widgets is a standard practice
 * Keep state as close to the area of concern as possible
   * Keep it in the widget if that is all that needs it
   * Keep it at the lowest level in the widget tree that ensures it lives long enough to be useful
+
+### Android permissions
+see [android/permissions](../../../android/permissions/index.html) for Android permission specifics. 
+I'll just cover the Flutter side here.
+
+To qualify to use the Manage External Storage permission you need to:
+* File managers
+* Backup and restore apps
+* Anti-virsus apps
+* Document management apps
+* On-device files search
+* Disk and file encryption
+* Device to device data migration
+
+`File Browser???`
+
+1. Add the permission handler to your app
+   ```bash
+   $ flutter pub add permission_handler
+   ```
+
+2. Ensure you app is setup for Androidx which mine was by default
+   1. Edit `android/gradle.properties`
+   2. Check for `android.useAndroidX=true`
+   3. Check for `android.enableJetifier=true`
+
+3. Ensure the `compileSdkVersion` is set to `33`
+   1. Edit `android/app/build.gradel`
+   2. Add
+      ```
+      android {
+        compileSdkVersion 33
+      }
+      ```
+
+4. Add any needed permissions to your `AndroidManifest.xml` file
+   * See [All possible permissions listed for Flutter](https://github.com/Baseflow/flutter-permission-handler/blob/main/permission_handler/example/android/app/src/main/AndroidManifest.xml)
+   1. Edit `android/app/src/main/AndroidManifest.xml`
+   2. At the top before the `<application` section add the desired permissions
+      ```xml
+      <!--  -->
+      <uses-feature android:name="android.hardware.camera" android:required="false" />
+      <uses-permission android:name="android.permission.CAMERA"/>
+
+      <!-- Read and write external storage for Android 12 and lower -->
+      <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+           android:maxSdkVersion="32" />
+      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
+             android:maxSdkVersion="29"  />
+
+      <!-- Broad access to external storage -->
+      <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+
+      <!-- *************************************************** -->
+      <!-- Granular media permissions for Android 13 and newer -->
+      <!-- *************************************************** -->
+
+      <!-- Permission to read image files from external storage -->
+      <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+      <!-- Permission to read video files from external storage -->
+      <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+
+      <!-- Permission to read audio files from external storage -->
+      <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+
+      <!-- Permissions options for the `manage external storage` group -->
+      <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+      ```
+
+5. Use the `permission_handler` and `device_info_plus` packages and
+   ```dart
+   // Android 13 or higher
+   await Permission.photos.request();
+   await Permission.manageExternalStorage.request();
+   ```
 
 ### Build methods
 In Flutter when a parent widget receives a callback and updates its internal state it will then 
@@ -267,6 +338,8 @@ initialize.
 
 **References**
 * [Flutter docs - Splash screen](https://docs.flutter.dev/platform-integration/android/splash-screen)
+
+### Custom Scroll Controler
 
 ### Responsive
 Flutter apps might appear on screens of many different sizes. Ideally you want your app to be both 
@@ -323,7 +396,7 @@ When using the package `path_provider` and other tools for resolving paths on di
 your project name as an identifier it will default to something like `com.example.riverpod_moview`. 
 You can change this for the different platforms with:
 
-* Linux
+***For Linux***
   * Edit `linux/CMakeLists.txt`
   * Change `set(APPLICATION_ID "com.example.riverpod_movies")`
   * to `set(APPLICATION_ID "riverpod_movies")`
@@ -401,7 +474,24 @@ get built in animations as well.
 * [Choose the right gesture widgets](https://blog.logrocket.com/choosing-the-right-gestures-for-your-flutter-project/)
 * [Vertical Drag](https://blog.logrocket.com/handling-gestures-flutter-gesturedetector/)
 
-* ***Dismissible*** allows for flicking an item left or right to dismiss, think delete or archive
+`GestureDetector` wraps whatever wiget you give it as its child and makes the child clickable. Often 
+you'll want to first wrap your content in a `Container` to give a larger clicking area.
+
+```dart
+itemBuilder: (context, index) => GestureDetector(
+  child: Container(
+    color: Colors.blue,
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text('Folder $index', style: Theme.of(context).textTheme.titleMedium),
+      Text(value[index], style: Theme.of(context).textTheme.bodyMedium),
+    ]),
+  ),
+  onTap: () {
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => FolderPage(path: value[index])));
+  },
+),
+```
 
 ### Layout
 
@@ -418,6 +508,18 @@ get built in animations as well.
 * ***Positioned*** can be used on children of a `Stack` to position them relative to it
 
 ### Keyboard input
+
+### MediaQuery
+[MediaQuery](https://api.flutter.dev/flutter/widgets/MediaQuery-class.html) provides a way to 
+interact with your device to make it more responsive.
+
+`MediaQuery.of`
+
+* Get device size information for layout
+  * Screen size
+* Check device orientation
+* Check areas that are obscured by cameras
+
 
 ### Navigation
 Flutter's Material 3 implementation provides several navigation options:
@@ -648,6 +750,135 @@ displayed when ready.
    ```dart
        appWindow.show();
    ```
+
+
+## Scrolling
+Flutter has many built-in widgets that automatically scroll and also offers a variety of widgets that 
+you can customize to create specific scrolling behaviors. Many Flutter widgets support scrolling out 
+of the box and do most of the work for you. For example the `SingleChildScrollView` automatically 
+scrolls its child when necessary. 
+**References**
+* [Scrolling - docs](https://docs.flutter.dev/ui/layout/scrolling)
+* [Sliver workshop](flutter.dev/go/sliver-workshop)
+
+### Shrink wrap
+Shrink wrap forces a nested view to evaluate its entire item list size to then show properly in the 
+parent and can be a performance issue. If you have large sets of items in your inner lists your going 
+to get dropped frames and stutters in your UI. In this case use the `CustomScrollView` and `Slivers` 
+to solve the issue.
+
+### Efficient scrolling
+More advanced widgets like the `ListView` and `GridView` display multiple items and provide a 
+constructor that requires a builder method to build the child items on demand i.e. lazy loading. This 
+is important because they only create those widgets that are visible or will soon become visible. In 
+this way your app appears responsive and performant when you need to display large amounts of data. 
+These are both good options for a lot of data.
+
+Switching to the `CustomScrollView` and the `SliverGrid` and `SliverChildDelegateBuilder` is the same 
+thing as the `GridView.builder` efficiency wise and complexity really, but you get more options on 
+how to customize it. The `ListView` and `GridView` just simplify it a little.
+
+### Infinite scrolling easy
+A simpler way to get infinite scrolling is to simply add to trigger a fetch of new data when you are 
+at some number of items from the end. This will asynchronously retrieve the data and load it into the 
+list of items and then populate it on the screen as you scroll to it.
+
+1. Add a fetch page method to your riverpod provider. It is critical that you don't specify the 
+   `AsyncLoading` or any other state change other than new data or you'll loose the scroll position.
+   ```dart
+   Future<void> fetchNextPage() async {
+     // If we've reached the page limit then were done
+     if (_totalPages != -1 && _currentPage >= _totalPages) {
+       return;
+     }
+ 
+     // Fetch the next page and specifically not setting loading state to avoid resetting
+     // the scroll position for infite scrolling.
+     // state = const AsyncLoading();
+     state = await AsyncValue.guard(() async {
+       final dto = await locate<TMDB>().getNowPlayingMovies(page: _currentPage++);
+ 
+       // Update the page if reset
+       if (_totalPages == -1) {
+         _totalPages = dto.totalPages;
+       }
+ 
+       // Convert to movies and add to the state and replace it
+       final movies = state.value ?? [];
+       return movies + dto.results.map((x) => model.Movie.fromJson(x.toJson())).toList();
+     });
+   }
+   ```
+2. Trigger the page fetch in your `onNextPageRequested` in your list or grid view
+   ```dart
+   (content, index) {
+     if (index == media.length - 5) {
+       widget.onNextPageRequested?.call();
+     }
+   }
+   ```
+
+### Infinite scrolling with scroll controller
+For advanced features like infinite scrolling or resuming scrolling you'll need to use your own 
+scroll controller and implemente logic to handle these use cases for your app. Best practice is to 
+fetch the data in advance to the user requesting it thus by the time the user makes the fetch request 
+by scrolling the data is already available to view.
+
+1. Setup your scroll controller and current position in your stateful widget.
+   ```dart
+   final _scrollController = ScrollController();
+   var _currentScrollOffset = 0.0;
+   ```
+
+2. Setup your scroll listener in the state init method and implement the standard dispose
+   ```dart
+   @override
+   void initState() {
+     super.initState();
+     _scrollController.addListener(_onScroll);
+   }
+
+   @override
+   void dispose() {
+     _scrollController.dispose();
+     super.dispose();
+   }
+   ```
+
+3. Implement your on scroll method to trigger an action if the bottom of the scroll has been hit and 
+   save your current position in your state.
+   ```dart
+   void _onScroll() {
+     if (_scrollController.offset >= _scrollController.position.maxScrollExtent &&
+         !_scrollController.position.outOfRange) {
+       setState(() {
+         _currentScrollOffset = _scrollController.offset;
+       });
+       widget.onNextPageRequested?.call();
+     }
+   }
+   ```
+
+2. Use the `jumpTo` method to resume your position
+
+### Fancy scrolling
+Provides options for fancy scrolling in the UI with `SliverList`, `SliverGrid`, or `SliverAppBar`. 
+These provide the same functionality as their non-sliver version, but you can customize their 
+scrolling behavior inside the `CustomScrollView` and combine them.
+
+**References**
+* [Fancy scrolling - docs](https://docs.flutter.dev/ui/layout/scrolling/slivers)
+
+Slivers are the basic building blocks for scrolling in Flutter. A Sliver is a portion of a scrollable 
+area that display the content based on its configuration. Slivers manage the display of their 
+children when they become visible and apply the scrolling effects on them. All scrollable widgets 
+like `ListView` and `GridView` are built on top of Slivers.
+
+**SliverAppBar**  
+The sliver app bar has a lot of neat options like `floating` which scrols it out of view but back as 
+soon as you scroll back down at all. It also has the `snap` option which makes it snap back in a 
+little crisper and faster than a regular scroll would. We can also use the expanded height to provide 
+more room in the begining for a background image or something that will fold up when scrolled.
 
 
 ## Dart
