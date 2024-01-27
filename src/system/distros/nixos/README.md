@@ -23,12 +23,13 @@ approach to cloud infrastructure.
 * [Effort to make more GUI centric](https://discourse.nixos.org/t/snowflakeos-creating-a-gui-focused-nixos-based-distro/21856)
 
 **Features**
-* Seems to have better package support than Arch Linux
-  * Stable packages: `zoom`, `vscode`, `rustdesk`, `vopono`, `inxi`, `ccextractor`, `epson-escpr2`, 
-  `golangci-lint`, `makemkv`, `hardinfo`, `i3lock`, `losslesscut`, `pnmixer`, `mycli`
+* Seems to have equivalent or maybe even better package support than Arch Linux
+  * Stable packages exist for: `zoom`, `vscode`, `rustdesk`, `vopono`, `inxi`, `ccextractor`, 
+    `epson-escpr2`, `golangci-lint`, `makemkv`, `hardinfo`, `i3lock`, `losslesscut`, `pnmixer`, `mycli`
+    which are in the AUR for Arch
   * Missing: `xnviewmp`, `winff`, `arcologout`
 * Most up to date distribution
-* Abilty to try new tools risk free in shell environments that are cleaned up
+* ***Abilty to try new tools risk free*** in shell environments that are cleaned up
 * Create shell env configs that can be reused to setup an environment
 * Build docker images using nix language then import them into docker
 

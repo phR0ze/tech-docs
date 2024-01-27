@@ -67,29 +67,29 @@ are written primarily in C/C++.
   * [Run on Android Emulator](#run-on-android-emulator)
 * [Publish app](#publish-app)
   * [Build release](#build-release)
+* [Images](#images)
+  * [Display an Image](#display-an-image)
+* [Packages](#packages)
 * [Flutter app examples](#flutter-app-examples)
   * [AuthPass](#auth-pass)
 * [Flutter Patterns](#flutter-patterns)
   * [Android permissions](#android-permissions)
-  * [Display Image](#display-image)
   * [Launch Screen](#launch-screen)
   * [Responsive](#responsive)
   * [Build methods](#build-methods)
   * [Custom Widgets](#custom-widgets)
   * [Launch Screen](#launch-screen)
-* [Flutter platform](#flutter-platform)
+* [Project](#project)
   * [Project ID](#project-id)
-  * [pubspec](#pubspec)
+  * [pubspec.yaml](#pubspec-yaml)
+    * [Dependencies](#dependencies)
+* [Flutter platform](#flutter-platform)
   * [Basic widgets](#basic-widgets)
-  * [Dependencies](#dependencies)
-  * [Display an Image](#display-an-image)
   * [Future Builder](#future-builder)
-  * [Gestures](#gestures)
   * [Layout](#layout)
   * [Keyboard Input](#keyboard-input)
   * [MediaQuery](#mediaquery)
   * [Navigation](#navigation)
-  * [Packages](#packages)
   * [Persist configuration](#persist-configuration)
   * [State](#state)
   * [Slivers](#slivers)
@@ -105,7 +105,7 @@ are written primarily in C/C++.
   * [Parameters](#parameters)
   * [static vs final vs const](#static-vs-final-vs-const)
 
-## Getting Started
+# Getting Started
 In my opinion the best approach to Flutter application development uses the flutter cli for creating 
 and interacting with your project and a desktop environment to run and test your application and 
 finally the Android emulator as a standalone component to run and test your Android version of the 
@@ -113,7 +113,7 @@ application.
 
 Note: the Android Studio path is slow, clunky and overly complicated IMO.
 
-### Setup Flutter on Arch Linux
+## Setup Flutter on Arch Linux
 Reference: [getting started with Flutter on Arch Linux](https://dev.to/nabbisen/flutter-3-on-arch-linux-getting-started-fc0)
 
 1. Install [android tooling](../../../android/emulator)
@@ -142,7 +142,7 @@ Reference: [getting started with Flutter on Arch Linux](https://dev.to/nabbisen/
    $ flutter doctor --android-licenses
    ```
 
-### Create a new Flutter project
+## Create a new Flutter project
 1. [Install and configure VS Code](../../../editors/vscode)
 
 2. Create your project using the Flutter CLI
@@ -194,7 +194,7 @@ Reference: [getting started with Flutter on Arch Linux](https://dev.to/nabbisen/
    1. Open the `main.dart`
    2. Hit `F5`
 
-### Run on Android Emulator
+## Run on Android Emulator
 Althought the Android Emulator works as a Standalone service I found it slow and often froze up when 
 starting it back up after using it once before; something with the saved state maybe. At any rate I 
 had the most success developing locally with Linux and then creating a new Android emulator each time 
@@ -218,35 +218,227 @@ I wanted to try it out on Android.
    $ avdmanager delete avd -n android30
    ```
 
-## Publish app
+# Publish app
 
-### Build release
+## Build release
+Build a release apk for testing with:
+```bash
+$ flutter build apk --release
+```
 
-## Flutter packages
+# Images
 
-### Smooth Page Indicator
-[Smooth Page Indicator](https://pub.dev/packages/smooth_page_indicator)
-* Assume animated page indicator for scrolling images
+## Animated Images
+By default Flutter supports `Animated GIF` and  `Animated WebP`
 
-### 
+## Disk Cache
 
-## Flutter app examples
+* [`flutter_cache_manager`](https://pub.dev/packages/flutter_cache_manager)
+  * [Medium article](https://nureddineraslan.medium.com/caching-in-flutter-an-effective-approach-to-speed-up-your-app-77e688d3fbe5)
+* [`get_storage`](https://pub.dev/packages/get_storage)
 
-### AuthPass
+## Global imageCache
+Flutter implements a least-recently-used global singleton image cache of up to 1000 images, and up 
+to 100 MB. It is used internally by ImageProvider. The image cache is created during startup by the 
+PaintingBinding.createImageCache method and is managed by the system. The cache holds a list of 
+`live` references. An image is considered live if its listener count never drops to zero. The 
+`putIfAbsent` method is the main entry-point to the cache API. It returns the previously cached image 
+for the given key, if available; if not, it calls the given callback to obtain it first. In either 
+case, the key is moved to the most recently used position.
+
+* [ImageCache class docs](https://api.flutter.dev/flutter/painting/ImageCache-class.html)
+
+Flutter's global image cache is not persisted on disk however. Thus we get packages like the 
+`flutter_cache_manager` package that do this for you.
+
+## Image vs ImageProvider
+The `ImageProvider` is what provides the actual image to the `Image` widget. It is an abstract class 
+that represents a way to obtain an image. If you need a custom image provider then you'll want to use 
+the `Image` base constructor directly. Otherwies you can simply allow the Image widget to use the 
+default image provider using one of the factory constructors. The Image widget is responsible for 
+displaying the image on the screen.
+
+**Getting an Image:**
+* `Image.asset()`
+* `Image.network()`
+* `Image.file()`
+* `Image.memory()`
+
+**Getting an ImageProvider:**
+* `AssetImage()`
+* `NetworkImage()`
+* `FileImage()`
+* `MemoryImage()`
+
+**Convert an ImageProvider to and Image**
+```dart
+Image(image: myImageProvider)
+```
+
+**Convert an Image to and ImageProvider**
+```dart
+myImageProvider.image
+```
+
+## Caching thumbnails
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Display an Image
+The ***Image*** class renders an image to the screen. Flutter supports: `JPEG`, `PNG`, `Animated 
+GIF`, `Animated WebP`, `BMP`, and `WBMP`. In order to render the images to the screen Flutter needs 
+to cache them as raw images so a lot of memory may be required. You can work around this by setting 
+the custom decode size to limit how much memory is consumed by the cache.
+
+* `Image.asset()`
+* `Image.network()`
+* `Image.file()`
+* `Image.memory()`
+
+# Packages
+
+## Used and found useful
+A list of packages I've found to be helpful and have used in applications I've written.
+
+* [`device_info_plus`](https://pub.dev/packages/device_info_plus)
+  * License: BSD-3
+  * Provides the ability to check the Android SDK version
+  * Flutter favorite
+
+* [`quiver`](https://pub.dev/packages/quiver)
+  * License: Apache 2
+  * Utilities for making core Dart libaries easier and more convenient
+  * Owned by `google.dev` team
+
+* [`path_provider`](https://pub.dev/packages/path_provider)
+  * License: BSD-3
+  * Provides easy access to paths for storing state and caching
+  * Flutter favorite
+
+## Didn't end up using
+* [`easy_image_viewer`](https://pub.dev/packages/easy_image_viewer)
+  * License: MIT
+  * Provides the ability to display an image with typical image features
+    * Swipe left/right for page changes
+    * Swipe down for dismissing
+    * Pinch to zoom, pan
+  * Unable to use it as the page swiping and dimissing interfer with pinch to zoom
+
+## Interesting packages
+
+* [`extended_image`](https://pub.dev/packages/extended_image)
+  * License: MIT
+  * memory caching
+  * disk caching option built off `path_provider` and direct file manipulation
+  * using modern version of flutter
+  * zoom and pan with reset button `Simple > zoom/pan image`
+  * google photo like dismiss `Simple > SlidePage`
+  * crop tool `Simple > ImageEditor`
+  * image viewer example `Complex demos > WaterfallFlow` 
+    * nice layout and demostrates network caching
+  * complex editor example offers selection between
+    * Image Dart - stable
+    * ImageEditor android/ios native - faster
+  * news browser like example with nice layout
+    * pull down to refresh
+    * multiple images to scroll through
+    * clickable images that can be: zoomed, dismissed, saved and pulled up for details
+
+
+* [`photo_view`](https://pub.dev/packages/photo_view)
+  * License: MIT
+  * double tap zoom with two allowed before resetting
+  * pan once in zoom mode
+  * rotate and zoom with slider controls
+  * pinch to rotate and zoom
+  * able to show SVG as an image
+  * Show any widget not just image e.g. container, text or svg
+  * programatic rotation
+  * Seems to have found a way to use dismissible and zoom together
+
+* [`flutter_cache_manager`](https://pub.dev/packages/flutter_cache_manager)
+  * Uses `provider_path` to provide the cache directory and stores there
+
+* [`flutter_launcher_icons`](https://pub.dev/packages/flutter_launcher_icons)
+  * CLI to change your launcher icon for you
+
+* [`flutter_native_splash`](https://pub.dev/packages/flutter_native_splash)
+  * Custom image as splash screen instead of default white image
+
+* [`sliding_up_panel`](https://pub.dev/packages/sliding_up_panel)
+  * Nice way to show a images details
+
+* [`media_store_plus`](https://pub.dev/packages/media_store_plus)
+  * Provides MediaStore plugin access
+
+* [`smooth_page_indicator`](https://pub.dev/packages/smooth_page_indicator)
+  * Assome animated page indicator for scrolling images
+
+**Flutter favorites**
+* [`battery_plus`](https://pub.dev/packages/battery_plus)
+* [`flame`](https://pub.dev/packages/flame)
+* [`fluent_ui`](https://pub.dev/packages/fluent_ui)
+* [`flutter_local_notifications`](https://pub.dev/packages/flutter_local_notifications)
+* [`flutter_rust_bridge`](https://pub.dev/packages/flutter_rust_bridge)
+* [`go_router`](https://pub.dev/packages/go_router)
+* [`json_serializable`](https://pub.dev/packages/json_serializable)
+* [`url_launcher`](https://pub.dev/packages/url_launcher)
+
+[Most liked packages](https://pub.dev/packages?q=platform%3Alinux&sort=like)
+* [`dio`](https://pub.dev/packages/dio) 
+
+[material.io](https://pub.dev/publishers/material.io/packages)
+* [`adaptive_breakpoints`](https://pub.dev/packages/adaptive_breakpoints)
+* [`adaptive_components`](https://pub.dev/packages/adaptive_components)
+* [`adaptive_navigation`](https://pub.dev/packages/adaptive_navigation)
+* [`dynamic_color`](https://pub.dev/packages/dynamic_color)
+* [`google_fonts`](https://pub.dev/packages/google_fonts)
+
+[google.dev packages](https://pub.dev/publishers/google.dev/packages)
+* [`googleapis_auth`](https://pub.dev/packages/googleapis_auth)
+* [`file`](https://pub.dev/packages/file)
+  * A pluggable, mockable file system abstraction for Dart with local and in-memory files
+* [`retry`](https://pub.dev/packages/retry)
+
+[gskinner](https://pub.dev/publishers/gskinner.com/packages)
+* [`flutter_animate`](https://pub.dev/packages/flutter_animate)
+* [`universal_platform`](https://pub.dev/packages/universal_platform)
+
+## Deprecated packages
+* [`provider`](https://pub.dev/packages/provider)
+  * Use Riverpod instead i.e. the 2.0 version from the same author
+
+# Flutter app examples
+
+## AuthPass
 [AuthPass](https://authpass.app/) is a Free and Open Source password manager for Android, iOS, macOS, 
 Linux and Windows that is compatible with KeePass.
 
 **References**
 * [authpass - Github](https://github.com/authpass/authpass)
 
-## Flutter Patterns
+# Flutter Patterns
 * ***Custom Widgets*** are a best practice for reusability
 * ***Pass Widgets*** widgets as parameters to other widgets is a standard practice
 * Keep state as close to the area of concern as possible
   * Keep it in the widget if that is all that needs it
   * Keep it at the lowest level in the widget tree that ensures it lives long enough to be useful
 
-### Android permissions
+## Android permissions
 see [android/permissions](../../../android/permissions/index.html) for Android permission specifics. 
 I'll just cover the Flutter side here.
 
@@ -322,16 +514,16 @@ To qualify to use the Manage External Storage permission you need to:
    await Permission.manageExternalStorage.request();
    ```
 
-### Build methods
+## Build methods
 In Flutter when a parent widget receives a callback and updates its internal state it will then 
 trigger a rebuild which will then rebuild all the widgets below it if they have changed. The 
 framework does this by comparing the newly built widgets with the previously built widgets and only 
 applying the differences to the underlying RenderObject.
 
-### Custom Widgets
+## Custom Widgets
 Reduce your widgets to only accept what they use as parameters not all app state.
 
-### Launch Screen
+## Launch Screen
 Launch screens, a.k.a splash screens, provide a simple initial experience while your app loads. They 
 set the stage for your application, while allowing time for the app engine to load and your app to 
 initialize.
@@ -339,9 +531,9 @@ initialize.
 **References**
 * [Flutter docs - Splash screen](https://docs.flutter.dev/platform-integration/android/splash-screen)
 
-### Custom Scroll Controler
+## Custom Scroll Controler
 
-### Responsive
+## Responsive
 Flutter apps might appear on screens of many different sizes. Ideally you want your app to be both 
 ***adaptive*** and ***responsive***. Flutter's primary means of handling responsiveness is to use the 
 `LayoutBuilder` which will redraw the UI whever the size constraints change providing the ability for 
@@ -381,7 +573,7 @@ devices e.g. keyboard and mouse vs touch.
 * [Building adaptive apps](https://docs.flutter.dev/ui/layout/responsive/building-adaptive-apps)
 
 
-## Flutter platform
+# Project
 Every app has a `main()` which runs your root widget. Every widget has a `build` which must return a 
 widget or tree of widgets so that Flutter nows what to draw. Widgets can be nested as desired.
 
@@ -391,7 +583,7 @@ widget or tree of widgets so that Flutter nows what to draw. Widgets can be nest
 * [Material 3 docs](https://docs.flutter.dev/ui/widgets/material)
 * [Material 3 Icons](https://fonts.google.com/icons)
 
-### Project ID
+## Project ID
 When using the package `path_provider` and other tools for resolving paths on disk etc... that use 
 your project name as an identifier it will default to something like `com.example.riverpod_moview`. 
 You can change this for the different platforms with:
@@ -402,12 +594,18 @@ You can change this for the different platforms with:
   * to `set(APPLICATION_ID "riverpod_movies")`
   * This makes `getApplicationSupportDirectory` resolve to `/home/<user>/.local/share/riverpod_movies`
 
-### pubspec
+## pubspec
 The `pubspec.yaml` in the root of your Flutter project is the main project file tracking dependencies 
 and configuration for your project
 
-### Basic widgets
-* ***Text*** styled text
+### version
+The app version called out in the `pubspec.yaml` uses the typical semver format `major.minor.patch` 
+but then adds on an optional build number separated by the plus sign `+`
+
+Example:
+```
+1.0.0+1
+```
 
 ### Dependencies
 Flutter/dart dependencies can be specified by git repo as well
@@ -419,81 +617,16 @@ dependencies:
       ref: main
 ```
 
-### Display an Image
-The ***Image*** class renders an image to the screen. Flutter supports: JPEG, PNG, Animated GIF, 
-Animated WebP, BMP, and WBMP. In order to render the images to the screen Flutter needs to cache them 
-as raw images so a lot of memory may be required. You can work around this by setting the custom 
-decode size to limit how much memory is consumed by the cache.
+# Flutter platform
 
-* [Flutter Image class docs](https://api.flutter.dev/flutter/widgets/Image-class.html) 
-* [Easy image viewer on pub.dev](https://pub.dev/packages/easy_image_viewer)
-* [File picker example](https://www.geeksforgeeks.org/flutter-pick-and-open-files-from-storage/)
+## Basic widgets
+* ***Text*** styled text
 
-**Images from assets**
-```dart
-Image.asset(
-  'assets/images/dash.jpg'
-)
-```
-Image assets will automatically show the correct image for the devices pixel density
-
-**Images from file**
-```dart
-Image.file(
-  '/path/to/dash.jpg'
-)
-```
-
-**Images from network**
-```dart
-Image.network(
-  'http://example.com/dash.jpg'
-)
-```
-Flutter will automatically download and cache the image. You can use the `loadingBuilder` function to 
-show loading progress while being downloaded
-
-**Images from memory as byte arrays**
-```dart
-Image.memory(
-  myUint8List,
-)
-```
-
-### Future Builder
+## Future Builder
 The `FutureBuilder` widget will take a future and handle the different states of the future i.e. 
 completed, failed and waiting.
 
-### Gestures
-By using the built in widgets to handle gestures rather than directly with the gesture detecter you 
-get built in animations as well.
-
-![Flutter Gestures](../../../../data/images/flutter-gestures-mind-map.png)
-
-**References**
-* [Choose the right gesture widgets](https://blog.logrocket.com/choosing-the-right-gestures-for-your-flutter-project/)
-* [Vertical Drag](https://blog.logrocket.com/handling-gestures-flutter-gesturedetector/)
-
-`GestureDetector` wraps whatever wiget you give it as its child and makes the child clickable. Often 
-you'll want to first wrap your content in a `Container` to give a larger clicking area.
-
-```dart
-itemBuilder: (context, index) => GestureDetector(
-  child: Container(
-    color: Colors.blue,
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text('Folder $index', style: Theme.of(context).textTheme.titleMedium),
-      Text(value[index], style: Theme.of(context).textTheme.bodyMedium),
-    ]),
-  ),
-  onTap: () {
-    Navigator.push(context,
-        MaterialPageRoute(builder: (context) => FolderPage(path: value[index])));
-  },
-),
-```
-
-### Layout
+## Layout
 
 * ***BoxDecoration*** lets you decorate the `Container` widget
 * ***Column*** takes any number of children and puts them in a column from top to bottom
@@ -507,9 +640,9 @@ itemBuilder: (context, index) => GestureDetector(
 * ***Placeholder()*** fantastic idea for building out layouts without any content yet
 * ***Positioned*** can be used on children of a `Stack` to position them relative to it
 
-### Keyboard input
+## Keyboard input
 
-### MediaQuery
+## MediaQuery
 [MediaQuery](https://api.flutter.dev/flutter/widgets/MediaQuery-class.html) provides a way to 
 interact with your device to make it more responsive.
 
@@ -521,7 +654,7 @@ interact with your device to make it more responsive.
 * Check areas that are obscured by cameras
 
 
-### Navigation
+## Navigation
 Flutter's Material 3 implementation provides several navigation options:
 * ***AppBar*** - advanced navigation and actions bar at top
 * ***BottomAppBar*** -  advanced navigation and actions bar at bottom
@@ -560,44 +693,7 @@ onPressed: () {
 }
 ```
 
-### Packages
-**Flutter favorites**
-* [`battery_plus`](https://pub.dev/packages/battery_plus)
-* [`device_info_plus`](https://pub.dev/packages/device_info_plus)
-* [`flame`](https://pub.dev/packages/flame)
-* [`fluent_ui`](https://pub.dev/packages/fluent_ui)
-* [`flutter_local_notifications`](https://pub.dev/packages/flutter_local_notifications)
-* [`flutter_rust_bridge`](https://pub.dev/packages/flutter_rust_bridge)
-* [`go_router`](https://pub.dev/packages/go_router)
-* [`json_serializable`](https://pub.dev/packages/json_serializable)
-* [`path_provider`](https://pub.dev/packages/path_provider)
-* [`provider`](https://pub.dev/packages/provider)
-* [`url_launcher`](https://pub.dev/packages/url_launcher)
-
-[Most liked packages](https://pub.dev/packages?q=platform%3Alinux&sort=like)
-* [`dio`](https://pub.dev/packages/dio) 
-
-[material.io](https://pub.dev/publishers/material.io/packages)
-* [`adaptive_breakpoints`](https://pub.dev/packages/adaptive_breakpoints)
-* [`adaptive_components`](https://pub.dev/packages/adaptive_components)
-* [`adaptive_navigation`](https://pub.dev/packages/adaptive_navigation)
-* [`dynamic_color`](https://pub.dev/packages/dynamic_color)
-* [`google_fonts`](https://pub.dev/packages/google_fonts)
-
-[google.dev packages](https://pub.dev/publishers/google.dev/packages)
-* [`googleapis_auth`](https://pub.dev/packages/googleapis_auth)
-* [`file`](https://pub.dev/packages/file)
-  * A pluggable, mockable file system abstraction for Dart with local and in-memory files
-* [`quiver`](https://pub.dev/packages/quiver)
-  * Utilities for making core Dart libaries easier and more convenient
-  * e.g. `isBlank` checks if a string is null, empty or made of whitespace characters
-* [`retry`](https://pub.dev/packages/retry)
-
-[gskinner](https://pub.dev/publishers/gskinner.com/packages)
-* [`flutter_animate`](https://pub.dev/packages/flutter_animate)
-* [`universal_platform`](https://pub.dev/packages/universal_platform)
-
-### Persist configuration
+## Persist configuration
 Persisting data can be done in a variety of ways in Flutter. I'm looking for:
 * Standard Linux convention `~/.config/<app>.yaml` convention
 * Automatically convert into a singleton class in the app
@@ -632,7 +728,7 @@ Persisting data can be done in a variety of ways in Flutter. I'm looking for:
   * not sure what that resoves to on linux but doesn't fit conventions as is for sure
   * Could be modified to fit linux conventions though without much effort, although I'd use yaml
 
-### State
+## State
 Flutter uses `StatefulWidgets` to generate `State` objects, which are then used to hold state. 
 Widgets and State objects have different life cycles. Widgets are used for presentation and are 
 frequently destroyed and recreated with changes while State is persisted between calls to the 
@@ -662,7 +758,7 @@ updates to your app wiget tree thus speeding up your whole app. BLoC offers more
 complex to use. Idustry concensus is to use Provider unless you need more complexity and performance 
 and then use BLoC which is more verbose requiring more boiler plate code.
 
-### Slivers
+## Slivers
 A sliver is a portion of a scrollable area inside a CustomScrollView that can be configured 
 accordingly to behave in a certain way. Using slivers we can create a plethora of different scrolling 
 effects. Slivers lazy build their views when the widgets come into the viewport. This makes it ideal 
@@ -685,7 +781,7 @@ A widget that uses multiple Slivers rather than just one.
 * `SliverOpacity` - sliver makes its sliver child partially transparent
 * `SliverPadding` - sliver that creates empty space around another sliver
 
-### Themes
+## Themes
 You can choose any color with `Color.fromRGB0(0, 255, 0, 1.0)` or `Color(0xFF00FF00)`. Flutter uses 
 an app wide Theme that all widgets respect to provide a matching suite of colors.
 
@@ -709,7 +805,7 @@ final style = theme.textTheme.displayMedium!.copyWith(
 final theme = Theme.of(context);
 ```
 
-### Window decorations
+## Window decorations
 the `bitsdojo_window` package provides support for creating your own window decorations. The bits 
 window package has an interesting side affect. Because it is hiding the initial window and only 
 showing it once it is draw you get a very smooth window creation that doesn't start at a default size 
@@ -752,7 +848,7 @@ displayed when ready.
    ```
 
 
-## Scrolling
+# Scrolling
 Flutter has many built-in widgets that automatically scroll and also offers a variety of widgets that 
 you can customize to create specific scrolling behaviors. Many Flutter widgets support scrolling out 
 of the box and do most of the work for you. For example the `SingleChildScrollView` automatically 
@@ -761,13 +857,13 @@ scrolls its child when necessary.
 * [Scrolling - docs](https://docs.flutter.dev/ui/layout/scrolling)
 * [Sliver workshop](flutter.dev/go/sliver-workshop)
 
-### Shrink wrap
+## Shrink wrap
 Shrink wrap forces a nested view to evaluate its entire item list size to then show properly in the 
 parent and can be a performance issue. If you have large sets of items in your inner lists your going 
 to get dropped frames and stutters in your UI. In this case use the `CustomScrollView` and `Slivers` 
 to solve the issue.
 
-### Efficient scrolling
+## Efficient scrolling
 More advanced widgets like the `ListView` and `GridView` display multiple items and provide a 
 constructor that requires a builder method to build the child items on demand i.e. lazy loading. This 
 is important because they only create those widgets that are visible or will soon become visible. In 
@@ -778,7 +874,7 @@ Switching to the `CustomScrollView` and the `SliverGrid` and `SliverChildDelegat
 thing as the `GridView.builder` efficiency wise and complexity really, but you get more options on 
 how to customize it. The `ListView` and `GridView` just simplify it a little.
 
-### Infinite scrolling easy
+## Infinite scrolling easy
 A simpler way to get infinite scrolling is to simply add to trigger a fetch of new data when you are 
 at some number of items from the end. This will asynchronously retrieve the data and load it into the 
 list of items and then populate it on the screen as you scroll to it.
@@ -818,7 +914,7 @@ list of items and then populate it on the screen as you scroll to it.
    }
    ```
 
-### Infinite scrolling with scroll controller
+## Infinite scrolling with scroll controller
 For advanced features like infinite scrolling or resuming scrolling you'll need to use your own 
 scroll controller and implemente logic to handle these use cases for your app. Best practice is to 
 fetch the data in advance to the user requesting it thus by the time the user makes the fetch request 
@@ -861,7 +957,7 @@ by scrolling the data is already available to view.
 
 2. Use the `jumpTo` method to resume your position
 
-### Fancy scrolling
+## Fancy scrolling
 Provides options for fancy scrolling in the UI with `SliverList`, `SliverGrid`, or `SliverAppBar`. 
 These provide the same functionality as their non-sliver version, but you can customize their 
 scrolling behavior inside the `CustomScrollView` and combine them.
@@ -881,9 +977,9 @@ little crisper and faster than a regular scroll would. We can also use the expan
 more room in the begining for a background image or something that will fold up when scrolled.
 
 
-## Dart
+# Dart
 
-### Parameters
+## Parameters
 * [Dart functions docs](https://dart.dev/language/functions)
 
 The parameters of a class constructor or fucntion are required by default.
@@ -894,12 +990,12 @@ class Test {
 }
 ```
 
-### static vs final vs const
+## static vs final vs const
 * ***static*** means a member is available on the class itself instead of on instances of the class
 * ***final*** means single-assignment i.e. it must be initialized and cannot be changed
 * ***const*** means that the object can be determined completely at compile time and frozen
 
-## Rust Integration
+# Rust Integration
 
 **References**
 * [Cargo flutter](https://github.com/flutter-rs/cargo-flutter)

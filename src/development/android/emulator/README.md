@@ -1,5 +1,4 @@
 # Emulator
-
 The Android Emulator is actually a downstream project from QEMU and adds the ability to boot Android 
 devices.
 
@@ -96,6 +95,25 @@ market.
 
 **References**
 * [Vulkan Android docs](https://developer.android.com/games/develop/use-vulkan)
+
+## Other Emulators
+As of 2024 there are more options for emulating Android
+
+### WayDroid
+A fork of Anbox it runs Android in a container using LXC. Waydroid offers:
+
+* Super easy to install and get running
+* [Installation instructions](https://docs.waydro.id/usage/install-on-desktops)
+
+### Android-x86 Emulator
+  * Install from ISO in Virtual Box
+  * Wi-Fi and Bluetooth
+
+### Bliss OS
+  * ISO based install
+
+### Anbox
+Deprecated and lacks Google Play Store support
 
 <!-- 
 vim: ts=2:sw=2:sts=2

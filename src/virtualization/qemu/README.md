@@ -16,7 +16,8 @@ Documenting my experience with QEMU
 # Overview
 Quick EMUlator is a command line virtual machine system. It is fast, portable and has excellent guest 
 support. It is the swiss army knife of virtualization. QEMU supports everything and more than other 
-hypervisors.
+hypervisors. Its one downside is that is is all command line driven and all the GUIs out there don't 
+do it justice.
 
 **References**
 * [Archlinux QEMU](https://wiki.archlinux.org/title/QEMU)
