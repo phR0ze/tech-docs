@@ -6,6 +6,12 @@ describe the semantic actions that consist of one or more pointer movements.
 * [Flutter taps, drags and other gestures](https://docs.flutter.dev/ui/interactivity/gestures)
 
 ### Quick links
+* [Pointers](#pointers)
+  * [Which widget gets the touch](#which-widget-gets-the-touch)
+* [Gesture Arena](#gesture-arena)
+* [Gesture Detectors](#gesture-detectors)
+* [Raw Gesture Detector](#raw-gesture-detector)
+* [Gesture Recognizer](#gesture-recognizer)
 * [Dismissible](#dismissible)
 * [InteractiveViewer](#interactiveviewer)
 * [PageView](#PageView)
@@ -42,6 +48,17 @@ the gesture arena. The gesture arena determines which gesture wins using the fol
 
 * Max time in the arena is 500ms i.e. double tap
 * Child's recognizers will always win as they get the first shot
+
+### Nesting of gesture detectors
+The gesture arena explanation seems simply enough; however when you start wrapping an 
+InteractiveViewer inside a PageViewer inside a Dismissible things start to break down. By default the 
+InteractiveViewer stops responding to pinch to zoom about 80% of the time when inside a PageView 
+which has its behavior set to opaque by default and can't be changed.
+
+* [PageView is not click through issue](https://github.com/flutter/flutter/issues/47119)
+* [Allow multiple gestures example](https://gist.github.com/Nash0x7E2/08acca529096d93f3df0f60f9c034056)
+* [Raw Gesture Detectors seems to be the solution](https://stackoverflow.com/questions/58138114/receive-onverticaldragupdate-on-nested-gesturedetectors-in-flutter)
+
 
 ## Gesture Detectors
 Gesture detectors detect gestures using gesture recognizers then maps them to callbacks. Think of the 
@@ -116,8 +133,8 @@ This is usually must more reliable and gives you nice animations for free.
 Provides an animated slide out of view via the swipe or flinging gesture. Its really nice and 
 convenient however it doesn't seem to work well with the InteractiveViewer's Zoom
 
-* Works well with PageView's swipe scrolling
-* Breaks InteractiveViewer's pinch to zoom
+* Works well with PageView's swipe scrolling with just the two of them
+* Breaks down when used with the InteractiveViewer's pinch to zoom
 
 ## InteractiveViewer
 [InteractiveViewer](https://api.flutter.dev/flutter/widgets/InteractiveViewer-class.html)
