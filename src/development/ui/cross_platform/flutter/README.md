@@ -38,6 +38,7 @@ are written primarily in C/C++.
 * [Flutter cookbook](https://docs.flutter.dev/cookbook)
 * [Dart pad with Flutter](https://dartpad.dev/?id=e7076b40fb17a0fa899f9f7a154a02e8)
 * [Pub dev - Dart and Flutter package repo](https://pub.dev/)
+* [Flutter MDI ideas](https://itnext.io/desktop-gui-implementation-using-flutter-web-part-3-draggable-resizable-windows-46ea26049605)
 
 **Benefits**
 * Cross-platform Android, iOS, WASM, Windows, MacOS, Linux
