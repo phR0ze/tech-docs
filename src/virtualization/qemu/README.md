@@ -2,6 +2,10 @@
 <img align="left" width="40" height="40" src="../../data/images/logo_256x256.png">
 Documenting my experience with QEMU
 
+Fundamentally is a neat idea. CLI based, fast and reliable; but every time I try to do anything 
+complicated it takes forever to figure it out. Bridge networking is so much simpler with VirtualBox 
+so going back to that for now.
+
 ### Quick links
 * [Overview](#overview)
   * [Install QEMU](#install-qemu)
@@ -122,27 +126,48 @@ network and talk to the VMs then assigns the VMs tap devices that are part of th
 
 ## Creating a bridge
 Although this is automatically managed by Docker, VirtualBox, Libvirt and others we can manually 
-create one as well. This guide is for NetworManager users and we'll be using the cli `nmcli`.
+create one as well. This guide is for NetworManager users using `nmcli`.
+
+* [Instructions via iproute2](https://wiki.archlinux.org/title/Network_bridge#With_iproute2)
+  * [iproute2 only](https://bbs.archlinux.org/viewtopic.php?id=231111)
+* [Instructions via network manager](https://wiki.archlinux.org/title/Network_bridge#With_NetworkManager)
+  * [Redhat nmcli](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/configuring_and_managing_networking/configuring-a-network-bridge_configuring-and-managing-networking)
 
 **Note on bridge permissions**:  
 By default QEMU is configured for only a specific named bridge `virbr0` to be accessible by any user. 
 You can fix this by:
-* Editing `/etc/qemu/bridge.conf` and changing `virbr0` to `all` OR
-* Adding a new user specific file `echo "allow all" | sudo tee /etc/qemu/${USER}.conf` OR
-* But the simplest solution is to just use a bridge with the name `virbr0`
+* Editing `/etc/qemu/bridge.conf` and changing `virbr0` to `all`
+* But the simplest solution is to just use a bridge with the same name `virbr0`
+* Note: disable STP to not advertise it on the network
 
 1. Create a new empty bridge named `virbr0` and set to UP
    ```bash
-   $ sudo nmcli conn add type bridge con-name virbr0 ifname virbr0
-   $ sudo nmcli conn up virbr0
-   # OR
-   $ sudo ip link add virbr0 type bridge
-   $ sudo ip link set dev virbr0 up
+   $ sudo nmcli con add type bridge con-name virbr0 ifname virbr0 stp no
+   $ sudo nmcli con add type bridge con-name virbr0 ifname virbr0 stp no ipv4.method auto ipv6.method disabled connection.autoconnect yes
    ```
 
-2. Assign an IP address to the bridge `virbr0`
+2. Assign your NIC to the bridge i.e. add it as a slave to the bridge
    ```bash
-   $ sudo nmcli conn add type ethernet slave-type bridge con-name bridge-br0 ifname enp1s0 master br0
+   $ nmcli con add type bridge-slave ifname enp1s0 master virbr0
+
+   OR
+
+   $  nmcli con modify enp1s0 master virbr0
+
+# use as port of other device
+   $ nmcli con modify virbr0 ipv4.method disabled ipv6.method disabled connection.autoconnect yes stp no
+   $ nmcli con modify bridge0 connection.autoconnect-slaves 1
+   ```
+
+3. Enable the new bridge interface
+   ```bash
+   $ sudo nmcli con down enp1s0
+   $ sudo nmcli con up virbr0
+   ```
+
+2. Assign an IP address to the bridge
+   ```bash
+   $ sudo nmcli conn modify virbr0 ipv4.addresses IP_ADDRE
    # OR
    $ sudo ip address add 192.168.1.4/24 dev virbr0
    ```

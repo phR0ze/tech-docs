@@ -9,8 +9,10 @@ Documenting my research on FreeCAD
 * [FreeCAD Overview](#freecad-overview)
   * [FreeCAD competitors](#freecad-competitors)
   * [Install and configure FreeCAD](#install-and-configure-freecad)
+  * [Crete new project](#create-new-project)
   * [Workbenches](#workbenches)
 * [General object manipulation](#general-object-manipulation)
+  * [Draw Rectangle](#draw-rectangle)
   * [Rotate object around axis](#rotate-object-around-axis)
 * [Parts Design Workbench](#parts-design-workbench)
   * [Create a truss](#create-a-truss)
@@ -60,6 +62,15 @@ or Sketchup.
    3. Also click the same menu and select `Settings >Orbin Style >Turntable`
    4. Press Shift and hold middle mouse button to pan
    5. Hit `Home` to return to home view
+
+## Create new project
+Example of starting a new project
+
+1. Click the `Create new...`
+2. Switch to the `BIM` workbench
+3. Switch to top down view clicking `TOP` in top right view control
+4. Choose the working plan as the `Top`
+5. Select the rectangle tool
  
 ## Workbenches
 Workbenches in FreeCAD are a collection of tools that can be selected to focus on different aspects 
@@ -69,6 +80,9 @@ of CAD work. You can customize workbenches and move tools from one to another.
 * `BIM` - addon for Building Information Modeling tools similar to Revit, AchiCAD, Tkla, AllPlan or BricsCAD
 
 # General object manipulation
+
+## Draw rectangle
+1. Select the rectangle tool
 
 ## Rotate object around axis
 1. Select your object
@@ -180,6 +194,7 @@ planes you created with BIM.
 2. Click the `Insert Default Page` button top left
 3. Double click the `Page > Template` object on left in the tree view
 4. Under the templates properties below select the `Template` file path property and choose `USLetter_Landscape_blank.svg`
+   * Optionally if you want the title block you'll need to use the `Template` called `Arch_D_Landscape_cust.svg`
 
 ## Insert technical views
 1. Click drawing tab to bring up your drawing and position it as desired
@@ -193,6 +208,8 @@ planes you created with BIM.
 2. Click the dimension buttons as desired
 
 ## Edit drawing title block
+Note for title block you'll need to change the template to `Arch_D_Landscap_cust.svg`
+
 1. Right click on drawing and choose `Toggle Frames` to ensure they are visible
 2. Now you can double click the green blocks in the title block to edit them
 

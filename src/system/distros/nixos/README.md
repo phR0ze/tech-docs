@@ -1,5 +1,6 @@
 # NixOS
-Making reproducible, declarative and reliable systems is NixOS's mission.
+Making reproducible, declarative and reliable systems is NixOS's mission. Fearlessly install software 
+and upgrade your system with the ability to rollback and recover with little effort.
 
 ### Quick links
 * [Overview](#overview)
@@ -7,6 +8,12 @@ Making reproducible, declarative and reliable systems is NixOS's mission.
   * [Declarative](#declarative)
   * [Reliable](#reliable)
 * [Get Started](#get-started)
+  * [Install NixOS](#install-nixos)
+  * [Live ISO installer notes](#live-iso-installer-notes)
+  * [First run experience](#first-run-experience)
+* [Install from minimal ISO](#install-from-minimal-iso)
+
+* [Learning NixOS](#learning-nixos)
 * [Build Live ISO](#build-live-iso)
 * [Upgrades](#upgrades)
 * [Flakes](#flakes)
@@ -44,12 +51,15 @@ what programming languages and tools you're using.
 ### Reliable
 Nix ensures that installing or upgrading one package cannot break other packages. It allows you to 
 roll back to previous versions, and ensures that no packages is in an inconsistent state during an 
-upgrade.
+upgrade. All dependencies are included for the given app and changing that app won't change the 
+dependencies other apps may need.
 
 ## Get Started
-1. Navigate to https://nixos.org/download#nixos-iso and download the latest GNOME based image
+
+### Install NixOS
+1. Navigate to [NixOS: the Linux distribution](https://nixos.org/download#nixos-iso)
    ```bash
-   $ wget https://channels.nixos.org/nixos-23.05/latest-nixos-gnome-x86_64-linux.iso
+   $ wget https://channels.nixos.org/nixos-23.11/latest-nixos-gnome-x86_64-linux.iso
    ```
 
 2. Create a new sparse qcow2 drive to install to
@@ -62,30 +72,99 @@ upgrade.
    $ qemu-system-x86_64 -enable-kvm -m 4G -nic user,model=virtio -drive file=nix1.qcow2,media=disk,if=virtio \
        -cdrom latest-nixos-gnome-x86_64-linux.iso
    ```
-4. Following runs just need the cdrom dropped.
+
+4. Follow on runs of the VM just need the cdrom dropped.
    ```bash
    $ qemu-system-x86_64 -enable-kvm -m 4G -nic user,model=virtio -drive file=nix1.qcow2,media=disk,if=virtio
    ```
 
-### Notes on Live ISO installer
+### Live ISO installer notes
+Install the `NixOS 23.11.3684... Installer` option
+
 * ISO has few options
   * Installer, nomodeset, copytoram, debug, tty console Memtest86+
 * Took so long to load I almost thought it froze
+  * Not sure why it took so long
 * Live ISO comes with
   * NixOS Installer, Firefox, Nix Manual, Shell, GParted, and the basic Gnome apps
-* NixOS Installer (Calamares)
+* NixOS Installer (clearly the Calamares installer)
   * Looks great and seems smooth and has all modern options for an installer
   * Desktop option is neat, it gives apparently an option to choose which desktop to install
     * GNOME, Plasma, Xfce, Pantheon, Cinnamon, MATE, Enlightenment, LXQt, Budgi, Deepin, No desktop
   * Unfree software enablement option
-  * Trying Budgie
+  * Trying Xfce
   * Check the restart option and click next to reboot
 * Using Grub for boot loader
+* Install is super slow in a VM, not sure why
 
 ### First run experience
-Much of this will based on my Budgie impressions but capturing the NixOS items here
-* Install only took 9.5 GB by default
-* Pull down vim temporaily: `nix-shell -p vim`
+Xfce is my go to light desktop environment and I'm comparing this to my minimal Arch Linux install
+
+* Install only took 5.6 GB by default
+* Install vim for temporary use with nix shell: `nix-shell -p vim`
+
+## Learning NixOS
+[First Steps](https://nix.dev/tutorials/first-steps/) walk you through
+* Installing software
+* Creating development environments
+* Reproducible scripts
+* Nix language to build portable, reproducible dev environments
+
+### Shell environments
+You can create temporary Nix shell environments that allow you to install and use software in an 
+isolated way that you can then wipe out when your done. You can also share the command that invoked 
+the shell to share it with others.
+
+**Create shell with two packages**
+```bash
+$ nix-shell -p cowsay lolcat
+```
+
+**Exit the shell or press Ctrl+D to clean up**
+```bash
+$ exit
+```
+
+**Run app directly in shell**
+```bash
+$ nix-shell -p cowsay --run "cowsay Nix"
+```
+
+### Search for packages
+You can [search the NixOS packages](https://search.nixos.org/packages)
+
+
+## Install from minimal ISO
+1. Navigate to [NixOS: the Linux distribution](https://nixos.org/download#nixos-iso)
+   ```bash
+   $ wget https://channels.nixos.org/nixos-23.11/latest-nixos-minimal-x86_64-linux.iso
+   ```
+
+2. Create a new sparse qcow2 drive to install to
+   ```bash
+   $ qemu-img create -f qcow2 nix2.qcow2 20G
+   ```
+
+3. Create a new VM using the new drive and ISO
+   ```bash
+   $ qemu-system-x86_64 -enable-kvm -m 4G -nic user,model=virtio -drive file=nix2.qcow2,media=disk,if=virtio \
+       -cdrom latest-nixos-minimal-x86_64-linux.iso
+   ```
+
+4. Follow on runs of the VM just need the cdrom dropped.
+   ```bash
+   $ qemu-system-x86_64 -enable-kvm -m 4G -nic user,model=virtio -drive file=nix1.qcow2,media=disk,if=virtio
+   ```
+
+
+
+
+
+
+
+
+
+
 
 ## Build Live ISO
 Default live installer configurations are available inside `nixos/modules/installer/cd-dvd`
