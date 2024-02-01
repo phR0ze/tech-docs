@@ -341,6 +341,10 @@ A list of packages I've found to be helpful and have used in applications I've w
 
 ## Interesting packages
 
+* [`vm_service`](https://pub.dev/packages/vm_service)
+  * The `extended_image` package example uses this to show a really slick sub-window that shows 
+  memory consumption
+
 * [`extended_image`](https://pub.dev/packages/extended_image)
   * License: MIT
   * memory caching

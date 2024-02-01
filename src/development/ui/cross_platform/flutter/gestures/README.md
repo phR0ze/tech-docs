@@ -7,6 +7,7 @@ describe the semantic actions that consist of one or more pointer movements.
 
 ### Quick links
 * [Pointers](#pointers)
+  * [Pointer Events](#pointer-events)
   * [Which widget gets the touch](#which-widget-gets-the-touch)
 * [Gesture Arena](#gesture-arena)
 * [Gesture Detectors](#gesture-detectors)
@@ -17,6 +18,8 @@ describe the semantic actions that consist of one or more pointer movements.
 * [PageView](#PageView)
 
 ## Pointers
+
+### Pointer Events
 Pointers represent the raw data about the user's interaction with the screen. There are four types of 
 pointer events.
 
@@ -50,15 +53,49 @@ the gesture arena. The gesture arena determines which gesture wins using the fol
 * Child's recognizers will always win as they get the first shot
 
 ### Nesting of gesture detectors
-The gesture arena explanation seems simply enough; however when you start wrapping an 
-InteractiveViewer inside a PageViewer inside a Dismissible things start to break down. By default the 
-InteractiveViewer stops responding to pinch to zoom about 80% of the time when inside a PageView 
-which has its behavior set to opaque by default and can't be changed.
+The gesture arena explanation seems simply enough; however when you start to nest gesture detectors 
+such as wrapping an `InteractiveViewer` inside a `PageViewer` inside a `Dismissible` things start to 
+break down. By default the `InteractiveViewer` stops responding to pinch to zoom about 80% of the 
+time when inside a `PageView`. There seems to be multiple problems with nesting of detectors of this 
+sort. They have to be carefully crafted with the correct behaviors set which PageView doesn't have 
+and what's worse the base GestureDetector is unable to process scale, drags and pans at the same time 
+without some non-intuitive convolutions since the scale is a super set of pan and pan is a super set 
+of drag horizontal + drag vertical which means you can't have any at the same time unless you 
+carefully and manually track the number of pointers in flight and manually disable different gesture 
+callbacks under different circumstances to orchestrate your desired behavior. Although this can be 
+done for complex nested gestues it might be better just to build your own gesture recognizer and 
+detector.
 
 * [PageView is not click through issue](https://github.com/flutter/flutter/issues/47119)
 * [Allow multiple gestures example](https://gist.github.com/Nash0x7E2/08acca529096d93f3df0f60f9c034056)
 * [Raw Gesture Detectors seems to be the solution](https://stackoverflow.com/questions/58138114/receive-onverticaldragupdate-on-nested-gesturedetectors-in-flutter)
+* [pointerCount=2 for trackpad gestures](https://github.com/flutter/flutter/pull/140745)
+* [us scale recognizer instead of pan](https://github.com/flutter/flutter/issues/115061)
+* [interactiveViewer blocks gestures](https://github.com/flutter/flutter/issues/136622)
+* [onTap is ignored after scale](https://github.com/flutter/flutter/issues/140730)
+* [onScale conflicts with PageView](https://github.com/flutter/flutter/issues/68960)
+* [conflict between scale and drag gestures](https://github.com/flutter/flutter/issues/13101)
+* [recognizers should bid when they win](https://github.com/flutter/flutter/issues/11384)
 
+Its a common enough problem that multiple different packages have solved it in different ways.
+Usually using the low level event [Listener] directly or as a wrapper around [GestureDetector].
+Others have used the [RawGestureDetector] which is a lower level version of the [GestureDetector].
+* [Gesture X Detector](https://pub.dev/packages/gesture_x_detector) uses raw events from Listener
+* [Extended Image](https://pub.dev/packages/extended_image) uses custom gesture recognizers
+
+The official solution from Flutter seems to be a combination of the following:
+* Use the [pointerCount] added to the [ScaleStartDetails] in this PR
+  https://github.com/flutter/flutter/pull/73474 to track how many pointers were involved
+* Since the scale gesture is a super set of the pan gesture and the pan gesture is just
+  the horizontal drag + the vertical drag we can use the scale callbacks for all three.
+  https://github.com/flutter/flutter/blob/fb57da5f945d02ef4f98dfd9409a72b7cce74268/packages/flutter/lib/src/widgets/gesture_detector.dart#L167
+
+Older solutions include using a raw [Listener] to track the number of pointers in play
+directly to then decipher which gestures to enable or disable or alternatively ignoring
+events in the handlers based on the pointer count.
+onScaleStart: _pointers == 2 ? _onScaleStart : null,
+onTapUp: _pointers == 1 ? _onTapUp: null,
+https://github.com/flutter/flutter/issues/13102
 
 ## Gesture Detectors
 Gesture detectors detect gestures using gesture recognizers then maps them to callbacks. Think of the 
