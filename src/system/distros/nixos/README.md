@@ -1,62 +1,71 @@
 # NixOS
-Making reproducible, declarative and reliable systems is NixOS's mission. Fearlessly install software 
-and upgrade your system with the ability to rollback and recover with little effort.
+`NixOS` is a Linux distribution built on top of the `Nix` package manager which leverages the 
+`Nix Expression Language` to make building new systems that are reliable and can be easily reproduced 
+in a declarative way. The claim is that you can fearlessly make changes and install new software 
+because they are in isolation and can always be rolled back if something breaks.
 
 ### Quick links
 * [Overview](#overview)
-  * [Reproducible](#reproducible)
-  * [Declarative](#declarative)
-  * [Reliable](#reliable)
-* [Get Started](#get-started)
-  * [Install NixOS](#install-nixos)
-  * [Live ISO installer notes](#live-iso-installer-notes)
-  * [First run experience](#first-run-experience)
-* [Install from minimal ISO](#install-from-minimal-iso)
-
+  * [Flakes are best practice](#flakes-are-best-practice)
+* [Getting started](#getting-started)
+  * [Install NixOS VM](#install-nixos-vm)
+  * [Install NixOS bare metal](#install-nixos-bare-metal)
+  * [Configure installation](#configure-installation)
+    * [Boot loader](#boot-loader)
+    * [Add new user](#add-new-user)
+    * [Add sudo passwordless access](#add-sudo-passwordless-access)
+    * [Enable Xfce as desktop](#enable-xfce-as-desktop)
+  * [Upgrade NixOS](#upgrade-nixos)
+* [Flakes](#flakes)
 * [Learning NixOS](#learning-nixos)
 * [Build Live ISO](#build-live-iso)
 * [Upgrades](#upgrades)
 * [Flakes](#flakes)
 
 ## Overview
-Nix appears to have the same goal in mind as I've always wanted i.e. the ability to automate the 
-deployment of a full system in a reliable way with all custom configuration intact. They approach 
-desktop systems much like enterprise systems in that their apply system is akin to Terraform's 
-approach to cloud infrastructure.
+Those new to NixOS can find it challenging due to overlapping similar terminology. The primary 
+confusion comes from the fact that `Nix`, the package manager and heart of NixOS, can be used 
+directly on other linux distros and MacOS as well. This means `Nixpkgs`, the Nix package repository, 
+and `Flakes`, the modern Nix packaging system, are both used in a wide variety of OSs and contexts 
+that aren't in some cases directly applicable to `NixOS`.
 
 **References**
-* [NixOS main site](https://nixos.org/)
-* [NixOS Wiki](https://nixos.wiki)
-* [Effort to make more GUI centric](https://discourse.nixos.org/t/snowflakeos-creating-a-gui-focused-nixos-based-distro/21856)
+* [Nix Manual](https://nixos.org/manual/nix/stable/)
+* [Nixpkgs Manual](https://nixos.org/manual/nixpkgs/stable)
+  * [Nixpkgs github](https://github.com/NixOS/nixpkgs)
+* [NixOS Manual](https://nixos.org/manual/nixos/stable)
+* [Determinate Systems](https://github.com/DeterminateSystems)
+  * [Determinate Nix Installer](https://github.com/DeterminateSystems/nix-installer)
+  * [FlakesHub](https://flakehub.com/)
+    * Provides search and semantic versioning
+* [NixOS and Flakes book](https://nixos-and-flakes.thiscute.world/best-practices/run-downloaded-binaries-on-nixos)
 
-**Features**
-* Seems to have equivalent or maybe even better package support than Arch Linux
-  * Stable packages exist for: `zoom`, `vscode`, `rustdesk`, `vopono`, `inxi`, `ccextractor`, 
-    `epson-escpr2`, `golangci-lint`, `makemkv`, `hardinfo`, `i3lock`, `losslesscut`, `pnmixer`, `mycli`
-    which are in the AUR for Arch
-  * Missing: `xnviewmp`, `winff`, `arcologout`
-* Most up to date distribution
-* ***Abilty to try new tools risk free*** in shell environments that are cleaned up
-* Create shell env configs that can be reused to setup an environment
-* Build docker images using nix language then import them into docker
+### Flakes are best practice
+***Flakes*** are installable units of configuration that may include files, configs, packages, 
+dependencies or other flakes. You can think about them like a package, but the Nix ecosystem already 
+has a package type so they had to use another term. They simplify usability and improve 
+reproducibility through better dependency managment than legacy methods. Despite having yet to shed 
+the experimental label, `Flakes` are considered the best practice in the Nix community. Other methods 
+are considered legacy. 
 
-### Reproducible
-Nix builds packages in isolation from each other. This ensures that they are reproducible and don't 
-have undeclared dependencies, so if a package works on one machine it will work on another.
+### Prerequisites
+Rust tool installable via curl bashing to assist during the install in applying configuration from 
+git repos.
 
-### Declarative
-Nix makes it trivial to share development and build environments for your projects, regardless of 
-what programming languages and tools you're using.
+1. Boot from NixOS ISO
+2. Partition target disk
+3. Generate the hardware config
+4. Configure flakes
 
-### Reliable
-Nix ensures that installing or upgrading one package cannot break other packages. It allows you to 
-roll back to previous versions, and ensures that no packages is in an inconsistent state during an 
-upgrade. All dependencies are included for the given app and changing that app won't change the 
-dependencies other apps may need.
+### Remote deployments
+Sometimes it nice to use a beefier machine to build and ready the target components to then remotely 
+deploy to the target machine.
 
-## Get Started
+* [Remote deployments](https://nixos-and-flakes.thiscute.world/best-practices/remote-deployment#deploy-through-nixos-rebuild)
 
-### Install NixOS
+# Getting started
+
+## Install NixOS VM
 1. Navigate to [NixOS: the Linux distribution](https://nixos.org/download#nixos-iso)
    ```bash
    $ wget https://channels.nixos.org/nixos-23.11/latest-nixos-gnome-x86_64-linux.iso
@@ -77,38 +86,151 @@ dependencies other apps may need.
    ```bash
    $ qemu-system-x86_64 -enable-kvm -m 4G -nic user,model=virtio -drive file=nix1.qcow2,media=disk,if=virtio
    ```
+5. Once booted
+   1. Select the `NixOS Installer` option at the top
+6. Continue with steps in [Configure installation](#configure-installation)
 
-### Live ISO installer notes
-Install the `NixOS 23.11.3684... Installer` option
+## Install NixOS bare metal
 
-* ISO has few options
-  * Installer, nomodeset, copytoram, debug, tty console Memtest86+
-* Took so long to load I almost thought it froze
-  * Not sure why it took so long
-* Live ISO comes with
-  * NixOS Installer, Firefox, Nix Manual, Shell, GParted, and the basic Gnome apps
-* NixOS Installer (clearly the Calamares installer)
-  * Looks great and seems smooth and has all modern options for an installer
-  * Desktop option is neat, it gives apparently an option to choose which desktop to install
-    * GNOME, Plasma, Xfce, Pantheon, Cinnamon, MATE, Enlightenment, LXQt, Budgi, Deepin, No desktop
-  * Unfree software enablement option
-  * Trying Xfce
-  * Check the restart option and click next to reboot
-* Using Grub for boot loader
-* Install is super slow in a VM, not sure why
+1. Build NixOS bootable USB
+   1. Determine the correct USB device
+      ```bash
+      $ lsblk
+      ```
+   2. Optionally wipe your USB first
+      ```bash
+      $ sudo wipefs --all --force /dev/sdd
+      ```
+   3. Copy to the dev leaving off the partition
+      ```bash
+      $ sudo dd bs=4M if=latest-nixos-minimal-x86_64-linux.iso of=/dev/sdd status=progress conv=fsync oflag=direct
+      ```
+2. Boot from USB and install
+   1. Boot from the USB
+   2. Select the `NixOS Installer` option at the top
+3. Continue with steps in [Configure installation](#configure-installation)
 
-### First run experience
-Xfce is my go to light desktop environment and I'm comparing this to my minimal Arch Linux install
+## Configure installation
+* [Nix Manual](https://nixos.org/manual/nix/unstable/contributing/cli-guideline)
+* [Configuration collection](https://nixos.wiki/wiki/Configuration_Collection)
+  * [AaronJanse configs](https://github.com/aaronjanse/dotfiles/tree/master)
 
-* Install only took 5.6 GB by default
-* Install vim for temporary use with nix shell: `nix-shell -p vim`
+1. Copy over nix configuration file
+   1. Set the user password: `passwd nixos` 
+   2. Determine the ip address: `ip a`
+   3. Shell in via ssh from a terminal
+   4. Now from another comp run: `scp configuration.nix nixos@192.168.1.206:~/`
+
+2. Setup the target hard disk
+   1. Use `clu` to partition the drive and generate a hardward config
+   2. Finally run the installer, if the configuration fails to build just fix it and try again
+      ```bash
+      $ nixos-install --no-root-passwd
+      ```
+   3. Reboot
+      ```bash
+      $ sudo reboot
+      ```
+
+### Boot loader
+NixOS recommends using `systemd` for the boot loader. I'll have to circle back on that as I recall 
+having some issue with passing arguments to the kernel via the systemd boot loader.
+
+### Add new user
+In order to be able to login to your new system your user must have a temporary password using the 
+`initialPassword` property. Or optionally you could use the `initialHashedPassword` but you'd need to 
+hash the value first with `mkpasswd -m sha512 PASSWORD`. I find its just easier to have the user change their password 
+on first run.
+
+* [Create users](https://discourse.nixos.org/t/hashedpassword-issues-cant-sudo/13061)
+
+```
+users.users.alice = {
+  isNormalUser = true;
+  extraGroups = [ "wheel" "networkmanager" ];
+  initialPassword = "nixos";
+};
+```
+
+### Add sudo passwordless access
+https://nixos.wiki/wiki/Sudo
+
+Add sudo passwordless access to those in the `wheel` group
+```
+security.sudo = {
+  enable = true;
+  extraRules = [{
+    commands = [{ command = "ALL"; options = [ "NOPASSWD" ];}]; groups = [ "wheel" ]; }
+  ];
+};
+```
+
+### Enable Xfce as desktop
+https://nixos.wiki/wiki/Xfce
+
+```
+services.xserver = {
+  enable = true;
+  desktopManager = {
+    xfce.enable = true;
+    xterm.enable = false;
+  };
+  displayManager.defaultSession = "xfce";
+};
+```
+
+### Packages
+NixOS requires a minimal set of packages to function.
+
+* pkgs.nix
+* pkgs.bashInteractive
+* pkgs.coreutils-full
+* pkgs.gnutar
+* pkgs.gzip
+* pkgs.gnugrep
+* pkgs.which
+* pkgs.curl
+* pkgs.less
+* pkgs.wget
+* pkgs.man
+* pkgs.cacert.out
+* pkgs.findutils
+
+### Kodi
+https://nixos.wiki/wiki/Kodi
+```
+```
+
+### Docker image
+NixOS builds its own docker images rather than being build with Docker directly
+
+You can build your latest NixOS docker image with
+```bash
+$ nix build ./\#hydraJobs.dockerImage.x86_64-linux
+$ docker load -i ./result/image.tar.gz
+$ docker run -ti nix:2.5pre20211105
+```
+
+## Upgrade NixOS
+NixOS uses a rolling release with different channels based on stability from 
+
+## Flakes
+Use Flakes not channels and no `nix-env`
+
+### Snowfall
+The Snowfall project has been working on GUI tools for Nix using gtk4 and Rust
+
+* [Effort to make more GUI centric](https://discourse.nixos.org/t/snowflakeos-creating-a-gui-focused-nixos-based-distro/21856)
+* [Snowfall rust](https://github.com/snowfallorg)
+
+* Calamares installer
+* nixos-conf-editor
+* nix-software-center
 
 ## Learning NixOS
-[First Steps](https://nix.dev/tutorials/first-steps/) walk you through
-* Installing software
-* Creating development environments
-* Reproducible scripts
-* Nix language to build portable, reproducible dev environments
+* [NixOS Wiki](https://nixos.wiki/)
+* [NixOS Manual](https://nixpkgs-manual-sphinx-markedown-example.netlify.app/)
+* [User management](https://nixos.org/manual/nixos/stable/#sec-user-management)
 
 ### Shell environments
 You can create temporary Nix shell environments that allow you to install and use software in an 
@@ -132,37 +254,6 @@ $ nix-shell -p cowsay --run "cowsay Nix"
 
 ### Search for packages
 You can [search the NixOS packages](https://search.nixos.org/packages)
-
-
-## Install from minimal ISO
-1. Navigate to [NixOS: the Linux distribution](https://nixos.org/download#nixos-iso)
-   ```bash
-   $ wget https://channels.nixos.org/nixos-23.11/latest-nixos-minimal-x86_64-linux.iso
-   ```
-
-2. Create a new sparse qcow2 drive to install to
-   ```bash
-   $ qemu-img create -f qcow2 nix2.qcow2 20G
-   ```
-
-3. Create a new VM using the new drive and ISO
-   ```bash
-   $ qemu-system-x86_64 -enable-kvm -m 4G -nic user,model=virtio -drive file=nix2.qcow2,media=disk,if=virtio \
-       -cdrom latest-nixos-minimal-x86_64-linux.iso
-   ```
-
-4. Follow on runs of the VM just need the cdrom dropped.
-   ```bash
-   $ qemu-system-x86_64 -enable-kvm -m 4G -nic user,model=virtio -drive file=nix1.qcow2,media=disk,if=virtio
-   ```
-
-
-
-
-
-
-
-
 
 
 
