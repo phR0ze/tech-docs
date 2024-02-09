@@ -16,9 +16,9 @@ NeoVim is a fork of Vim aiming to improve user experience and plugin implementat
 ## Getting started
 
 ### Install NeoVim
-Unfortunately NeoVim's QT UI is far inferior to GVim which is what I used to use. Typically however 
-I simply use the shell version of neovim or Visual Studio Code with the Vim plugin when in a UI. As 
-a fall back in lite configurations I'll use `geany`.
+Unfortunately NeoVim's QT UI is far inferior to GVim, but not that big a loss. I typically use the 
+shell version of neovim or Visual Studio Code with the Vim plugin when in a UI anyway. As also fall 
+back in lite configurations `geany` seems like a decent alternative for quick stuff.
 ```bash
 $ sudo pacman -S neovim
 ```
