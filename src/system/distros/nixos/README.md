@@ -16,6 +16,7 @@ because they are in isolation and can always be rolled back if something breaks.
     * [Add sudo passwordless access](#add-sudo-passwordless-access)
     * [Enable Xfce as desktop](#enable-xfce-as-desktop)
   * [Upgrade NixOS](#upgrade-nixos)
+* [Build bootable ISO](#build-bootalble-iso)
 * [Flakes](#flakes)
 * [Learning NixOS](#learning-nixos)
 * [Build Live ISO](#build-live-iso)
@@ -132,9 +133,19 @@ deploy to the target machine.
       $ sudo reboot
       ```
 
+### Package vs Module
+You can install packages directly with `systemPackages = [ "foo" ]` or use NixOS modules to get more 
+control over the application's installation and configuration. Its a good idea to always look up in 
+`https://mynixos.com` your app and see what modules a.k.a options are available.
+
+### Bash
+[programs.bash](https://mynixos.com/options/programs.bash)
+
 ### Boot loader
 NixOS recommends using `systemd` for the boot loader. I'll have to circle back on that as I recall 
 having some issue with passing arguments to the kernel via the systemd boot loader.
+
+NixOS module: `boot.loader.grub`
 
 ### Add new user
 In order to be able to login to your new system your user must have a temporary password using the 
@@ -196,11 +207,6 @@ NixOS requires a minimal set of packages to function.
 * pkgs.cacert.out
 * pkgs.findutils
 
-### Kodi
-https://nixos.wiki/wiki/Kodi
-```
-```
-
 ### Docker image
 NixOS builds its own docker images rather than being build with Docker directly
 
@@ -211,8 +217,46 @@ $ docker load -i ./result/image.tar.gz
 $ docker run -ti nix:2.5pre20211105
 ```
 
-## Upgrade NixOS
-NixOS uses a rolling release with different channels based on stability from 
+## Which packages are installed or will be installed
+
+Search for a package from the command line
+```
+$ nix-env -qaP --description [package_name]
+```
+
+System wide software
+```
+/run/current-system/sw
+
+$ nix-store -q --references /run/current-system/sw
+```
+
+### Get a list of differences in the upgrade
+```bash
+$ nix --extra-experimental-features "nix-command flakes" store diff-closures /run/*-system
+
+nix show-derivation -r $(readlink -f $(which firefox)) | grep patches
+
+nix store diff-closures /run/*-system
+nixos-rebuild build 
+nix store diff-closures /run/current-system /etc/nixos/result
+```
+
+### Find out what version of the nixpkgs repo was used
+```bash
+$ nix --extra-experimental-features "nix-command flakes" flake metadata
+Resolved URL:  git+file:///mnt/etc/nixos
+Locked URL:    git+file:///mnt/etc/nixos
+Description:   System Configuration
+Path:          /nix/store/xxg0bjxfv6qgrjyl3n8s285bq6f3n2ay-source
+Revision:      2d6d965617851b9629cc84059ece0371ddc67f27-dirty
+Last modified: 2024-02-10 21:46:58
+Inputs:
+├───nixpkgs: github:NixOS/nixpkgs/f8e2ebd66d097614d51a56a755450d4ae1632df1
+└───nixpkgs-stable: github:NixOS/nixpkgs/20f65b86b6485decb43c5498780c223571dd56ef
+
+$ nix --extra-experimental-features "nix-command flakes" eval --raw github:NixOS/nixpkgs/20f65b86b6485decb43c5498780c223571dd56ef#hello
+```
 
 ## Flakes
 Use Flakes not channels and no `nix-env`
@@ -231,6 +275,25 @@ The Snowfall project has been working on GUI tools for Nix using gtk4 and Rust
 * [NixOS Wiki](https://nixos.wiki/)
 * [NixOS Manual](https://nixpkgs-manual-sphinx-markedown-example.netlify.app/)
 * [User management](https://nixos.org/manual/nixos/stable/#sec-user-management)
+* [hey tool for nixos](https://github.com/hlissner/dotfiles)
+
+* std
+* [flake.parts](https://flake.parts/)
+* flake-utils-plus
+* devos
+* colmena
+
+### nixos-anywhere
+The [nixos-anywhere](https://github.com/nix-community/nixos-anywhere) project looks interesting.
+
+* [srid](https://github.com/srid/nixos-config) 
+  * `nix flake update`
+
+### nixos-install
+The `nixos-install` tool installs the bootloader and NixOS to the `/mnt` path based on the 
+configuration passed in. 
+1. It copies Nix and its dependencies to `/mnt/nix/store`
+2. It installs the current channel "nixos" unless `--no-channel-copy`
 
 ### Shell environments
 You can create temporary Nix shell environments that allow you to install and use software in an 

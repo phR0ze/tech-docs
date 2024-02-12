@@ -65,31 +65,7 @@ $ nix --extra-experimental-features 'nix-command flakes' flake show .
 $ sudo nixos-install --no-root-passwd --impure --flake .#nixos
 ```
 
-### Flake registry
-The [nix registry](https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-registry.html) 
-command allows for interacting with the flake registry. Flake registries are a convenience feature 
-that allows you to refer to flakes using symbolic identifers such as `nixpkgs` rather than the full 
-URLs such as `git://github.com/NixOS/nixpkgs`. They also allow you to override these mappings to 
-redirect to other locations. There are multiple registries:
-
-* the [global registry](https://github.com/NixOS/flake-registry/blob/master/flake-registry.json), 
-* the system registry at `/etc/nix/registry.json`
-* the user registry at `~/.config/nix/registry.json`
-
 ## Composition
-A flake refers to a file-system tree whose root directory contains a `flake.nix`
-
-
-
-
-
-
-
-
-
-
-
-
 
 ## NixOS Modular Configuration
 By using flakes for the NixOS system configuration we solve the legacy issues with NixOS's channel 
