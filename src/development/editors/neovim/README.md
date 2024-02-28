@@ -16,11 +16,42 @@ NeoVim is a fork of Vim aiming to improve user experience and plugin implementat
 ## Getting started
 
 ### Install NeoVim
-Unfortunately NeoVim's QT UI is far inferior to GVim, but not that big a loss. I typically use the 
-shell version of neovim or Visual Studio Code with the Vim plugin when in a UI anyway. As also fall 
-back in lite configurations `geany` seems like a decent alternative for quick stuff.
+Unfortunately NeoVim's QT UI is far inferior to GVim, but its not that big a loss. I typically use 
+the shell version of neovim or Visual Studio Code with the Vim plugin when in a UI anyway. As also 
+fall back in lite configurations `geany` seems like a decent alternative for quick stuff.
+
+#### Arch Linux
 ```bash
 $ sudo pacman -S neovim
+```
+
+#### NixOS
+NixOS offers some basic neovim configuration
+```nix
+programs.neovim = {
+  enable = true;
+  defaultEditor = true;
+  viAlias = true;
+  vimAlias = true;
+  configure = ''
+    set number
+    set cc=80
+    set list
+    set listchars=tab:→\ ,space:·,nbsp:␣,trail:•,eol:¶,precedes:«,extends:»
+    if &diff
+      colorscheme blue
+    endif
+  '';
+};
+```
+
+[Home Manager](https://mipmip.github.io/home-manager-option-search/?query=neovim) extends the neovim 
+options to include plugins.
+
+```nix
+programs.neovim.plugins = with pkgs.vimPlugins; [
+  nvim-highlight-colors
+];
 ```
 
 ### Migrating to NeoVim
