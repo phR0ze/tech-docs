@@ -1,12 +1,29 @@
 # NixOS
 `NixOS` is a Linux distribution built on top of the `Nix` package manager which leverages the 
-`Nix Expression Language` to make building new systems that are reliable and can be easily reproduced 
-in a declarative way. The claim is that you can fearlessly make changes and install new software 
-because they are in isolation and can always be rolled back if something breaks.
+`Nix Expression Language` to make it `trivial to share development and build environments`. At the 
+system level this means being able to build new systems in a declarative way that are essentially 
+identical to the original declared state. Additionally NixOS claims to make packages Reproducible and 
+installing or upgrading Reliable. The claim is that you can make changes, install new software and 
+upgrade fearlessly because changes are done in isolation and can be rolled back.
+
+### My perspective
+In practice `NixOS` doesn't deliver on its goals out of the box. There is considerable complicated 
+configuration required to actually be able to rebuild systems that are identical to the orginal 
+declared state. Additionally `NixOS` predominantly focuses on the system level and almost entirely 
+lacks support for declarative system wide user configuration. `Home Manager`, although commonly sited
+as filling this gap, unfortunately focuses primarily on a multi-user approach that doesn't seem to 
+mesh well with your typical single-user consumer systems.
+
+Additionally those new to NixOS find it challenging due to overlapping similar terminology. The 
+primary confusion I've found comes from the fact that the ecosystem is quite broad and `Nix`, the 
+package manager and heart of NixOS, is cross-platform and cross-distro. This means documentation and 
+tutorials are fractured and sometimes not applicable at all or difficult to follow as the target OS 
+is different. Although the benefits of Nix and NixOS out weigh these concerns it does make the 
+ecosystem more unapproachble than prior ecosystems like Arch Linux that I'm coming from.
 
 ### Quick links
 * [Overview](#overview)
-  * [Flakes are best practice](#flakes-are-best-practice)
+  * [Flakes as entry point](#flakes-as-entry-point)
 * [Getting started](#getting-started)
   * [Install NixOS VM](#install-nixos-vm)
   * [Install NixOS bare metal](#install-nixos-bare-metal)
@@ -24,30 +41,67 @@ because they are in isolation and can always be rolled back if something breaks.
 * [Flakes](#flakes)
 
 ## Overview
-Those new to NixOS can find it challenging due to overlapping similar terminology. The primary 
-confusion comes from the fact that `Nix`, the package manager and heart of NixOS, can be used 
-directly on other linux distros and MacOS as well. This means `Nixpkgs`, the Nix package repository, 
-and `Flakes`, the modern Nix packaging system, are both used in a wide variety of OSs and contexts 
-that aren't in some cases directly applicable to `NixOS`.
 
 **References**
 * [Nix Manual](https://nixos.org/manual/nix/stable/)
+* [Nix Dev](https://nix.dev/tutorials/nix-language.html)
 * [Nixpkgs Manual](https://nixos.org/manual/nixpkgs/stable)
   * [Nixpkgs github](https://github.com/NixOS/nixpkgs)
 * [NixOS Manual](https://nixos.org/manual/nixos/stable)
 * [Determinate Systems](https://github.com/DeterminateSystems)
   * [Determinate Nix Installer](https://github.com/DeterminateSystems/nix-installer)
   * [FlakesHub](https://flakehub.com/)
-    * Provides search and semantic versioning
-* [NixOS and Flakes book](https://nixos-and-flakes.thiscute.world/best-practices/run-downloaded-binaries-on-nixos)
+* [NixOS and Flakes Book](https://nixos-and-flakes.thiscute.world/preface)
+* [Flakes aren't real](https://jade.fyi/blog/flakes-arent-real/)
 
-### Flakes are best practice
-***Flakes*** are installable units of configuration that may include files, configs, packages, 
-dependencies or other flakes. You can think about them like a package, but the Nix ecosystem already 
-has a package type so they had to use another term. They simplify usability and improve 
-reproducibility through better dependency managment than legacy methods. Despite having yet to shed 
-the experimental label, `Flakes` are considered the best practice in the Nix community. Other methods 
-are considered legacy. 
+### Flakes as entry point
+There is a lot of commotion and confusion in the NixOS community around Flakes due to their 
+experimental state and only partial adoption in Nix. Additionally the Flakes feature is often 
+conflated with the the new Nix cli command feature because it's required for flake support. 
+Regardless flakes serve a sepecific purpose are widely used and won't be going anywhere.
+
+After digesting the Nix community blogs, docs and various sources its safe to say that Flakes solve 
+the versioning issue in NixOS. Flakes track which version of packages are installed allowing NixOS to 
+deliver on the rebuildable system statement. A common use case for flakes  is to use it as your entry 
+point to your system configuration thus providing a reproducible way to rebuild your system even if 
+the packages versions change.
+
+### How to determine what is installed
+NixOS doesn't have a ***simple*** way to determine what is installed, but it does have powerful and 
+programmatic ways to evaluate and extract information about the system.
+
+**Prettyify the json output**
+* `-r` removes quotes from output
+* `. |= unique` removes duplicates from the array
+* `.[]` converts the array to a newline separate string
+
+```bash
+$ nix-instantiate --strict --json --eval -E 'builtins.map (p: p.name) (import <nixpkgs/nixos> {}).config.environment.systemPackages' | jq -r '. |= unique | .[]'
+
+$ nix-store -q --references /run/current-system/sw
+```
+
+### Get file names in package
+Again not much built in support for simple queries but some decent programatic APIs
+
+***Example of looking up util-linux***
+```bash
+$ find $(nix-build '<nixpkgs>' -A util-linux --no-link)
+```
+
+### Delete a store item
+1. Remove all links to it
+2. Run the command
+   ```
+   $ nix-store --delete /nix/store/ghgk3fkg1fi1kz02zzkxivvcgyrpmpbb-nixos-23.11.20240211.809cca7-x86_64-linux.iso
+   ```
+
+
+
+
+
+
+
 
 ### Prerequisites
 Rust tool installable via curl bashing to assist during the install in applying configuration from 
@@ -138,15 +192,6 @@ You can install packages directly with `systemPackages = [ "foo" ]` or use NixOS
 control over the application's installation and configuration. Its a good idea to always look up in 
 `https://mynixos.com` your app and see what modules a.k.a options are available.
 
-### Bash
-[programs.bash](https://mynixos.com/options/programs.bash)
-
-### Boot loader
-NixOS recommends using `systemd` for the boot loader. I'll have to circle back on that as I recall 
-having some issue with passing arguments to the kernel via the systemd boot loader.
-
-NixOS module: `boot.loader.grub`
-
 ### Add new user
 In order to be able to login to your new system your user must have a temporary password using the 
 `initialPassword` property. Or optionally you could use the `initialHashedPassword` but you'd need to 
@@ -161,60 +206,6 @@ users.users.alice = {
   extraGroups = [ "wheel" "networkmanager" ];
   initialPassword = "nixos";
 };
-```
-
-### Add sudo passwordless access
-https://nixos.wiki/wiki/Sudo
-
-Add sudo passwordless access to those in the `wheel` group
-```
-security.sudo = {
-  enable = true;
-  extraRules = [{
-    commands = [{ command = "ALL"; options = [ "NOPASSWD" ];}]; groups = [ "wheel" ]; }
-  ];
-};
-```
-
-### Enable Xfce as desktop
-https://nixos.wiki/wiki/Xfce
-
-```
-services.xserver = {
-  enable = true;
-  desktopManager = {
-    xfce.enable = true;
-    xterm.enable = false;
-  };
-  displayManager.defaultSession = "xfce";
-};
-```
-
-### Packages
-NixOS requires a minimal set of packages to function.
-
-* pkgs.nix
-* pkgs.bashInteractive
-* pkgs.coreutils-full
-* pkgs.gnutar
-* pkgs.gzip
-* pkgs.gnugrep
-* pkgs.which
-* pkgs.curl
-* pkgs.less
-* pkgs.wget
-* pkgs.man
-* pkgs.cacert.out
-* pkgs.findutils
-
-### Docker image
-NixOS builds its own docker images rather than being build with Docker directly
-
-You can build your latest NixOS docker image with
-```bash
-$ nix build ./\#hydraJobs.dockerImage.x86_64-linux
-$ docker load -i ./result/image.tar.gz
-$ docker run -ti nix:2.5pre20211105
 ```
 
 ## Which packages are installed or will be installed
@@ -244,22 +235,25 @@ nix store diff-closures /run/current-system /etc/nixos/result
 
 ### Find out what version of the nixpkgs repo was used
 ```bash
-$ nix --extra-experimental-features "nix-command flakes" flake metadata
-Resolved URL:  git+file:///mnt/etc/nixos
-Locked URL:    git+file:///mnt/etc/nixos
+$ cd /etc/nixos
+$ nix flake metadata
+Resolved URL:  git+file:///etc/nixos
+Locked URL:    git+file:///etc/nixos
 Description:   System Configuration
-Path:          /nix/store/xxg0bjxfv6qgrjyl3n8s285bq6f3n2ay-source
-Revision:      2d6d965617851b9629cc84059ece0371ddc67f27-dirty
-Last modified: 2024-02-10 21:46:58
+Path:          /nix/store/j0g0jnxy4zhlx9iapp400ijjlvf583hk-source
+Revision:      662e16a94336faeb2bda3464be9adaf5fe579ccf-dirty
+Last modified: 2024-02-27 16:48:22
 Inputs:
-├───nixpkgs: github:NixOS/nixpkgs/f8e2ebd66d097614d51a56a755450d4ae1632df1
-└───nixpkgs-stable: github:NixOS/nixpkgs/20f65b86b6485decb43c5498780c223571dd56ef
-
-$ nix --extra-experimental-features "nix-command flakes" eval --raw github:NixOS/nixpkgs/20f65b86b6485decb43c5498780c223571dd56ef#hello
+├───home-manager: github:nix-community/home-manager/652fda4ca6dafeb090943422c34ae9145787af37
+│   └───nixpkgs follows input 'nixpkgs'
+├───nixpkgs: github:nixos/nixpkgs/5bf1cadb72ab4e77cb0b700dab76bcdaf88f706b
+└───nixpkgs-unstable: github:nixos/nixpkgs/73de017ef2d18a04ac4bfd0c02650007ccb31c2a
 ```
 
-## Flakes
-Use Flakes not channels and no `nix-env`
+
+```
+$ nix --extra-experimental-features "nix-command flakes" eval --raw github:NixOS/nixpkgs/20f65b86b6485decb43c5498780c223571dd56ef#hello
+```
 
 ### Snowfall
 The Snowfall project has been working on GUI tools for Nix using gtk4 and Rust
@@ -270,24 +264,6 @@ The Snowfall project has been working on GUI tools for Nix using gtk4 and Rust
 * Calamares installer
 * nixos-conf-editor
 * nix-software-center
-
-## Learning NixOS
-* [NixOS Wiki](https://nixos.wiki/)
-* [NixOS Manual](https://nixpkgs-manual-sphinx-markedown-example.netlify.app/)
-* [User management](https://nixos.org/manual/nixos/stable/#sec-user-management)
-* [hey tool for nixos](https://github.com/hlissner/dotfiles)
-
-* std
-* [flake.parts](https://flake.parts/)
-* flake-utils-plus
-* devos
-* colmena
-
-### nixos-anywhere
-The [nixos-anywhere](https://github.com/nix-community/nixos-anywhere) project looks interesting.
-
-* [srid](https://github.com/srid/nixos-config) 
-  * `nix flake update`
 
 ### nixos-install
 The `nixos-install` tool installs the bootloader and NixOS to the `/mnt` path based on the 
@@ -317,7 +293,6 @@ $ nix-shell -p cowsay --run "cowsay Nix"
 
 ### Search for packages
 You can [search the NixOS packages](https://search.nixos.org/packages)
-
 
 
 ## Build Live ISO
@@ -411,11 +386,6 @@ or kernel modules. You can also specify a channel explicitly, e.g.
 ```
 system.autoUpgrade.channel = "https://channels.nixos.org/nixos-23.05";
 ```
-
-## Flakes
-[Flakes is a feature](https://nixos.wiki/wiki/Flakes) of managing Nix packages to simplify usability, 
-composability and improve reproducibility of Nix installations. Flakes were created to solve some 
-problems in the original Nix reproducible built paradigm see [what problems do flakes solve](https://www.tweag.io/blog/2020-05-25-flakes/).
 
 <!-- 
 vim: ts=2:sw=2:sts=2
