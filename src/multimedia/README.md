@@ -11,11 +11,13 @@ Documenting various multimedia technologies
   * [Sweet Home 3D](#sweet-home-3d)
 * [Audio](#audio)
   * [Backup an audio CD](#backup-an-audio-cd)
+  * [Change speed of audio](#change-speed-of-audio)
   * [Convert WAV to MP3](#convert-wav-to-mp3)
 * [Images](#images)
   * [Convert HEIC to JPEG](#convert-heic-to-jpeg)
 * [Screen Recorder](#screen-recorder)
 * [Video](#video)
+  * [Add audio](#add-audio)
   * [Backup a Blu-ray](#backup-a-bluray)
   * [Backup a DVD](#backup-a-dvd)
   * [Extracting specific chapters](#extracting-specific-chapters)
@@ -56,6 +58,13 @@ Documenting various multimedia technologies
 3. Turn on error correction (will slow it way down)
    1. Navigate to the `Advanced` tab
    2. Uncheck at the bottom the `Faster ripping (no error correction)` option
+
+## Change speed of audio
+1. Launch `audacity`
+2. Select `File >Import >Audio...`
+3. Select all audio with `Ctrl+a`
+4. Select `Effect >Pitch and Tempo >Change Tempo...`
+5. Change the `Percent Change: -15.00` and click `Apply`
 
 ## Convert WAV to MP3
 1. Install `Sound Konverter`
@@ -102,6 +111,19 @@ The two best are ***SimpleScreenRecorder*** and ***RecordMyDesktop***
 
 
 # Video
+
+## Add audio
+Adding and removing audio from a MOV file can be done with OpenShot
+
+1. Click the Add button to add your video
+2. Drag your video down into the editing section below
+3. Right click on your video track and choose `Add Track Below`
+4. Right click on your video and select `Separate Audio >Single Clip (all channels)`
+5. Now right click the audio track and select `Remove Clip`
+6. Click the Add button to add your new audio
+7. Drag your new audio down into the editing section below
+8. Offset the new audio as desired
+9. 
 
 ## Backup a Blu-ray
 Instructions for backing up your legally purchased personal collection.

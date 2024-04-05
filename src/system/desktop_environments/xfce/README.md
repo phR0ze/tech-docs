@@ -1,11 +1,13 @@
 # XFCE
 
 ### Quick links
+* [xfconf](xfconf/README.md)
 * [xfce4-appearance](#xfce4-appearance)
 * [xfce4-clipman](#xfce4-clipman)
 * [xfce4-display-settings](#xfce4-display-settings)
 * [xfce4-panel](#xfce4-panel)
 * [xfce4-power-manager](#xfce4-power-manager)
+  * [Toggle presentationi mode](#toggle-presentation-mode)
 * [xfce4-terminal](#xfce4-terminal)
 
 **References**
@@ -31,6 +33,11 @@ Features application launchers, panel menus, a workspace switcher and more.
 XFCE panel supports plugins. It comes with some basic ones out of the box called ***internal***
 
 ## xfce4-power-manager
+
+### Toggle presentation mode
+```bash
+$ xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/presentation-mode -T
+```
 
 ## xfce4-terminal
 

@@ -66,6 +66,13 @@ deliver on the rebuildable system statement. A common use case for flakes  is to
 point to your system configuration thus providing a reproducible way to rebuild your system even if 
 the packages versions change.
 
+### Invoke nix cleanup
+Remove nix store items that are no longer being used.
+
+```bash
+$ nix-store --gc
+```
+
 ### How to determine what is installed
 NixOS doesn't have a ***simple*** way to determine what is installed, but it does have powerful and 
 programmatic ways to evaluate and extract information about the system.
@@ -95,13 +102,6 @@ $ find $(nix-build '<nixpkgs>' -A util-linux --no-link)
    ```
    $ nix-store --delete /nix/store/ghgk3fkg1fi1kz02zzkxivvcgyrpmpbb-nixos-23.11.20240211.809cca7-x86_64-linux.iso
    ```
-
-
-
-
-
-
-
 
 ### Prerequisites
 Rust tool installable via curl bashing to assist during the install in applying configuration from 
