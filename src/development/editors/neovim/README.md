@@ -55,9 +55,6 @@ programs.neovim.plugins = with pkgs.vimPlugins; [
 ```
 
 ### Migrating to NeoVim
-On install of `cyberlinux` I've setup a link `ln -sf /usr/bin/nvim /usr/bin/vim` so I don't need to 
-change any other configuration.
-
 Simply copy your `~/.vimrc` to `~/.config/nvim/init.vim` as a starting point
 
 ## Config Locations

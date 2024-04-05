@@ -3,6 +3,8 @@
 ### Quick links
 * [Overview](#overview)
   * [Example configs](#example-configs)
+* [system.build](#system-build)
+* [Adding one off dotfiles](#adding-one-off-dotfiles)
 * [nixos-rebuild](#nixos-rebuilt)
   * [Skip git add requirement](#skip-git-add-requirement)
 * [nixpkgs](#nixpkgs)
@@ -11,6 +13,12 @@
 * [config](#config)
 * [Modules](#modules)
 * [Flakes](#flakes)
+  * [Lock file](#lock-file)
+  * [Basic flake commands](#basic-flake-commands)
+  * [Enabling flakes temporarily](#enabling-flakes-temporarily)
+  * [Install from flake](#install-from-flake)
+  * [Flake registry](#flake-registry)
+* [Create custom option](#create-custom-option)
 
 ## Overview
 
@@ -21,6 +29,159 @@
 
 ### Example configs
 * [NobbZ](https://github.com/NobbZ/nixos-config)
+
+## environment.etc
+[environment.etc](https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/system/etc/etc.nix) is 
+declared as just another nix module although it has some rather complicated associated functionality.
+
+### Filter options
+The first thing we get in the file is a lambda
+[filter f list](https://nixos.org/manual/nix/stable/language/builtins.html#builtins-filter) 
+invocation which applies the function `f` i.e. `(f: f.enable)` to every object in the `list` i.e. 
+`(attrValues config.environment.etc)` and returns a filtered list where
+[attrValues](https://nixos.org/manual/nix/stable/language/builtins.html#builtins-attrValues)
+is another function that returns the values of the attributes in teh set `set`
+```nix
+  etc' = filter (f: f.enable) (attrValues config.environment.etc);
+```
+
+### runCommandLocal
+[runCommandLocal](https://ryantm.github.io/nixpkgs/builders/trivial-builders/) is a variant of the 
+`runCommand` which forces dervations to be build locally. `runCommand` takes three arguments `name`, 
+`env` and `buildCommand`.
+* `name` is the name the nix will append to the store path similar to the `.drv`
+* `env` is an attribute set specifying environment variables that will be set for the derivation
+* `buildCommand` specifies the commands that will be run to create the derivation.
+
+`environment.etc` configures a variable to hold the run command called `etc`
+```nix
+  etc = pkgs.runCommandLocal "etc" {
+    # This is needed for the systemd module
+    passthru.targets = map (x: x.target) etc';
+  } /* sh */ ''
+    # Configure bash to exit immediately on errors
+    set -euo pipefail
+
+    # Define a bash function to be used later
+    makeEtcEntry() {
+      src="$1"        # 
+      target="$2"
+      mode="$3"
+      user="$4"
+      group="$5"
+
+      if [[ "$src" = *'*'* ]]; then
+        # If the source name contains '*', perform globbing.
+        mkdir -p "$out/etc/$target"
+        for fn in $src; do
+            ln -s "$fn" "$out/etc/$target/"
+        done
+      else
+
+        mkdir -p "$out/etc/$(dirname "$target")"
+        if ! [ -e "$out/etc/$target" ]; then
+          ln -s "$src" "$out/etc/$target"
+        else
+          echo "duplicate entry $target -> $src"
+          if [ "$(readlink "$out/etc/$target")" != "$src" ]; then
+            echo "mismatched duplicate entry $(readlink "$out/etc/$target") <-> $src"
+            ret=1
+
+            continue
+          fi
+        fi
+
+        if [ "$mode" != symlink ]; then
+          echo "$mode" > "$out/etc/$target.mode"
+          echo "$user" > "$out/etc/$target.uid"
+          echo "$group" > "$out/etc/$target.gid"
+        fi
+      fi
+    }
+
+    # Create the $out directory
+    mkdir -p "$out/etc"
+
+    # Use lib.strings.concatMapStringsSep to concatenate the results of the function call with newlines
+    # where the f function using the filtered etc' list
+    ${concatMapStringsSep "\n" (etcEntry: escapeShellArgs [
+      "makeEtcEntry"
+      # Force local source paths to be added to the store
+      "${etcEntry.source}"
+      etcEntry.target
+      etcEntry.mode
+      etcEntry.user
+      etcEntry.group
+    ]) etc'}
+  '';
+```
+### Submodule
+`environment.etc` is declared as a option [submodule](https://nixos.org/manual/nixos/unstable/#section-option-types-submodule).
+Submodules allow for defining sub-options that are handled like a separate module. It takes a 
+parameter `o`, that should be a set, or a function returning a set or function returning a set with 
+an `options` key defining the sub-options.
+
+In `environment.etc`'s case it is using a 
+***Declaration***
+```nix
+in
+{
+  imports = [ ../build.nix ];
+  options = {
+    environment.etc = mkOption {
+      default = {};
+      type = with types; attrsOf (submodule (
+        { name, config, options, ... }:
+        { options = {
+
+            enable = mkOption {
+              type = types.bool;
+              default = true;
+              description = lib.mdDoc ''
+                Whether this /etc file should be generated.  This
+                option allows specific /etc files to be disabled.
+              '';
+            };
+    ...
+          };
+
+          config = {
+            target = mkDefault name;
+            source = mkIf (config.text != null) (
+              let name' = "etc-" + lib.replaceStrings ["/"] ["-"] name;
+              in mkDerivedConfig options.text (pkgs.writeText name')
+            );
+          };
+
+        }));
+};
+```
+
+
+
+### system.build.etc
+A tree of symlinks that form the static parts of `/etc`. The `environment.etc` module depends on perl 
+to run a custom perl script to activate `/etc`.
+
+
+
+
+
+
+
+
+
+
+
+
+## Adding one off dotfiles
+Using the following syntax we can create a file in the `/nix/store/...` from a static file's contents 
+which path then gets dropped in as a replacement for the variable.
+
+see [Bash example](https://github.com/phR0ze/nixos-config/blob/5ac2f722dab099217bd36e43c5af9657b32c0ab4/modules/terminal/bash.nix#L30)
+```nix
+${pkgs.writeText "starship.toml" (lib.fileContents ../../../users/profiles/starship/starship.toml)}
+```
 
 ## nixos-rebuild
 
@@ -204,7 +365,7 @@ provided by the module system.
 * `modulesPath` - helper referring to the `nixpkgs/nixos/modules`
 
 ### top-level error
-If you something like `has an unsupported attribute ... This is caused by introducing a top-level 
+If you see something like `has an unsupported attribute ... This is caused by introducing a top-level 
 config or options`.
 
 NixOS modules allow for two syntaxes
@@ -280,6 +441,50 @@ redirect to other locations. There are multiple registries:
 * the [global registry](https://github.com/NixOS/flake-registry/blob/master/flake-registry.json), 
 * the system registry at `/etc/nix/registry.json`
 * the user registry at `~/.config/nix/registry.json`
+
+## Create custom option
+When using the `options` attribute set Nix will automatically assume that the rest of the 
+configuration is part of the `config` attribute set. So to make is match you'll need to add the rest 
+to the `config` attribute set.
+
+```nix
+{ config, lib, pkgs, ... }:
+{
+  options = {
+    my.arbitrary.option = lib.mkOption {
+      type = lib.types.string;
+      default = "stuff";
+    };
+  };
+
+  config = {
+    my.arbitrary.option = "more stuff";
+  };
+}
+```
+
+### Create a file writer
+Examples include
+* Nix's `environment.etc."<file>".<type> = ` located at `nixos/modules/system/etc/etc.nix`
+  ```nix
+  environment.etc = {
+    bosConfig = {
+      source = bosConfig;
+      target = "openafs/BosConfig";
+      mode = "0644";
+    };
+    cellServDB = {
+      text = mkCellServDB cfg.cellName cfg.cellServDB;
+      target = "openafs/server/CellServDB";
+      mode = "0644";
+    };
+  };
+  ```
+* Home Manager's `home.file."<file>"`
+
+```nix
+```
+
 
 <!-- 
 vim: ts=2:sw=2:sts=2
