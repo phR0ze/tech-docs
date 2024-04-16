@@ -90,6 +90,7 @@
   - [Bluetooth](networking/bluetooth/README.md)
     - [Blueman](networking/bluetooth/blueman/README.md)
   - [File Sharing](networking/file_sharing/README.md)
+  - [Meeting](networking/meeting/README.md)
   - [Mesh technology](networking/mesh_technology/README.md)
     - [Istio](networking/mesh_technology/istio/README.md)
   - [Network managers](networking/network_managers/README.md)
