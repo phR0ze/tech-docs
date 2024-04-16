@@ -1,29 +1,31 @@
 # Remoting
-Various different remoting technologies exist for Linux from keyboard and mouse sharing across on 
-local systems to a full remote session where you have a video stream of the remote desktop.
-
-### Quick links
-* [Full Remote Desktop](#full-remote-desktop)
-  * [RustDesk](#rustdesk)
-  * [Teamviewer](#teamviewer)
-* [Local Device Sharing](#local-device-sharing)
-  * [Barrier](#barrier)
-* [Meeting Screen Sharing](#meeting-screen-sharing)
-  * [Zoom](#zoom)
-  * [Google Meet](#google-meet)
-
-## Full Remote Desktop
 Full remote desktop solutions in the Linux world have been rather poor in my opinion. Most early 
 solutions used `VNC`, `XRDP` or remote `X11`. None of these technologies though were very good. 
 Yes it was possible to carefully tune them to provide a decent solution; but out of the box usage for 
 non-experts was painful at best resulting in tearing, choppy, kludgy solutions that we're difficult 
 to setup, maintain and still had poor results. There were a few paid options (`Zoho Assist`,
-`Remote Access Plus`, and others) that had better results but it wasn't until Teamviewer came along 
-that the, personal use, out of box experience had improved enough that you could easily just install 
-and use the software on Linux and mobile. However technology continues to improve and there are 
-better options now.
+`Remote Access Plus`, and others) that had better results.
 
-### RustDesk
+### Quick links
+* [RustDesk](#rustdesk)
+* [Teamviewer](#teamviewer)
+* [Local Device Sharing](#local-device-sharing)
+  * [Barrier](#barrier)
+
+## x11vnc
+
+## x2go
+
+## xdmcp
+Is similar to telnet, using unencrypted authentication.
+
+## xpra
+
+## xrdp
+
+## TigerVNC
+
+## RustDesk
 Open source project written in Rust providing both a client and server. The project is cross platform 
 and available in AUR. Its meant to be a TeamViewer alternative and allows for remote service help 
 like TeamViewer using an ID and RustDesk servers to connect in to assist your relatives or whatever. 
@@ -80,7 +82,7 @@ Client options allow for Relay Server configuration
 3. Punch in the value from your `id_*.pub` server file as the `Key`
 4. Leave the rest of the values blank
 
-### Teamviewer
+## Teamviewer
 Teamviewer is a free for personal use remote desktop solution that in my opinion provided one of the 
 first decent out of box experiences out there.
 
