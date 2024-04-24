@@ -77,6 +77,11 @@
   - [Google Cloud Platform](cloud/google_cloud_platform/README.md)
     - [Cloud Run](cloud/google_cloud_platform/cloud_run/README.md)
 
+- [Hardware](hardware/README.md)
+  - [Accelerated Graphics](hardware/accelerated_graphics/README.md)
+
+- [MacOS](macos/README.md)
+
 - [Multimedia](multimedia/README.md)
   - [CAD](multimedia/cad/README.md)
     - [FreeCAD](multimedia/cad/freecad/README.md)
