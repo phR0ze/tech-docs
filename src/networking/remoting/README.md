@@ -3,18 +3,58 @@ Full remote desktop solutions in the Linux world have been rather poor in my opi
 solutions used `VNC`, `XRDP` or remote `X11`. None of these technologies though were very good. 
 Yes it was possible to carefully tune them to provide a decent solution; but out of the box usage for 
 non-experts was painful at best resulting in tearing, choppy, kludgy solutions that we're difficult 
-to setup, maintain and still had poor results. There were a few paid options (`Zoho Assist`,
-`Remote Access Plus`, and others) that had better results.
+to setup and maintain. There were a few paid options (`Zoho Assist`, `Remote Access Plus`, and 
+others) that had better results.
 
 ### Quick links
+* [Lightdm remote login](#lightdm-remote-login)
 * [RustDesk](#rustdesk)
 * [Teamviewer](#teamviewer)
+* [Clients](#clients)
+  * [Remmina](#remmina)
 * [Local Device Sharing](#local-device-sharing)
   * [Barrier](#barrier)
 
-## x11vnc
+## Lightdm remote login
+Some VNC servers like `x11vnc` and TigerVNC's `x0vncserver` make the primary X session available for 
+remote connections. Lightdm provides the ability to using XDMCP, VNC for incoming remote logins.
+
+**References**
+* [Arch linux docs - lightdm](https://wiki.archlinux.org/title/LightDM)
+* [Arch linux docs - x11vnc](https://wiki.archlinux.org/title/X11vnc)
+* [Super user post](https://superuser.com/questions/1718646/xvnc-and-lightdm-connect-to-primary-display-0-and-login-remotely)
+* [Super user x11vnc](https://superuser.com/questions/1375625/vncviewer-connect-to-primary-display-of-lightdm-on-debian-jessie-share-with-phy)
+
+x11vnc doesn't require any special configuration from lightdm. however you can have lightdm start the 
+vnc server using its configuration for Tiger VNC
+
+It depends on `tigervnc` which needs to be installed on the server side.
+
+1. Setup an authentication password
+   ```
+   $ vncpasswd /etc/vncpasswd
+   ```
+
+2. Edit `/etc/lightdm/lightdm.conf` configs to below.
+   ```
+   [VNCServer]
+   enabled=true
+   command=Xvnc -rfbauth /etc/vncpasswd
+   port=5900
+   listen-address=localhost
+   width=1024
+   height=768
+   depth=24
+   ```
+
+### x11vnc
+x11vnc doesn't require any special configuration from lightdm
+
+### TigerVNC x0vncserver
+* [TigerVNC x0vncserver docs](https://tigervnc.org/doc/x0vncserver.html)
 
 ## x2go
+Modified NX 3 protocol
 
 ## xdmcp
 Is similar to telnet, using unencrypted authentication.
@@ -22,8 +62,6 @@ Is similar to telnet, using unencrypted authentication.
 ## xpra
 
 ## xrdp
-
-## TigerVNC
 
 ## RustDesk
 Open source project written in Rust providing both a client and server. The project is cross platform 
@@ -114,6 +152,13 @@ SSH if I'm remote.
   l. Disable log files  
   m. Check ***Disable TeamViewer shutdown***  
   n. Click ***OK***  
+
+## Clients
+
+### Remmina
+* simple GTK app
+* easy to use
+* supports RDP, VNC, SPICE, X2GO, SSH and HTTP(S)
 
 ## Local Device Sharing
 
