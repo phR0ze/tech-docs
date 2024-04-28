@@ -140,6 +140,7 @@
 
 - [Virtualization](virtualization/README.md)
   - [Kubernetes](virtualization/kubernetes/README.md)
+  - [libvirt](virtualization/libvirt/README.md)
   - [Podman](virtualization/podman/README.md)
   - [QEMU](virtualization/qemu/README.md)
 
