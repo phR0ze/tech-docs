@@ -9,21 +9,22 @@ Documenting various virtualization technologies
   * [USB Access in VM](#usb-access-in-vm)
 
 ## Overview
-### Libvirt
+
+### Virt Manager vs libvirt vs QEMU vs KVM
 Libvirt is a collection of software that provides a convenient way to manage virtual machines and 
 other virtualization functionality. `libvirtd` provides a daemon and API library and `virsh` provides 
 a command line utility. The projects primary goal is to provide a single way to manage multiple 
-different virtualization providers/hypervisors.
+different virtualization providers/hypervisors regardless of the implementation e.g. `KVM`, `Xen`, 
+`LXC`, `VirtualBox` etc... `Virt Manager` was created to provide a GUI interface for libvirt.
 
-* QEMU
-* KVM
+KVM isn't fully functional on its own. It only provice a kernel API to userspace. The moste popular 
+way to make KVM fully functional is to use QEMU which provides the rest of the pieces and a user 
+interface. libvirt in turn uses QEMU to then manage KVM. `qemu-kvm` was a fork of QEMU with KVM 
+acceleration built in that was merged back in as `qemu -enable-kvm`. So your tools stack will look 
+something 
+like.
 
-
-
-
-
-
-
+`Virt Manager` => `libvirtd` => `QEMU` => `KVM` 
 
 ## ProxMox
 ProxMox Virtual Environment is an open source server virtualization management solution based on 
