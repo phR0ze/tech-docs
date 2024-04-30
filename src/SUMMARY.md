@@ -145,6 +145,7 @@
   - [libvirt](virtualization/libvirt/README.md)
   - [Podman](virtualization/podman/README.md)
   - [QEMU](virtualization/qemu/README.md)
+  - [VirtManager](virtualization/virt_manager/README.md)
 
 --------
 

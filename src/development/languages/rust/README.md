@@ -108,10 +108,10 @@ Resources:
 [Google Rust Course](https://google.github.io/comprehensive-rust/welcome.html)
 
 ## Install Rust
-see [Install Rust](../vscode#install-rust)
+see [Install Rust](../../editors/vscode/rust/#install-rust)
 
 ## Configure VScode
-see [Config Rust](../vscode#config-rust)
+see [Config Rust](../../editors/vscode#config-rust)
 
 ## Create new project
 Always start with a new project directory and add crates to it using `[workspace]` to split the 
