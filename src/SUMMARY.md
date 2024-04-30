@@ -114,6 +114,8 @@
   - [Password Managers](security/password_managers/README.md)
 
 - [System](system/README.md)
+  - [Android](system/android/README.md)
+    - [Rooting](system/android/rooting/README.md)
   - [Desktop Environments](system/desktop_environments/README.md)
     - [System 76](system/desktop_environments/system_76/README.md)
     - [XFCE](system/desktop_environments/xfce/README.md)

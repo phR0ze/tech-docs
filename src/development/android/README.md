@@ -1,7 +1,7 @@
 # Android
 <img align="left" width="48" height="48" src="../../data/images/logo_256x256.png">
 
-Documenting my learning experience with Android
+Documenting my learning experience with Android development
 
 ### Quick links
 * [AGDK](#agdk)

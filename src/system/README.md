@@ -1,7 +1,9 @@
 system
 ====================================================================================================
 <img align="left" width="48" height="48" src="../../art/logo_256x256.png">
-Documentation for various system technologies
+Documentation for various system technologies i.e operating system configuration and core systems 
+components. Development specific technologies are in the top level 
+[Developement](../development/README.md) section.
 <br><br>
 
 ### Quick links
