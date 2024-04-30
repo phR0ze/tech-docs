@@ -9,9 +9,8 @@
 The Rust `toolchain` is all the necessary build components for your local system while a `target` is 
 the ability to cross compile to another platform.
 
-1. Install rust via rustup and the rust debugger lldb
+1. In my NixOS based distro `rustup` and `lldb` are already installed so just install rust
    ```bash
-   $ sudo pacman -S rustup lldb
    $ rustup default stable
    ```
 2. List all available targets and see which are installed
@@ -28,6 +27,8 @@ the ability to cross compile to another platform.
    ```
 
 ### Config Rust
+My new NixOS based operating system has my extensions built in
+
 1. Install and configure language server:
    a. Install extension `rust-analyzer by matklad.rust-analyzer`  
    b. Click `Yes` bottom right to install helper tooling  
