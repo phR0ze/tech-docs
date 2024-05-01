@@ -97,8 +97,11 @@ to `systemd` via the `dbus`.
 2. Left click on the NetworkManager applet in the tray and choose `VPN Connections > Add a VPN 
    connection...`
 3. Choose the VPN Connection Type as `Import a saved VPN configuration...` and choose `Create...`
-4. Navigate to your `ovpn` file e.g. `/etc/openvpn/client/TARGET.ovpn`
+4. Navigate to your `ovpn` file e.g. `~/Downloads/TARGET.ovpn`
+   * Note that NetworkManager will be copying out of `~/Downloads/TARGET.ovpn` the configuration it 
+   needs into `~/.cert` and `/etc/NetworkManager/system-connections`
 5. Set your `User name` and `Password`
+   * Change the password option to `Store the password for all users` or it doesn't save at all
 6. Switch to the `IPv4 Settings tab`
 7. Change the `Method` drop down from `Automatic (VPN)` i.e. send all traffic over the VPN to 
    `Automatic (VPN) addresses only` which will only send vpn address ranges over the VPN.
