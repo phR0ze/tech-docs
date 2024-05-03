@@ -27,13 +27,21 @@ libvirt-based containers.
 ## Create a Virtual Machine
 1. Click the `Create a new virtual machine` button
 2. Choose ISO or CDROM
-   1. Select `Local install media (ISO image or CDROM)` and click `Forward`
+   1. Select `Local install media (ISO image or CDROM)` and move `Forward`
    2. Select your ISO image
    3. Uncheck `Automatically detect from the installation media / source`
-   4. Enter `NixOS` and select `NixOS Unstable` and click `Forward`
+   4. Enter `NixOS` and select `NixOS Unstable` and move `Forward`
 3. Choose Memory and CPU  settings
    1. Set Memory to `4096`
-   2. Set CPU to `4`
+   2. Set CPU to `4` and click `Forward`
+4. Create a disk image for the new VM
+   1. Set the size to `40` GiB and move `Forward`
+   * Note: image will be stored at `/var/lib/libvirt/images/NixOS1.qcow2`
+5. Ready to begin installation
+   1. Named the VM `NixOS1`
+   2. Expand the `Network selection` and select `Bridge device...`
+   3. Set the bridget device name to `virbr0`
+   4. Click `Finish`
 
 
 

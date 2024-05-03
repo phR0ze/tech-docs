@@ -5,6 +5,7 @@ Documenting various virtualization technologies
 ### Quick links
 * [Overview](#overview)
   * [Virt Manager vs Libvirt vs QEMU vs KVM](#virt-manager-vs-libvirt-vs-qemu-vs-kvm)
+* [Network Bridge](network_bridge/README.md)
 * [ProxMox](#prox-mox)
 * [Virtual Box](#virtual-box)
   * [USB Access in VM](#usb-access-in-vm)
