@@ -130,6 +130,7 @@
       - [Nix Language](system/distros/nixos/nix_language/README.md)
     - [cyberlinux](system/distros/cyberlinux/README.md)
   - [Flatpak](system/flatpak/README.md)
+  - [OSX](system/osx/README.md)
   - [Recovery](system/recovery/README.md)
   - [Suckless](system/suckless/README.md)
   - [Terminal](system/terminal/README.md)
