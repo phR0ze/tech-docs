@@ -89,7 +89,6 @@
 
 - [Networking](networking/README.md)
   - [DNS](networking/dns/README.md)
-  - [Bridge](networking/bridge/README.md)
   - [Browsers](networking/browsers/README.md)
     - [Firefox](networking/browsers/firefox/README.md)
   - [Bluetooth](networking/bluetooth/README.md)
@@ -143,6 +142,7 @@
 - [Virtualization](virtualization/README.md)
   - [Kubernetes](virtualization/kubernetes/README.md)
   - [libvirt](virtualization/libvirt/README.md)
+  - [Network Bridge](virtualization/network_bridge/README.md)
   - [Podman](virtualization/podman/README.md)
   - [QEMU](virtualization/qemu/README.md)
   - [VirtManager](virtualization/virt_manager/README.md)

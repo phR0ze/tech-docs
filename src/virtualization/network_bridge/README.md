@@ -1,12 +1,15 @@
-# Bridge
-A bridged network shares a real Ethernet device (e.g. `enp1s0`) with virtual machines (VMs). Each VM 
-can bind directly to any available IPv4 or IPv6 addresses on the LAN via the network bridge, just 
-like a phycical computer would.
+# Network Bridge
+A network bridge is a virtual network device that behaves like a switch allowing virtual devices to 
+be connected to your network and behave as if they were real devices. 
+
+**References**
+* [Arch Linux Wiki](https://wiki.archlinux.org/title/Network_bridge)
 
 There are a number of ways to create bridged networks and many processes are deprecated or only used 
-by niche segments of the community. [Arch linux has the best documentation on this](https://wiki.archlinux.org/title/Network_bridge)
+by niche segments of the community.
 
 ### Quick links
+* [Overview](#overview)
 * [Prerequisites](#prerequisites)
   * [Disable netfiltering for bridges](#disable-netfiltering-for-bridges)
 * [Creating a bridge](#creating-a-bridge)
@@ -15,9 +18,6 @@ by niche segments of the community. [Arch linux has the best documentation on th
   * [via-iproute2](#via-iproute2)
 
 ## Overview
-In the most common case there will be a new network bridge virtual device created that will replace 
-the host machine's NIC (e.g. `enp1s0`) connection. The machine's NIC will instead be enslaved to the 
-bridge (e.g. `virbr0`).
 
 ### Terms
 * Controller - refers to the bridge itself
@@ -48,7 +48,7 @@ circumventing the host operating system's network stack. [see VirtualBox manual]
    ```
 
 ### Disable netfiltering for bridges
-[netfilter is currently enabled on bridgets by default](https://bugzilla.redhat.com/show_bug.cgi?id=512206#c0).
+[netfilter is currently enabled on bridges by default](https://bugzilla.redhat.com/show_bug.cgi?id=512206#c0).
 This is unneeded additional overhead that can be confusing when trouble shooting. The libvirt team 
 recommends disabling it for all bridge devices.
 
