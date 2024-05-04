@@ -83,6 +83,7 @@
 - [MacOS](macos/README.md)
 
 - [Multimedia](multimedia/README.md)
+  - [Audacity](multimedia/audacity/README.md)
   - [CAD](multimedia/cad/README.md)
     - [FreeCAD](multimedia/cad/freecad/README.md)
   - [MKV](multimedia/mkv/README.md)

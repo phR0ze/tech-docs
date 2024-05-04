@@ -11,7 +11,7 @@ Documenting various multimedia technologies
   * [Sweet Home 3D](#sweet-home-3d)
 * [Audio](#audio)
   * [Backup an audio CD](#backup-an-audio-cd)
-  * [Change speed of audio](#change-speed-of-audio)
+  * [Change speed of audio](audacity/README.md#change-speed-of-audio)
   * [Convert WAV to MP3](#convert-wav-to-mp3)
 * [Images](#images)
   * [Convert HEIC to JPEG](#convert-heic-to-jpeg)
@@ -58,13 +58,6 @@ Documenting various multimedia technologies
 3. Turn on error correction (will slow it way down)
    1. Navigate to the `Advanced` tab
    2. Uncheck at the bottom the `Faster ripping (no error correction)` option
-
-## Change speed of audio
-1. Launch `audacity`
-2. Select `File >Import >Audio...`
-3. Select all audio with `Ctrl+a`
-4. Select `Effect >Pitch and Tempo >Change Tempo...`
-5. Change the `Percent Change: -15.00` and click `Apply`
 
 ## Convert WAV to MP3
 1. Install `Sound Konverter`
