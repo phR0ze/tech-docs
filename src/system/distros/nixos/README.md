@@ -10,20 +10,27 @@ upgrade fearlessly because changes are done in isolation and can be rolled back.
 In practice `NixOS` doesn't deliver on its goals out of the box. There is considerable complicated 
 configuration required to actually be able to rebuild systems that are identical to the orginal 
 declared state. Additionally `NixOS` predominantly focuses on the system level and almost entirely 
-lacks support for declarative system wide user configuration. `Home Manager`, although commonly sited
-as filling this gap, unfortunately focuses primarily on a multi-user approach that doesn't seem to 
-mesh well with your typical single-user consumer systems.
+lacks support for declarative system wide ***user*** configuration. `Home Manager`, although commonly 
+sited as filling this gap, unfortunately focuses primarily on a multi-user approach that doesn't seem 
+to mesh well with a typical single-user consumer system.
 
 Additionally those new to NixOS find it challenging due to overlapping similar terminology. The 
 primary confusion I've found comes from the fact that the ecosystem is quite broad and `Nix`, the 
 package manager and heart of NixOS, is cross-platform and cross-distro. This means documentation and 
 tutorials are fractured and sometimes not applicable at all or difficult to follow as the target OS 
-is different. Although the benefits of Nix and NixOS out weigh these concerns it does make the 
+is different. Although ***the benefits of Nix and NixOS outweigh these concerns*** it does make the 
 ecosystem more unapproachble than prior ecosystems like Arch Linux that I'm coming from.
 
 ### Quick links
 * [Overview](#overview)
   * [Flakes as entry point](#flakes-as-entry-point)
+  * [System Versions](#system-versions)
+* [Common operations](#common-operations)
+  * [Temporarily run new software](#temporarily-run-new-software)
+  * [Rollback system version](#rollback-system-version)
+  * [Diff system versions](#diff-system-versions)
+  * [List what changed](#list-what-changed)
+  * [How to determine what is installed](#how-to-determine-what-is-installed)
 * [Getting started](#getting-started)
   * [Install NixOS VM](#install-nixos-vm)
   * [Install NixOS bare metal](#install-nixos-bare-metal)
@@ -57,8 +64,8 @@ ecosystem more unapproachble than prior ecosystems like Arch Linux that I'm comi
 ### Flakes as entry point
 There is a lot of commotion and confusion in the NixOS community around Flakes due to their 
 experimental state and only partial adoption in Nix. Additionally the Flakes feature is often 
-conflated with the the new Nix cli command feature because it's required for flake support. 
-Regardless flakes serve a sepecific purpose are widely used and won't be going anywhere.
+conflated with the the new Nix cli command features because it's required for flake support. 
+Regardless flakes serve a sepecific critical purpose won't be going anywhere.
 
 After digesting the Nix community blogs, docs and various sources its safe to say that Flakes solve 
 the versioning issue in NixOS. Flakes track which version of packages are installed allowing NixOS to 
@@ -66,11 +73,144 @@ deliver on the rebuildable system statement. A common use case for flakes  is to
 point to your system configuration thus providing a reproducible way to rebuild your system even if 
 the packages versions change.
 
-### Invoke nix cleanup
-Remove nix store items that are no longer being used.
+### System Versions
+NixOS stores the different system versions as links in `/nix/var/nix/profiles`. The terminology of 
+`profiles` and alternatly `generations` doesn't really resonate with me so I prefer to call them 
+`system versions`. Given that NisOS configurations are declaragive and best practice is to version 
+controll them with git this seems a much more natural fit.
+
+**References**
+* [NixOS profiles](https://nixos.org/manual/nix/stable/package-management/profiles.html)
+
+* `/run/current-system` is the currently running system version
+  * It is a link directly to the running system e.g. `/nix/store/1...workstation4-24.05`
+  * It might not be the same as the default boot version if you choose an alternate boot entry
+
+* `/nix/var/nix/profiles/system` is the default system version
+  * This is the version that the system will boot to by default
+  * It won't be the same as `/run/current-system` if you choose an alternate boot entry
+  * It links indirectly to the version via `system-VER-link`
+
+* `/nix/var/nix/profiles/default` is a link to the latest user version
+  * Used for user profiles
+
+## Common operations
+
+### Temporarily run new software
+NixOS allows you to temporarily download and run new software before committing to permantenly 
+installing it on your system. This allow syou to test software out and then allowing the system to 
+clean it up for you automatically if you don't persist it in your configuration.
+
+1. Download and run
+   ```
+   $ nix run nixpkgs#PACKAGE
+   ```
+2. Pass arguments to the new package with `--`
+   ```
+   $ nix run nixpkgs#vim -- --help
+   ```
+
+### Rollback system version
+Setting the default boot entry is all that is needed to `rollback` the system. You can manually 
+verify the default boot entry is changed via `/boot/grub/grub.cfg`
+
+**Set prior system version N as default boot entry**
+```bash
+$ sudo /nix/var/nix/profiles/system-N-link/bin/switch-to-configuration switch
+```
+
+**Set current system as default boot entry**
+```bash
+$ sudo /run/current-system/bin/switch-to-configuration switch
+```
+
+**Set manually built version to default boot entry**
+```bash
+$ sudo result/bin/switch-to-configuration switch
+```
+
+### Diff system versions
+You can diff different system versions using the `nix store diff-closures` command.
+
+**Syntax**
+* `nix store diff-closures FROM TO`
+
+**Example:** ***FROM*** the older system-13-link version ***TO** the current version
+```bash
+$ nix store diff-closures /nix/var/nix/profiles/system-13-link /run/current-system 
+qview: ∅ → 6.1, +1787.1 KiB
+ristretto: 0.13.2 → ∅, -1179.6 KiB
+
+```
+
+**Diff raw changes against the current system**
+1. Build the changes but neither activate it or add it to the GRUB boot menu
+   ```bash
+   $ nixos-rebuild build --flake "path:/etc/nixos#system"
+   ```
+2. Diff the resulting link against the current system version
+   ```bash
+   $ nix store diff-closures /run/current-system result/
+   ```
+
+### Manually add system version
+If you build your system version manually or loose the links due to automatic cleanup you can add 
+them back in manually as follows:
+
+1. Get the nix store path for your target system version
+   ```bash
+   $ readlink -e /run/current-system
+   ```
+2. Create a link to your system version in `/nix/var/nix/profiles`
+   ```bash
+   $ cd /nix/var/nix/profiles
+   $ ln -s /nix/store/...-workstation-23.05.4448.5550a85a087c system-39-link
+   ```
+3. Update the current system version
+   ```bash
+   $ rm system
+   $ ln -s system-39-link system
+   ```
+
+### Force saving store paths
+By adding paths to the `/nix/var/nix/gcroots` the system will ensure they are never removed.
 
 ```bash
-$ nix-store --gc
+$ ln -s /nix/store/...-workstation-23.05.4448.5550a85a087c /nix/var/nix/gcroots/save-this-version
+```
+
+Note: you can remove system versions by removing the links from `/nix/var/nix/profiles`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### List available system versions
+Note: `nixos-rebuild list-generations` only seems to list out what is in `/nix/var/nix/profiles` 
+which won't have an entry for your manual build.
+
+```bash
+$ nixos-rebuild list-generations --json
+```
+
+### List all packages for a system version
+
+**Syntax**
+* `nix-store -qR VERSION`
+
+**Example**
+```bash
+$ nix-store -qR /run/current-system
 ```
 
 ### How to determine what is installed
@@ -86,6 +226,16 @@ programmatic ways to evaluate and extract information about the system.
 $ nix-instantiate --strict --json --eval -E 'builtins.map (p: p.name) (import <nixpkgs/nixos> {}).config.environment.systemPackages' | jq -r '. |= unique | .[]'
 
 $ nix-store -q --references /run/current-system/sw
+```
+
+### Invoke nix cleanup
+Remove nix store items that are no longer being used.
+
+**References**
+* https://nixos.wiki/wiki/NixOS_Generations_Trimmer
+
+```bash
+$ nix-store --gc
 ```
 
 ### Get file names in package

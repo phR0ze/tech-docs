@@ -57,7 +57,7 @@ or Sketchup.
 5. Configure Settings, navigate to `Edit > Preferences > General > Units`
    1. Choose `Unit System` as `Building US (ft-in/sqft/cft)`
 6. Switch to Revit mouse controls
-   1. Bottom right where you see `CAD` change that to `Revit`
+   1. Bottom right where you see `CAD` change that to `OpenSCAD`
    2. Hover over your selection and it will show you how to use the mouse
    3. Also click the same menu and select `Settings >Orbin Style >Turntable`
    4. Press Shift and hold middle mouse button to pan
