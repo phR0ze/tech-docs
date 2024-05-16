@@ -2,6 +2,8 @@
 <img align="left" width="48" height="48" src="../../../data/images/logo_256x256.png">
 
 ### Quick links
+* [Package Management](#package-management)
+  * [Updating dependencies](#updating-dependencies)
 * [Configuration](#Configuration)
   * [goformat](#goformat)
     * [indent spaces](#indent-spaces)
@@ -12,6 +14,47 @@
     * [Consuming connections](#consuming-connections)
     * [Transactions](#transactions)
     * [Deadlock with Transactions](#deadlock-with-transactions)
+
+# Build
+
+## Build example
+```bash
+$ go build examples/
+```
+
+# Package Management
+
+## Updating dependencies
+
+### Update a specific dependency
+* `-m` list modules instead of packages
+* `-u` include available upgrade information
+
+1. Display latest versions for a specific module
+   ```bash
+   $ go list -m -u github.com/phR0ze/n
+
+   # use the -mod=mod for a vendored directory
+   $ go list -mod=mod -m -u github.com/phR0ze/n
+   github.com/phR0ze/n v1.2.9 [v1.3.0]
+   ```
+
+2. Upgrade the specific dependency
+   ```bash
+   $ go get -u github.com/phR0ze/n@v1.3.0
+   ```
+
+3. Clean up 
+   ```bash
+   $ go mod tidy
+   ```
+
+### Update all dependencies
+```bash
+$ go get -u
+$ go mod tidy
+$ make
+```
 
 # Configuration
 
