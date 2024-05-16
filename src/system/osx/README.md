@@ -32,9 +32,12 @@ My highly opionionated configuration for OSX
   * [Launch Agents](#launch-agents)
   * [Autostart Script](#autostart-script)
 * [Develop](#develop)
-  * [NeoVim](#neovim)
-  * [Git and projects](#git-and-projects)
-  * [Visual Studio Code](#visual-studio-code)
+  * [Install NeoVim](#install-neovim)
+  * [Install Git](#install-git)
+  * [Install Go](#install-go)
+* [Visual Studio Code](#visual-studio-code)
+  * [Install vscode](#install-vscode)
+  * [Configure vscode](#configure-vscode)
 * [Keyboard Shortcuts](#keyboard-shortcuts)
 * [Network](#network)
   * [DNS](#dns)
@@ -438,6 +441,8 @@ Note: for this to work `/usr/local/bin` needs to be one of the first things in y
    1. Launch vscode it should automatically prompty you but if not do step b
    2. Hit `Ctrl+Shift+P` and type in `Go: Install/Update Tools`
 
+## Visual Studio Code
+
 ### Install vscode
 Install go and delve
 ```bash
@@ -446,7 +451,63 @@ $ brew install delve
 $ ln -s /usr/local/opt/delve/bin/dlv ~/Projects/go/bin/dlv
 ```
 
-# Keyboard Shortcuts
+### Configure vscode
+Settings are stored in `~/Library/Application Support/Code`
+
+1. Install extensions
+   1. Click the button on the left that looks like an extension icon
+   2. Install General extensions:
+      | Name                     | Identifier                            |
+      | ------------------------ | ------------------------------------- |
+      | Even Better TOML         | `tamasfe.even-better-toml`            |
+      | Code Runner              | `formulahendry.code-runner`           |
+      | Color Picker             | `anseki.vscode-color`                 |
+      | Copilot                  | `GitHub.copilot`                      |
+      | Copilot Chat             | `GitHub.copilot-chat`                 |
+      | Dev Containers           | `ms-vscode-remote.remote-containers`  |
+      | Github Markdown Preview  | `bierner.github-markdown-preview`     |
+      | Github Pull Request      | `GitHub.vscode-pull-request-github`   |
+      | Vim                      | `vscodevim.vim`                       |
+      | VSCode Great Icons       | `emmanuelbeziat.vscode-great-icons`   |
+
+   3. Install Golang extensions
+      | Name                     | Identifier                            |
+      | ------------------------ | ------------------------------------- |
+      | Go                       | `golang.go`                           |
+
+   4. Install Ruby extensions
+      | Name                     | Identifier                            |
+      | ------------------------ | ------------------------------------- |
+      | Ruby                     | `Shopify.ruby-extensions-pack`        |
+      | Rubo Cop                 | `rubocop.vscode-rubocop`              |
+
+   6. Install Rust extensions
+      | Name                     | Identifier                            |
+      | ------------------------ | ------------------------------------- |
+      | rust-analyzer            | `rust-lang.rust-analyzer`             |
+      | CodeLLDB                 | `vadimcn.vscode-lldb`                 |
+      | Crates                   | `serayuzgur.crates`                   |
+
+2. Configure keyboard shortcuts
+   1. Navigate to `Code >Settings...>Keyboard Shortcuts`
+      | Name                                  | Key sequence      |
+      | ------------------------------------- | ----------------- |
+      | `New Window`                          | `Ctrl+Shift+n`    |
+      | `Close Window`                        | `Ctrl+w`          |
+      | `Copy`                                | `Ctrl+c`          |
+      | `Cut`                                 | `Ctrl+x`          |
+      | `File: Open File`                     | `Ctrl+o`          |
+      | `File: Open Folder`                   | `Ctrl+k, Ctrl+o`  |
+      | `File: Save`                          | `Ctrl+s`          |
+      | `workbench.action.openSettings`       | `Ctrl+,`          |
+      | `workbench.action.files.saveAll`      | `Ctrl+Shift+s,`   |
+      | `workbench.action.closeActiveEditor`  | `Ctrl+w`          |
+      | `settings.action.search`              | `Ctrl+f`          |
+
+2. Configure fonts
+   1. Set the font to: `InconsolataLGC Nerd Font Mono`
+
+## Keyboard Shortcuts
 | Symbol    | Key         | Symbol    | Key        |
 | --------- | ----------- | --------- | ---------- |
 | ⌘         | Command Key |  ←        | Left Key   |
