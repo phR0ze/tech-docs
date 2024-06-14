@@ -4,6 +4,7 @@ Documenting my learning experience with Dioxus.
 <br><br>
 
 ### Quick links
+* [Overview](#overview)
 * [Setup Dioxus](#setup-dioxus)
 * [Create a new Dioxus WASM project](#create-a-new-dioxus-wasm-project)
 * [Make a Dioxus WASM and Desktop project](#make-a-dioxus-wasm-and-desktop-project)
@@ -15,7 +16,7 @@ Documenting my learning experience with Dioxus.
 * [BULMA CSS](#bulma-css)
 * [DaisyUI](#daisyui)
 
-# Dioxus
+## Overview
 Dioxus is a React inspired portable, performant and ergonomic framework for building cross-platform 
 user interfaces in Rust. It is built on top of Tauri which provides the cross-platform aspects. Tauri 
 could be used directly but then you loose Dioxus's convenient works out of the box paradigm. Dioxus 
@@ -48,13 +49,12 @@ layers on top making it just work and adding the React capablities.
 * [Real World example](https://github.com/dxps/fullstack-rust-axum-dioxus-rwa)
 * [Material Icons browser](https://mui.com/material-ui/material-icons/)
 
-**Dioxus questions**
-* dioxus-web vs dioxus-html
-* global state management - Fermi
-
 ## Setup Dioxus
 
-### Install Arch system libs
+### Install system libs
+**NixOS**
+
+**Arch Linux**
 ```
 sudo pacman -S --needed \
     webkit2gtk-4.1 \
@@ -70,7 +70,9 @@ sudo pacman -S --needed \
 ```
 
 ### Install Dioxus CLI
+Requires Rust >= 1.79.0
 ```
+$ rustup update
 $ cargo install dioxus-cli
 ```
 
