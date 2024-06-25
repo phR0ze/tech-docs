@@ -29,34 +29,6 @@
   * [Delete All Tags](#delete-all-tags)
   * [Delete Matching Tags](#delete-matching-tags)
 
-## Config
-Git supports conditional configuration includes:
-
-1. Create your `~/.gitconfig` with your regular configuration. At the bottom add the conditional 
-   configuration for your `company_a` which will override the previously set values.
-   ```
-   [user]
-     name = John Smith
-     email = js@gmail.com
-   [push]
-     default = simple
-   
-   [includeIf "gitdir:~/Projecdts/work/company_a/"]
-     path = ~/.config/.gitconfig-company_a
-   ```
-
-2. Now create your company specific values to override with at `~/.config/.gitconfig-company_`
-   previously set that match. Using a github token explicitly for your company allows for simple ssh 
-   keys management in that your default will handle your github account while the tokens handle your 
-   company account. Alternatively you can do some `~/.ssh/config` foo but its more complicated.
-   ```
-   [url "https://user:git-hub-token@github.com/company_a"]
-     insteadof = company_a:
-   [user]
-     name = smithj
-     email = smithj@companya.com
-   ```
-
 ## Branches
 
 ### Delete Branch

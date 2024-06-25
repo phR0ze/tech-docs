@@ -57,6 +57,7 @@
   - [UI](development/ui/README.md)
     - [Cross-platform](development/ui/cross_platform/README.md)
       - [Dioxus](development/ui/cross_platform/dioxus/README.md)
+      - [GTK](development/ui/cross_platform/gtk/README.md)
       - [Flutter](development/ui/cross_platform/flutter/README.md)
         - [Animation](development/ui/cross_platform/flutter/animation/README.md)
         - [Dart](development/ui/cross_platform/flutter/dart/README.md)

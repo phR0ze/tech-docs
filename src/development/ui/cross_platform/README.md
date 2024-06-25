@@ -13,6 +13,7 @@ Typically the solutions come down to two types:
 
 
 ### Quick links
+* [Dioxus](#dioxus/README.md)
 * [Cordova](#cordova)
 * [React Native](#react-native)
 * [Xamarin](#xamarin)

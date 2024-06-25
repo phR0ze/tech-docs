@@ -100,6 +100,8 @@ user interfaces in Rust. It is built on top of Tauri which provides the cross-pl
 could be used directly but then you loose Dioxus's convenient works out of the box paradigm. Dioxus 
 layers on top making it just work and adding the React capablities.
 
+see [Dioxus in the development/ui/cross\_platform section](../../../ui/cross_platform/dioxus/README.md)
+
 # Tailwind CSS
 A utility-first CSS framework packed with utility type classes that can be composed to build any 
 design with infinite flexibility. Nothing is pre-styled; not even headings or links. You have to 
