@@ -53,6 +53,7 @@ layers on top making it just work and adding the React capablities.
 
 ### Install system libs
 **NixOS**
+TBD: ?
 
 **Arch Linux**
 ```
@@ -83,6 +84,27 @@ $ cargo install cargo-add
 
 ### Install Dioxus VSCode Extension
 Install the `dioxus` extension
+
+## Validate that Dioxus is working
+
+### Clone and build Tailwind example
+
+1. Clone the dioxus examples
+   ```bash
+   $ git clone https://github.com/DioxusLabs/dioxus.git
+   ```
+2. Build and run
+   ```bash
+   $ cd dioxus/examples/tailwind
+   $ dx serve
+   ```
+
+## Create a new Dioxus project
+
+1. Open a shell and run
+   ```bash
+   $ dx new
+   ```
 
 ## Create a new Dioxus WASM project
 1. Create the project
