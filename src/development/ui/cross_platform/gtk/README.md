@@ -1,4 +1,5 @@
 # GTK
+Note I'm focusing on GTK4
 
 ### Quick links
 * [Overview](#overview)
@@ -6,17 +7,22 @@
 
 ## Overview
 `gtk-rs` project contains the base Rust bindings for GTK and its supporting libaries. Relm4 builds on 
-top of `gtk-rs` to make teh binding more Rust idiomatic.
+top of `gtk-rs` to make the bindings more Rust idiomatic.
 
 **Resources**
 * [gtk4-rs book](https://gtk-rs.org/gtk4-rs/stable/latest/book/)
 
-## Relm4
-Relm4 makes developing beautifaul cross-platform applications idiomatic, simple, fast and enables you 
-to become productive in just a few hours. We'll see:
-
-* [Relm4](https://relm4.org/)
-* [Relm4 book](https://relm4.org/book/stable/)
+**Components**
+* ***GTK*** - is the primary library used to construct user interfaces
+* ***GSK*** - is an intermediate layer which provides a rendering API for Cairo, OpenGL or Vulkan
+* ***GDK*** - is an intermediate layer which isolates GTK from the details of the windowing system.
+* ***Pango*** - is the core text and font handling library used in GTK
+* ***GdkPixbuf*** - is a library for image loading and manipulation
+* ***Cairo*** - is a 2D graphics library with support for multiple output devices
+* ***Glib*** - provides the core application building blocks for libraries and apps in C
+* ***GObject*** - provides the object system used by GTK
+* ***GIO*** - provides a portable, modern and easy-to-use file system abstration API for accessing local 
+        and remote files; a set of abstractions over the DBus IPC, portable Networking and utilities.
 
 ### Install Dependencies in Nix
 Use a dev shell to include system dependencies: `nix-shell -p pkg-config openssl gtk4 libadwaita`. 
@@ -30,6 +36,54 @@ PKG_CONFIG_PATH_FOR_TARGET=/nix/store/z5ghkxklksfayrri517mnp67vfj03im5-openssl-3
 Run as an exported value `PKG_CONFIG_PATH=... cargo run --example menu` and it will also build.
 
 You can run `code` from the shell and it will inherit the dev shell setup.
+
+### Running examples
+```
+$ cd examples
+$ cargo run --features="v4_6" --bin about_dialog
+```
+
+## Input and event Handling
+**References**
+* [GTK docs on input and event handling](https://docs.gtk.org/gtk4/input-handling.html)
+* [GTK Event Controller](https://docs.gtk.org/gtk4/class.EventController.html)
+
+GTK uses logical devices, i.e. pointer/keyboard pair also called a `seat`, for input from the user. 
+When a user interactes with a logical device GTK receives events from the windowing system. GDK 
+translates these raw events into `GdkEvents`. For key events the top level window is the first to 
+trigger which passes the event to `Event Controllers` that are attached to the window. 
+
+* GDK is the layer to use for all interactions with the windowing system i.e. keyboard events.
+* GDK keys can be converted to and from names with `gdk_keyval_name()` and `gdk_keyval_from_name()`.
+
+### Event Controllers
+Event controllers are standalone objects that can perform specific actions upon received GdkEvents. 
+The `EventControllerKey` is an event controller the provides access to key events.
+
+### Key bindings
+Key bindings are a form of shortcuts that allow you to 
+
+## Font Attributes
+GTK has a few ways to influence the look and feel of your fonts. Pango attributes is the first using 
+a simple markup language with the `<span>` tag to allow configuring, font family, size, weight, style 
+etc...
+
+Example:
+```rust
+let size = "50";
+let label = gtk::Label::default();
+label.set_markup(format!("<span foreground=\"white\" font=\"{}\">test label</span>", size).as_str());
+```
+
+## Relm4
+Relm4 claimes to make developing beautifaul cross-platform applications idiomatic, simple, fast and 
+enables you to become productive in just a few hours. We'll see:
+
+* [Relm4](https://relm4.org/)
+* [Relm4 book](https://relm4.org/book/stable/)
+
+### Running examples
 ```
 $ cargo run --features="libadwaita gnome_43" --example toast
 ```
+
