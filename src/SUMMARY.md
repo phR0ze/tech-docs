@@ -78,6 +78,8 @@
 - [Cloud](cloud/README.md)
   - [Google Cloud Platform](cloud/google_cloud_platform/README.md)
     - [Cloud Run](cloud/google_cloud_platform/cloud_run/README.md)
+    - [gcloud](cloud/google_cloud_platform/gcloud/README.md)
+    - [IAP](cloud/google_cloud_platform/iap/README.md)
 
 - [Hardware](hardware/README.md)
   - [Accelerated Graphics](hardware/accelerated_graphics/README.md)
