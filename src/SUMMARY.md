@@ -90,6 +90,7 @@
   - [Audacity](multimedia/audacity/README.md)
   - [CAD](multimedia/cad/README.md)
     - [FreeCAD](multimedia/cad/freecad/README.md)
+  - [Kodi](multimedia/kodi/README.md)
   - [MKV](multimedia/mkv/README.md)
 
 - [Networking](networking/README.md)
