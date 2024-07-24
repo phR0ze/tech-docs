@@ -4,7 +4,7 @@ the low-level control of C, but also enforces memory and thread safety. Rust app
 directly into machine code, allowing for highly optimized code and better performance. Rust is being
 adopted at an incredible rate. It's the most loved language by developers according to the [Stack
 Overflow Developer Survey](https://insights.stackoverflow.com/survey/2019#technology-_-most-loved-dreaded-and-wanted-languages)
-and its the fith fast growing language according to [Github's State of the Octoverse](https://octoverse.github.com/projects.html)
+and its the fifth fastest growing language according to [Github's State of the Octoverse](https://octoverse.github.com/projects.html)
 There's no virtual machine or interpreter sitting between your code and your computer.
 
 Resources:
