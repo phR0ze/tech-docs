@@ -68,7 +68,7 @@ Note: you can list all your installed extensions with `code --list-extensions`
    | ------------------------ | ------------------------------------- |
    | rust-analyzer            | `rust-lang.rust-analyzer`             |
    | CodeLLDB                 | `vadimcn.vscode-lldb`                 |
-   | Crates                   | `serayuzgur.crates`                   |
+   | Dependi                  | `fill-labs.dependi`                   |
 
 # Keyboard Shortcuts
 Hit `Ctrl+Shift+p` and search for keyboard then choose `Preferences: Open Keyboard Shortcuts`
@@ -103,10 +103,40 @@ Keyboard shortcut overrides are found in: `~/.config/Code/User/keybindings.json`
 ```
 
 ## tasks.json
-Every project requires the creation of the `.vscode/tasks.json` file to map keybindings to your 
-specific project.
+Every project requires the creation of the `.vscode/tasks.json` file to configure build shortcuts for 
+your specific project.
 
-* see [Rust tasks](#rust-tasks)
+* [VSCode Tasks docs](https://code.visualstudio.com/docs/editor/tasks)
+
+### Golang task example
+1. Navigate to VSCode's menu `Terminal >Configure Default Build Task...`
+2. Choose `go: build workspace` which will create the `.vscode/tasks.json` for you
+3. Replace it's content with the following for a simple Makefiles based build
+```json
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "Build project",
+            "command": "make",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+        },
+        {
+            "type": "shell",
+            "label": "Test project",
+            "command": "make test",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+        }
+    ]
+}
+```
 
 # General Settings
 Configuration is saved at `~/.config/Code/User/settings.json`
