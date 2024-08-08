@@ -83,6 +83,7 @@
 
 - [Hardware](hardware/README.md)
   - [Accelerated Graphics](hardware/accelerated_graphics/README.md)
+  - [Tomato Router](hardware/tomator_router/README.md)
 
 - [MacOS](macos/README.md)
 
