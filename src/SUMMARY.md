@@ -33,6 +33,7 @@
       - [Apps](development/languages/rust/apps/README.md)
       - [Async](development/languages/rust/async/README.md)
         - [Tokio](development/languages/rust/async/tokio/README.md)
+      - [CLI](development/languages/rust/cli/README.md)
       - [Concurrancy](development/languages/rust/concurrancy/README.md)
       - [Databases](development/languages/rust/databases/README.md)
       - [Gaming](development/languages/rust/gaming/README.md)
