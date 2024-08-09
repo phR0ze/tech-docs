@@ -38,6 +38,7 @@
       - [Gaming](development/languages/rust/gaming/README.md)
         - [Macroquad](development/languages/rust/gaming/macroquad/README.md)
       - [GUI](development/languages/rust/gui/README.md)
+      - [Imaging](development/languages/rust/imaging/README.md)
       - [Mobile](development/languages/rust/mobile/README.md)
         - [Android](development/languages/rust/mobile/android/README.md)
       - [Platforms](development/languages/rust/platforms/README.md)
@@ -88,9 +89,11 @@
 - [MacOS](macos/README.md)
 
 - [Multimedia](multimedia/README.md)
-  - [Audacity](multimedia/audacity/README.md)
+  - [Audio](multimedia/audio/README.md)
+    - [Audacity](multimedia/audio/audacity/README.md)
   - [CAD](multimedia/cad/README.md)
     - [FreeCAD](multimedia/cad/freecad/README.md)
+  - [Image](multimedia/image/README.md)
   - [Kodi](multimedia/kodi/README.md)
   - [MKV](multimedia/mkv/README.md)
 

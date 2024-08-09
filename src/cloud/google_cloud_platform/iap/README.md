@@ -12,22 +12,35 @@ from untrusted networks without the use of VPNs. It is a zero-trust access model
   event need public IP addresses
 
 ## Using IAP for TCP Forwarding
-A TCP Tunnel can be created with IAP that allows for connectivity to private VMs. This can be done 
-via `gcloud compute start-iap-tunnel` to create a tunnel through which another process can create a 
-connection e.g. SSH, RDP.
+IAP's TCP forwarding feature allows user sto connect to arbitrary TCP ports on Compute Engine 
+instances. For general TCP traffic, IAP creates a listening port on the local host that forwards all 
+traffic to a specified instance. IAP then wraps all traffic from the client in HTTPS. Users gain 
+access to the interface and port if they pass the authentication and authorization check of the 
+target resource's Identity and Access Management (IAM) policy.
 
 * [IAP TCP Forwarding docs](https://cloud.google.com/iap/docs/tcp-forwarding-overview)
 * [Independent IAPC project](https://github.com/cedws/iapc)
+* [go based gcloud replacement](https://github.com/gartnera/gcloud)
 
-### gcloud tunnle examples
+### gcloud tunnel
 * [gcloud docs for iap-tunnel](https://cloud.google.com/sdk/gcloud/reference/compute/start-iap-tunnel)
 
-* Open a tunnel to the instances RDP port 3389 on an arbitrary local port
-  ```
-  gcloud compute start-iap-tunnel my-instance 3389
-  ```
-* Open a tunnel to the instances RDP port 3389 to a specific local port
-  ```
-  gcloud compute start-iap-tunnel my-instance 3389 --local-host-port=localhost:3333
-  ```
+1. Optionally filter on parent folder id to get projects that are part of a folder
+   ```bash
+   $ gcloud projects list --filter=parent.id=$PARENT_ID --format='value(project_id)'
+   ```
+2. Optionally list all VMs for the project filtering on a preset tag e.g. `allow-iap`
+   ```bash
+   $ gcloud compute instances list --filter='tags: allow-iap' --project $PROJECT_ID --format='value(name, zone)'
+   mysql-vm use-east4
+   ```
+3. Optionally extract db access secrets for the target db vm
+   ```bash
+   $ gcloud secrets versions access latest --secret $SECRET_NAME --project $PROJECT_ID
+   ```
 
+4. Opening the tunnel to your mysql instance requires the `VM_NAME`, `VM_ZONE`, `VM_PROJECT`, 
+   `REMOTE_PORT` and optionally the `LOCAL_PORT` to use.
+   ```bash
+   $ gcloud compute start-iap-tunnel --project=$VM_PROJECT $VM_NAME $REMOTE_PORT --zone=$VM_ZONE --local-host-port=localhost:$LOCAL_PORT
+   ```
