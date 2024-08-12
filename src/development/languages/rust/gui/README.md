@@ -16,6 +16,7 @@ Android, WASM and Linux support using Arch Linux as my devlopment environment.
 * [Tauri](#tauri)
   * [Install Tauri Dependencies](#install-tauri-dependencies)
 * [Dioxus](#dioxus)
+* [Freya](#freya)
 * [Tailwind CSS](#tailwind-css)
 * [BULMA CSS](#bulma-css)
 * [DaisyUI](#daisyui)
@@ -47,13 +48,13 @@ $ rustup target add i686-linux-android
 $ rustup target add x86_64-linux-android
 ```
 
-# Tauri
+## Tauri
 Tauri is a lot like Electron only faster and smaller. While Electron uses the Chromium engine with 
 Node.js bundled together producing fat 150MB+ binaries, Tauri is a Rust engine that uses the 
 operating system's WebView libraries, making it faster and smaller as its uding dynamic libraries 
 rather than baked in ones. 
 
-## Install Tauri Dependencies
+### Install Tauri Dependencies
 * [Tauri docs](https://next--tauri.netlify.app/next/guides/getting-started/prerequisites/linux)
 
 1. Install Arch system libs
@@ -94,7 +95,7 @@ rather than baked in ones.
    
 5. Install Android NDK
 
-# Dioxus
+## Dioxus
 Dioxus is a React inspired portable, performant and ergonomic framework for building cross-platform 
 user interfaces in Rust. It is built on top of Tauri which provides the cross-platform aspects. Tauri 
 could be used directly but then you loose Dioxus's convenient works out of the box paradigm. Dioxus 
@@ -102,7 +103,9 @@ layers on top making it just work and adding the React capablities.
 
 see [Dioxus in the development/ui/cross\_platform section](../../../ui/cross_platform/dioxus/README.md)
 
-# Tailwind CSS
+## Freya
+
+## Tailwind CSS
 A utility-first CSS framework packed with utility type classes that can be composed to build any 
 design with infinite flexibility. Nothing is pre-styled; not even headings or links. You have to 
 create everything from scratch, giving you the opportunity to create something unique. Typically a 
@@ -119,7 +122,7 @@ Tailwind.css provides the tools to build beautiful UIs with infinite customizati
 Tailwind plugin that provides a number of pre-created components along the lines of Bulma CSS that 
 use Tailwind to allow you to get up and running faster and use fewer class names.
 
-# BULMA CSS
+## BULMA CSS
 Bulma is a free, open source framework that provides ready-to-use frontend components that you can 
 easily combine to build responsive web interfaces.
 
