@@ -42,6 +42,7 @@
       - [Imaging](development/languages/rust/imaging/README.md)
       - [Mobile](development/languages/rust/mobile/README.md)
         - [Android](development/languages/rust/mobile/android/README.md)
+      - [Parsing](development/languages/rust/parsing/README.md)
       - [Platforms](development/languages/rust/platforms/README.md)
         - [Shuttle](development/languages/rust/platforms/shuttle/README.md)
       - [Web](development/languages/rust/web/README.md)
