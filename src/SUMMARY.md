@@ -36,6 +36,7 @@
       - [CLI](development/languages/rust/cli/README.md)
       - [Concurrancy](development/languages/rust/concurrancy/README.md)
       - [Databases](development/languages/rust/databases/README.md)
+      - [Errors](development/languages/rust/errors/README.md)
       - [Gaming](development/languages/rust/gaming/README.md)
         - [Macroquad](development/languages/rust/gaming/macroquad/README.md)
       - [GUI](development/languages/rust/gui/README.md)
