@@ -1,16 +1,13 @@
 # Build Package
 Deploying a new NixOS system using Nix and building packages using Nix have overlapping terminology 
 and uses cases and becomes super confusing quickly. Fundamentally a NixOS system is composed of nix 
-packages with the additional modular packaging options that allows for gluing a customizable set of 
+packages with the additional modular packaging options that allows for glueing a customizable set of 
 nix packages together with configuration changes to deploy your system.
 
 ### Quick links
 * [Overview](#overview)
   * [Terminology](#terminology)
 * [Packaging local files](#packaging-local-files)
-
-
-
 
 * [Build packages](#build-packages)
   * [Build phases](#build-phases)
@@ -87,16 +84,6 @@ on evaluation.
 # Rename the set using the value.target field
 (attrsets.mapAttrs' (name: value: nameValuePair (value.target) value) config.files.root)
 ```
-
-
-
-
-
-
-
-
-
-
 
 
 ## Build packages
@@ -177,12 +164,6 @@ Using `Prism Launcher` for my example
 
 
 
-
-
-
-
-
-
 Create a patch with git
 ```
 $ git diff -a > nixpkgs/pkgs/the/package/0001-changes.patch
@@ -217,34 +198,10 @@ nix-build -K
    ```
 
 
-
-
-
-
-
-
-
-
-
-
-
 2. Clone the source
    ```bash
    $ git clone --depth 1 https://github.com/PrismLauncher/PrismLauncher -b 8.0
    ```
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ### Build derivation for testing

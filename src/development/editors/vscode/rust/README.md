@@ -9,7 +9,7 @@
 The Rust `toolchain` is all the necessary build components for your local system while a `target` is 
 the ability to cross compile to another platform.
 
-1. In my NixOS based distro `rustup` and `lldb` are already installed so just install rust
+1. In my ***NixOS*** based distro `rustup` and `lldb` are already installed so just install rust
    ```bash
    $ rustup default stable
    ```
@@ -24,6 +24,59 @@ the ability to cross compile to another platform.
 3. Install android targets for NDK dev
    ```bash
    $ rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
+   ```
+
+### Install Rust Nightly
+Rust nightly as installed by `rustup` supplies unpatched binaries out of the box that don't work with 
+***NixOS*** background found at https://github.com/oxalica/rust-overlay.
+
+1. Create the development shell `flake.nix` in your project
+   ```nix
+   {
+     description = "Dev shell for rust nightly";
+   
+     inputs = {
+       nixpkgs.url      = "github:NixOS/nixpkgs/nixos-unstable";
+       rust-overlay.url = "github:oxalica/rust-overlay";
+       flake-utils.url  = "github:numtide/flake-utils";
+     };
+   
+     outputs = { self, nixpkgs, rust-overlay, flake-utils, ... }:
+       flake-utils.lib.eachDefaultSystem (system:
+         let
+           overlays = [ (import rust-overlay) ];
+           pkgs = import nixpkgs {
+             inherit system overlays;
+           };
+         in
+         with pkgs;
+         {
+           devShells.default = mkShell {
+             buildInputs = [
+               openssl
+               pkg-config
+               (
+                 rust-bin.selectLatestNightlyWith (toolchain: toolchain.default.override {
+                   extensions = [
+                     "rust-src"
+                     "rust-analyzer"
+                   ];
+                 })
+               )
+             ];
+           };
+         }
+       );
+   }
+   ```
+2. Add the file to git
+   ```bash
+   $ git add flake.nix
+   ```
+
+3. Execute dev shell
+   ```bash
+   $ nix develop
    ```
 
 ### Config Rust

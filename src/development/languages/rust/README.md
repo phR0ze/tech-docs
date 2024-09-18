@@ -33,6 +33,7 @@ Resources:
   * [This month in rust osdev](#this-month-in-rust-osdev)
   * [This month in rust gamedev](#this-month-in-rust-gamedev)
 * [Best Practices](#best-practices)
+  * [Args](#args)
   * [Builder Pattern](#builder-pattern)
   * [Panics](#panics)
   * [Errors](#errors)
@@ -489,6 +490,22 @@ Rust nightly and codecov because coveralls doesn't seem to have an easy github a
    ```
 
 # Best Practices
+
+## Args
+Most tooling will need some kind of CLI which requires a good deal of argument parsing to be useful.
+
+9/9/2024
+| Library     | Stars | Downloads | Dependencies      | Notes     
+| ----------- | ----- | --------- | ----------------- | -----------------------------------------------
+| `clap`      | 14k   | 275.4m    | So many           | Everything
+| `structopt` | 2.7k  | 47.2m     | Clap and 3 others | Everything plus the kitchen sink
+| `gumdrop`   | 42    | 3.3m      | None              | Has help which is unusual for light arg parsers
+| `getargs`   | 42    | 195k      | None              | Claim to be the fastest
+| `getopt`    |       | 40k       | None              | Not in Github so don't have good stats
+
+### getargs
+Seems super light and simple.
+
 
 ## Builder Pattern
 https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
