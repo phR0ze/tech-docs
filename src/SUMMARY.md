@@ -90,8 +90,6 @@
   - [Accelerated Graphics](hardware/accelerated_graphics/README.md)
   - [Tomato Router](hardware/tomator_router/README.md)
 
-- [MacOS](macos/README.md)
-
 - [Multimedia](multimedia/README.md)
   - [Audio](multimedia/audio/README.md)
     - [Audacity](multimedia/audio/audacity/README.md)
@@ -146,6 +144,11 @@
     - [cyberlinux](system/distros/cyberlinux/README.md)
   - [Flatpak](system/flatpak/README.md)
   - [OSX](system/osx/README.md)
+    - [Autostart](system/osx/autostart/README.md)
+    - [Console](system/osx/console/README.md)
+    - [MDM](system/osx/mdm/README.md)
+    - [OpenSSH](system/osx/open_ssh/README.md)
+    - [Users](system/osx/users/README.md)
   - [Recovery](system/recovery/README.md)
   - [Suckless](system/suckless/README.md)
   - [Terminal](system/terminal/README.md)

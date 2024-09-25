@@ -27,10 +27,6 @@ My highly opionionated configuration for OSX
   * [Slack](#slack)
   * [Caffeine](#caffeine)
   * [Barrier](#barrier)
-* [Autostart Apps](#autostart-apps)
-  * [Login Items](#login-items)
-  * [Launch Agents](#launch-agents)
-  * [Autostart Script](#autostart-script)
 * [Develop](#develop)
   * [Install NeoVim](#install-neovim)
   * [Install Git](#install-git)
@@ -339,63 +335,6 @@ not having an ARM version available see [issues on ARM](https://github.com/debau
 You might need to auth the app once for macOS to run it:
 1. Control click on the `Barrier.app` in the finder and then choose `Open`
 2. Click `Open System Preferences` and ensure `Barrier.app` is listed to control the computer
-
-## Autostart Apps
-
-### Login Items
-1. Navigate to `System Settings >General >Login Items`
-2. Click the little plus icon and select your app
-
-### Launch Agents
-Note: not sure this works anymore. I haven't tested this path for awhile
-
-Often you'll get software that may install a launch agent that sits in your tray taking up your CPU
-cycles. These can be disabled via the `launchctl` command line tool.
-
-Launch agents are located at `/Library/LaunchAgents`
-
-1. Launch a shell
-2. Run the oneliner `launchctl unload -w /Library/LaunchAgents/<offending plist>`
-2. Example disable Cisco VPN: `launchctl unload -w /Library/LaunchAgents/com.cisco.anyconnect.gui.plist`
-
-### Autostart Script
-Note: not sure this works anymore. I haven't tested this path for awhile
-
-Autostarting a script is done done via `launchd` and not through ***Login Items***. Upon system 
-start the root launchd process will scan the daemon directories `/System/Library/LaunchDaemons` and 
-`/Library/LaunchDaemons` for job definitions and load them depending on the existence/value of the 
-`Disabled` key
-
-When a user logs in a new launchd process will be started for this user. This launchd process will 
-scan the agent directories `/System/Library/LaunchAgents /Library/LaunchAgents ~/Library/LaunchAgents`
-for job definitions and load them depending on the existence/value of the `Disabled` key
-
-Loading a job definition does not necessarily mean to start the job. When a job is started is 
-determined by the job definition. When the `RunAtLoad` or `KeepAlive` flags have been specified 
-launchd will start the job unconditionally when it has been loaded.
-
-Resources:
-* http://www.launchd.info/
-* https://medium.com/@fahimhossain_16989/adding-startup-scripts-to-launch-daemon-on-mac-os-x-sierra-10-12-6-7e0318c74de1
-* Note there is a trial software you can install to debug with `brew cask install launchcontrol`
-
-1. Create a `.plist` file according to Apple docs
-2. Place the `.plist` file in ***~/Library/LaunchAgents***
-3. Login to run or manually run with `launchctl load [filename.plist]`
-```XML
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-   <key>Label</key>
-   <string>com.user.loginscript</string>
-   <key>ProgramArguments</key>
-   <array><string>/path/to/executable/script.sh</string></array>
-   <key>RunAtLoad</key>
-   <true/>
-</dict>
-</plist>
-```
 
 ## Develop
 First thing to do in OSX is install command line tools. Apparently you have to do this every time you
