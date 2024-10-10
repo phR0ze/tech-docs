@@ -345,10 +345,6 @@ populate the target nix store then we will have the store path
 
 
 
-
-
-
-
 ### Local binary cache
 * [Nix Local Binary Cache](https://nixos.org/manual/nix/stable/store/types/local-binary-cache-store)
 
@@ -374,13 +370,6 @@ populate the target nix store then we will have the store path
    ```bash
    $ sudo umount /mnt/cache
    ```
-
-
-
-
-
-
-
 
 ### Other notes
 Exporting and importing closures allows for sharing read-to-use applications similar to how docker 
@@ -451,6 +440,65 @@ $ nix copy file:///path/to/usbstick/folder your-config
 nixos-install will run `nix build --store /mnt` which won't be able to see what is in the installer 
 nix store so we need to copy everything to `/mnt` using `nix copy --no-check-sigs --to local?root=/mnt /out`
 * `nix copy --to /tmp/nix /run/current-system --no-check-sigs`
+
+## Build Live ISO
+Default live installer configurations are available inside `nixos/modules/installer/cd-dvd`
+
+**References**
+* [Nix generators github](https://github.com/nix-community/nixos-generators)
+* [Building an Image docs](https://nixos.org/manual/nixos/stable/#sec-building-image)
+
+You have two options:
+1. Use any of those default configurations as is
+2. Combine them with (any of) your host config(s) 
+
+System images, such as the live installer ones, know how to enforce configuration settings on which 
+they immediately depend in order to work correctly.
+
+However, if you are confident, you can opt to override those enforced values with `mkForce`. 
+
+### Build Unstable channel ISO
+```bash
+$ git clone https://github.com/NixOS/nixpkgs.git
+$ cd nixpkgs/nixos
+$ git switch nixos-unstable
+$ nix-build -A config.system.build.isoImage -I nixos-config=modules/installer/cd-dvd/installation-cd-minimal.nix default.nix
+```
+
+Check the content of the image with:
+```bash
+$ mount -o loop -t iso9660 ./result/iso/cd.iso /mnt/iso
+```
+
+### Additional drivers or firmware
+If you need additional (non-distributable) drivers or firmware in the installer, you might want to 
+extend these configurations.
+
+For example, to build the GNOME graphical installer ISO, but with support for certain WiFi adapters 
+present in some MacBooks, you can create the following file at 
+`modules/installer/cd-dvd/installation-cd-graphical-gnome-macbook.nix`:
+
+```
+{ config, ... }:
+
+{
+  imports = [ ./installation-cd-graphical-gnome.nix ];
+
+  boot.initrd.kernelModules = [ "wl" ];
+
+  boot.kernelModules = [ "kvm-intel" "wl" ];
+  boot.extraModulePackages = [ config.boot.kernelPackages.broadcom_sta ];
+}
+```
+
+Then build it like in the example above:
+
+```bash
+$ git clone https://github.com/NixOS/nixpkgs.git
+$ cd nixpkgs/nixos
+$ export NIXPKGS_ALLOW_UNFREE=1
+$ nix-build -A config.system.build.isoImage -I nixos-config=modules/installer/cd-dvd/installation-cd-graphical-gnome-macbook.nix default.nix
+```
 
 
 <!-- 

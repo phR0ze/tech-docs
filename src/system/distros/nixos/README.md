@@ -25,27 +25,18 @@ ecosystem more unapproachble than prior ecosystems like Arch Linux that I'm comi
 * [Overview](#overview)
   * [Flakes as entry point](#flakes-as-entry-point)
   * [System Versions](#system-versions)
+* [Getting started](#getting-started)
+  * [Install NixOS VM](#install-nixos-vm)
+  * [Install NixOS bare metal](#install-nixos-bare-metal)
+  * [Configure installation](#configure-installation)
+    * [Add new user](#add-new-user)
+  * [Upgrade NixOS](#upgrade-nixos)
 * [Common operations](#common-operations)
   * [Temporarily run new software](#temporarily-run-new-software)
   * [Rollback system version](#rollback-system-version)
   * [Diff system versions](#diff-system-versions)
   * [List what changed](#list-what-changed)
   * [How to determine what is installed](#how-to-determine-what-is-installed)
-* [Getting started](#getting-started)
-  * [Install NixOS VM](#install-nixos-vm)
-  * [Install NixOS bare metal](#install-nixos-bare-metal)
-  * [Configure installation](#configure-installation)
-    * [Boot loader](#boot-loader)
-    * [Add new user](#add-new-user)
-    * [Add sudo passwordless access](#add-sudo-passwordless-access)
-    * [Enable Xfce as desktop](#enable-xfce-as-desktop)
-  * [Upgrade NixOS](#upgrade-nixos)
-* [Build bootable ISO](#build-bootalble-iso)
-* [Flakes](#flakes)
-* [Learning NixOS](#learning-nixos)
-* [Build Live ISO](#build-live-iso)
-* [Upgrades](#upgrades)
-* [Flakes](#flakes)
 
 ## Overview
 
@@ -65,7 +56,7 @@ ecosystem more unapproachble than prior ecosystems like Arch Linux that I'm comi
 There is a lot of commotion and confusion in the NixOS community around Flakes due to their 
 experimental state and only partial adoption in Nix. Additionally the Flakes feature is often 
 conflated with the the new Nix cli command features because it's required for flake support. 
-Regardless flakes serve a sepecific critical purpose won't be going anywhere.
+Regardless flakes serve a sepecific critical purpose and won't be going anywhere.
 
 After digesting the Nix community blogs, docs and various sources its safe to say that Flakes solve 
 the versioning issue in NixOS. Flakes track which version of packages are installed allowing NixOS to 
@@ -76,8 +67,8 @@ the packages versions change.
 ### System Versions
 NixOS stores the different system versions as links in `/nix/var/nix/profiles`. The terminology of 
 `profiles` and alternatly `generations` doesn't really resonate with me so I prefer to call them 
-`system versions`. Given that NisOS configurations are declaragive and best practice is to version 
-controll them with git this seems a much more natural fit.
+`system versions`. Given that NisOS configurations are declarative and best practice is to version 
+control them with git this seems a much more natural fit in my opinion.
 
 **References**
 * [NixOS profiles](https://nixos.org/manual/nix/stable/package-management/profiles.html)
@@ -93,6 +84,94 @@ controll them with git this seems a much more natural fit.
 
 * `/nix/var/nix/profiles/default` is a link to the latest user version
   * Used for user profiles
+
+## Getting started
+
+### Install NixOS VM
+1. Navigate to [NixOS: the Linux distribution](https://nixos.org/download#nixos-iso)
+   ```bash
+   $ wget https://channels.nixos.org/nixos-23.11/latest-nixos-gnome-x86_64-linux.iso
+   ```
+
+2. Create a new sparse qcow2 drive to install to
+   ```bash
+   $ qemu-img create -f qcow2 nix1.qcow2 20G
+   ```
+
+3. Create a new VM using the new drive and ISO
+   ```bash
+   $ qemu-system-x86_64 -enable-kvm -m 4G -nic user,model=virtio -drive file=nix1.qcow2,media=disk,if=virtio \
+       -cdrom latest-nixos-gnome-x86_64-linux.iso
+   ```
+
+4. Follow on runs of the VM just need the cdrom dropped.
+   ```bash
+   $ qemu-system-x86_64 -enable-kvm -m 4G -nic user,model=virtio -drive file=nix1.qcow2,media=disk,if=virtio
+   ```
+5. Once booted
+   1. Select the `NixOS Installer` option at the top
+6. Continue with steps in [Configure installation](#configure-installation)
+
+### Install NixOS bare metal
+
+1. Build NixOS bootable USB
+   1. Determine the correct USB device
+      ```bash
+      $ lsblk
+      ```
+   2. Optionally wipe your USB first
+      ```bash
+      $ sudo wipefs --all --force /dev/sdd
+      ```
+   3. Copy to the dev leaving off the partition
+      ```bash
+      $ sudo dd bs=4M if=latest-nixos-minimal-x86_64-linux.iso of=/dev/sdd status=progress conv=fsync oflag=direct
+      ```
+2. Boot from USB and install
+   1. Boot from the USB
+   2. Select the `NixOS Installer` option at the top
+3. Continue with steps in [Configure installation](#configure-installation)
+
+## Configure installation
+* [Nix Manual](https://nixos.org/manual/nix/unstable/contributing/cli-guideline)
+* [Configuration collection](https://nixos.wiki/wiki/Configuration_Collection)
+  * [AaronJanse configs](https://github.com/aaronjanse/dotfiles/tree/master)
+* [Nix docs on configs](https://nixos.org/manual/nixos/stable/#ch-configuration)
+* [Nix config syntax](https://nixos.org/manual/nixos/stable/#sec-configuration-syntax)
+* [Nix manual](https://nixos.org/nix/manual/#chap-writing-nix-expressions)
+
+1. Copy over nix configuration file
+   1. Set the user password: `passwd nixos` 
+   2. Determine the ip address: `ip a`
+   3. Shell in via ssh from a terminal
+   4. Now from another comp run: `scp configuration.nix nixos@192.168.1.206:~/`
+
+2. Setup the target hard disk
+   1. Use `clu` to partition the drive and generate a hardward config
+   2. Finally run the installer, if the configuration fails to build just fix it and try again
+      ```bash
+      $ nixos-install --no-root-passwd
+      ```
+   3. Reboot
+      ```bash
+      $ sudo reboot
+      ```
+
+### Add new user
+In order to be able to login to your new system your user must have a temporary password using the 
+`initialPassword` property. Or optionally you could use the `initialHashedPassword` but you'd need to 
+hash the value first with `mkpasswd -m sha512 PASSWORD`. I find its just easier to have the user change their password 
+on first run.
+
+* [Create users](https://discourse.nixos.org/t/hashedpassword-issues-cant-sudo/13061)
+
+```
+users.users.alice = {
+  isNormalUser = true;
+  extraGroups = [ "wheel" "networkmanager" ];
+  initialPassword = "nixos";
+};
+```
 
 ## Common operations
 
@@ -181,20 +260,6 @@ $ ln -s /nix/store/...-workstation-23.05.4448.5550a85a087c /nix/var/nix/gcroots/
 
 Note: you can remove system versions by removing the links from `/nix/var/nix/profiles`
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ### List available system versions
 Note: `nixos-rebuild list-generations` only seems to list out what is in `/nix/var/nix/profiles` 
 which won't have an entry for your manual build.
@@ -253,112 +318,7 @@ $ find $(nix-build '<nixpkgs>' -A util-linux --no-link)
    $ nix-store --delete /nix/store/ghgk3fkg1fi1kz02zzkxivvcgyrpmpbb-nixos-23.11.20240211.809cca7-x86_64-linux.iso
    ```
 
-### Prerequisites
-Rust tool installable via curl bashing to assist during the install in applying configuration from 
-git repos.
-
-1. Boot from NixOS ISO
-2. Partition target disk
-3. Generate the hardware config
-4. Configure flakes
-
-### Remote deployments
-Sometimes it nice to use a beefier machine to build and ready the target components to then remotely 
-deploy to the target machine.
-
-* [Remote deployments](https://nixos-and-flakes.thiscute.world/best-practices/remote-deployment#deploy-through-nixos-rebuild)
-
-# Getting started
-
-## Install NixOS VM
-1. Navigate to [NixOS: the Linux distribution](https://nixos.org/download#nixos-iso)
-   ```bash
-   $ wget https://channels.nixos.org/nixos-23.11/latest-nixos-gnome-x86_64-linux.iso
-   ```
-
-2. Create a new sparse qcow2 drive to install to
-   ```bash
-   $ qemu-img create -f qcow2 nix1.qcow2 20G
-   ```
-
-3. Create a new VM using the new drive and ISO
-   ```bash
-   $ qemu-system-x86_64 -enable-kvm -m 4G -nic user,model=virtio -drive file=nix1.qcow2,media=disk,if=virtio \
-       -cdrom latest-nixos-gnome-x86_64-linux.iso
-   ```
-
-4. Follow on runs of the VM just need the cdrom dropped.
-   ```bash
-   $ qemu-system-x86_64 -enable-kvm -m 4G -nic user,model=virtio -drive file=nix1.qcow2,media=disk,if=virtio
-   ```
-5. Once booted
-   1. Select the `NixOS Installer` option at the top
-6. Continue with steps in [Configure installation](#configure-installation)
-
-## Install NixOS bare metal
-
-1. Build NixOS bootable USB
-   1. Determine the correct USB device
-      ```bash
-      $ lsblk
-      ```
-   2. Optionally wipe your USB first
-      ```bash
-      $ sudo wipefs --all --force /dev/sdd
-      ```
-   3. Copy to the dev leaving off the partition
-      ```bash
-      $ sudo dd bs=4M if=latest-nixos-minimal-x86_64-linux.iso of=/dev/sdd status=progress conv=fsync oflag=direct
-      ```
-2. Boot from USB and install
-   1. Boot from the USB
-   2. Select the `NixOS Installer` option at the top
-3. Continue with steps in [Configure installation](#configure-installation)
-
-## Configure installation
-* [Nix Manual](https://nixos.org/manual/nix/unstable/contributing/cli-guideline)
-* [Configuration collection](https://nixos.wiki/wiki/Configuration_Collection)
-  * [AaronJanse configs](https://github.com/aaronjanse/dotfiles/tree/master)
-
-1. Copy over nix configuration file
-   1. Set the user password: `passwd nixos` 
-   2. Determine the ip address: `ip a`
-   3. Shell in via ssh from a terminal
-   4. Now from another comp run: `scp configuration.nix nixos@192.168.1.206:~/`
-
-2. Setup the target hard disk
-   1. Use `clu` to partition the drive and generate a hardward config
-   2. Finally run the installer, if the configuration fails to build just fix it and try again
-      ```bash
-      $ nixos-install --no-root-passwd
-      ```
-   3. Reboot
-      ```bash
-      $ sudo reboot
-      ```
-
-### Package vs Module
-You can install packages directly with `systemPackages = [ "foo" ]` or use NixOS modules to get more 
-control over the application's installation and configuration. Its a good idea to always look up in 
-`https://mynixos.com` your app and see what modules a.k.a options are available.
-
-### Add new user
-In order to be able to login to your new system your user must have a temporary password using the 
-`initialPassword` property. Or optionally you could use the `initialHashedPassword` but you'd need to 
-hash the value first with `mkpasswd -m sha512 PASSWORD`. I find its just easier to have the user change their password 
-on first run.
-
-* [Create users](https://discourse.nixos.org/t/hashedpassword-issues-cant-sudo/13061)
-
-```
-users.users.alice = {
-  isNormalUser = true;
-  extraGroups = [ "wheel" "networkmanager" ];
-  initialPassword = "nixos";
-};
-```
-
-## Which packages are installed or will be installed
+### Which packages are installed or will be installed
 
 Search for a package from the command line
 ```
@@ -444,98 +404,6 @@ $ nix-shell -p cowsay --run "cowsay Nix"
 ### Search for packages
 You can [search the NixOS packages](https://search.nixos.org/packages)
 
-
-## Build Live ISO
-Default live installer configurations are available inside `nixos/modules/installer/cd-dvd`
-
-**References**
-* [Nix generators github](https://github.com/nix-community/nixos-generators)
-* [Building an Image docs](https://nixos.org/manual/nixos/stable/#sec-building-image)
-
-You have two options:
-1. Use any of those default configurations as is
-2. Combine them with (any of) your host config(s) 
-
-System images, such as the live installer ones, know how to enforce configuration settings on which 
-they immediately depend in order to work correctly.
-
-However, if you are confident, you can opt to override those enforced values with `mkForce`. 
-
-### Build Unstable channel ISO
-```bash
-$ git clone https://github.com/NixOS/nixpkgs.git
-$ cd nixpkgs/nixos
-$ git switch nixos-unstable
-$ nix-build -A config.system.build.isoImage -I nixos-config=modules/installer/cd-dvd/installation-cd-minimal.nix default.nix
-```
-
-Check the content of the image with:
-```bash
-$ mount -o loop -t iso9660 ./result/iso/cd.iso /mnt/iso
-```
-
-### Additional drivers or firmware
-If you need additional (non-distributable) drivers or firmware in the installer, you might want to 
-extend these configurations.
-
-For example, to build the GNOME graphical installer ISO, but with support for certain WiFi adapters 
-present in some MacBooks, you can create the following file at 
-`modules/installer/cd-dvd/installation-cd-graphical-gnome-macbook.nix`:
-
-```
-{ config, ... }:
-
-{
-  imports = [ ./installation-cd-graphical-gnome.nix ];
-
-  boot.initrd.kernelModules = [ "wl" ];
-
-  boot.kernelModules = [ "kvm-intel" "wl" ];
-  boot.extraModulePackages = [ config.boot.kernelPackages.broadcom_sta ];
-}
-```
-
-Then build it like in the example above:
-
-```bash
-$ git clone https://github.com/NixOS/nixpkgs.git
-$ cd nixpkgs/nixos
-$ export NIXPKGS_ALLOW_UNFREE=1
-$ nix-build -A config.system.build.isoImage -I nixos-config=modules/installer/cd-dvd/installation-cd-graphical-gnome-macbook.nix default.nix
-```
-
-## Configuration
-The NixOS configuration file `/etc/nixos/configuration.nix` is actually a Nix expression, which is 
-the Nix package manager's purely functional language for describing how to build packages and 
-configurations. This means you have all the expressive power of that language at your disposal, 
-including the ability to abstract over common patterns, which is very useful when managing complex 
-systems. The syntax and semantics of the Nix language are fully described in the Nix manual
-
-**References**
-* [Nix docs on configs](https://nixos.org/manual/nixos/stable/#ch-configuration)
-* [Nix config syntax](https://nixos.org/manual/nixos/stable/#sec-configuration-syntax)
-* [Nix manual](https://nixos.org/nix/manual/#chap-writing-nix-expressions)
-
-### Nix Configuration Syntax
-
-## Upgrades
-
-### Automatic Upgrades
-You can keep NixOS up-to-date automatically by adding the following to your `configuration.nix`
-```
-system.autoUpgrade.enable = true;
-system.autoUpgrade.allowReboot = true;
-```
-
-This enables a periodically executed systemd service named `nixos-upgrade.service`. If the `allowReboot` 
-option is `false`, it runs `nixos-rebuild switch --upgrade` to upgrade NixOS to the latest version in the 
-current channel. (To see when the service runs, see `systemctl list-timers`.) If `allowReboot` is `true`, 
-then the system will automatically reboot if the new generation contains a different kernel, initrd 
-or kernel modules. You can also specify a channel explicitly, e.g. 
-
-```
-system.autoUpgrade.channel = "https://channels.nixos.org/nixos-23.05";
-```
 
 <!-- 
 vim: ts=2:sw=2:sts=2

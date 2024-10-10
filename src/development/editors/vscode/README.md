@@ -4,6 +4,7 @@ Develop with Visual Studio Code
 ### Quick links
 * [Install](#install)
 * [Install Extensions](#install-extensions)
+  * [Export Extensions for Nix](#export-extensions-for-nix)
 * [Keyboard Shortcuts](#keyboard-shortcuts)
   * [tasks.json](#tasks-json)
 * [General Settings](#general-settings)
@@ -11,7 +12,7 @@ Develop with Visual Studio Code
 * [Troubleshooting](#troubleshooting)
   * [Remove All Extensions](#remove-all-extensions)
 
-# Install
+## Install
 ```bash
 # Install from the cyberlinux repo
 $ sudo pacman -S visual-studio-code-bin ripgrep
@@ -22,7 +23,7 @@ $ cd visual-studio-code-bin; makepkg -s
 $ sudo pacman -U visual-studio-code-bin-1.8.1-3x86_64.pkg.tar.xz
 ```
 
-# Install Extensions
+## Install Extensions
 Note: you can list all your installed extensions with `code --list-extensions`
 
 1. Launch `code`
@@ -70,7 +71,20 @@ Note: you can list all your installed extensions with `code --list-extensions`
    | CodeLLDB                 | `vadimcn.vscode-lldb`                 |
    | Dependi                  | `fill-labs.dependi`                   |
 
-# Keyboard Shortcuts
+### Export Extensions for Nix
+NixPkgs has a script that can be used to dump vscode extension details into a nix expression that you 
+can use in your configuration to install the current versions of all your extensions.
+
+1. Shallow clone `nipkgs` as it's large
+   ```bash
+   $ git clone -b master --depth 1 https://github.com/NixOS/nixpkgs
+   ```
+2. Run the script
+   ```bash
+   $ ./nixpkgs/pkgs/applications/editors/vscode/extensions/update_installed_exts.sh
+   ```
+
+## Keyboard Shortcuts
 Hit `Ctrl+Shift+p` and search for keyboard then choose `Preferences: Open Keyboard Shortcuts`
 
 | Key sequence   | Description             |
@@ -102,7 +116,7 @@ Keyboard shortcut overrides are found in: `~/.config/Code/User/keybindings.json`
 ]
 ```
 
-## tasks.json
+### tasks.json
 Every project requires the creation of the `.vscode/tasks.json` file to configure build shortcuts for 
 your specific project.
 
@@ -138,7 +152,7 @@ your specific project.
 }
 ```
 
-# General Settings
+## General Settings
 Configuration is saved at `~/.config/Code/User/settings.json`
 
 Hit `Ctrl+Shift+p` and search for `json` and select `Preferences: Open Settings(JSON)`
@@ -210,7 +224,7 @@ Hit `Ctrl+Shift+p` and search for `json` and select `Preferences: Open Settings(
 }
 ```
 
-## Powerline glyphs in terminal
+### Powerline glyphs in terminal
 Powerline depends on fonts that support the particular glyphs that it uses. In order to get them to 
 show up properly you need to install the right fonts then set VSCode to use the correct fonts for the 
 terminal.
@@ -239,7 +253,7 @@ terminal.
    "terminal.integrated.fontSize": 16
    ```
 
-# Language Servers
+## Language Servers
 The VS Code team at Microsoft proposed the language server protocol to allow for language developers 
 to be able to provide support for their language in a generic way that could then be leveraged by any 
 Integrated Development Environment or Editor. 
@@ -259,9 +273,9 @@ the implementation of programming language freatures. The layer that translates 
 into JSON requests and JSON responses into behavior (the client layer) is only coupled with the 
 editor it's implemented for usually via a plugin or extension.
 
-# Troubleshooting
+## Troubleshooting
 
-## Remove All Extensions
+### Remove All Extensions
 Extensions are stored in ***~/.vscode/extensions***
 
 To clean up all extensions simply remove this directory

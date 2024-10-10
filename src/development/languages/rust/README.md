@@ -109,7 +109,25 @@ Resources:
 [Google Rust Course](https://google.github.io/comprehensive-rust/welcome.html)
 
 ## Install Rust
-see [Install Rust](../../editors/vscode/rust/#install-rust)
+The Rust `toolchain` is all the necessary build components for your local system while a `target` is 
+the ability to cross compile to another platform.
+
+1. In my ***NixOS*** based distro `rustup` and `lldb` are already installed so just install rust
+   ```bash
+   $ rustup default stable
+   ```
+2. List all available targets and see which are installed
+   ```bash
+   $ rustup target list
+   ```
+3. Install musl target
+   ```bash
+   $ rustup target add x86_64-unknown-linux-musl
+   ```
+3. Install android targets for NDK dev
+   ```bash
+   $ rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
+   ```
 
 ## Configure VScode
 see [Config Rust](../../editors/vscode#config-rust)

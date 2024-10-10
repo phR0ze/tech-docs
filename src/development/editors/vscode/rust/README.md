@@ -6,25 +6,7 @@
 * [Rust tasks](#rust-tasks)
 
 ### Install Rust
-The Rust `toolchain` is all the necessary build components for your local system while a `target` is 
-the ability to cross compile to another platform.
-
-1. In my ***NixOS*** based distro `rustup` and `lldb` are already installed so just install rust
-   ```bash
-   $ rustup default stable
-   ```
-2. List all available targets and see which are installed
-   ```bash
-   $ rustup target list
-   ```
-3. Install musl target
-   ```bash
-   $ rustup target add x86_64-unknown-linux-musl
-   ```
-3. Install android targets for NDK dev
-   ```bash
-   $ rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
-   ```
+see [Install Rust](../../../languages/rust/#install-rust)
 
 ### Install Rust Nightly
 Rust nightly as installed by `rustup` supplies unpatched binaries out of the box that don't work with 
