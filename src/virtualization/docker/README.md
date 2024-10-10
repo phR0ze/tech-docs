@@ -3,8 +3,8 @@
 ## Docker in Docker
 By mounting the Docker daemon's Unix socket `/var/run/docker.sock` from the host into the container 
 we can use it to manage Docker. This opens up the possibility of building, pushing or pulling 
-images from the configured registry and any other docker operations. The actual operations actually 
-happen on the host machine that is running your base docker container.
+images from the configured registry and/or any other docker operations. The actual operations 
+actually happen on the host machine that is running your base docker container.
 
 Note: According to Jérôme Petazzoni, the creator of the dind implementation, adopting the 
 socket-based approach should be your preferred solution. Bind mounting your host's daemon socket is 
@@ -16,10 +16,7 @@ for each task. The `cli` is an alpine based image with `ca-certificates`, `opens
 dependencies installed as well as `docker`, `buildx` and `compose`. The `dind` version builds on top 
 of the cli version adding a number of networking packages and additional configuration.
 
-
-
-
-Example using official [Docker image](https://hub.docker.com/_/docker)
+**Example using official** [Docker image](https://hub.docker.com/_/docker)
 1. Change the docker sock permissions
    ```bash
    $ sudo chmod 666 /var/run/docker.sock
