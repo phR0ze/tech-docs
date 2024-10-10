@@ -164,6 +164,7 @@
 
 - [Virtualization](virtualization/README.md)
   - [Docker](virtualization/docker/README.md)
+    - [dind](virtualization/docker/dind/README.md)
   - [Kubernetes](virtualization/kubernetes/README.md)
   - [libvirt](virtualization/libvirt/README.md)
   - [Network Bridge](virtualization/network_bridge/README.md)
