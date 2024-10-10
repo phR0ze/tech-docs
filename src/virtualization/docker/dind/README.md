@@ -2,6 +2,10 @@
 
 ### Quick links
 * [CI Setup](#ci-setup)
+  * [Build custom Dockerfile](#build-custom-dockerfile)
+  * [Launch CI daemon](#launch-ci-daemon)
+  * [Configure registry access](#configure-registry-access)
+* [Socket mount solution](#socket-mount-solution)
 
 ## CI Setup
 Docker in Docker involves running Docker within a Docker container. Instead of interacting with the 
@@ -48,24 +52,38 @@ RUN --mount=type=secret,id=GITHUB_TOKEN,env=GITHUB_TOKEN \
 
 Build: `docker build --secret id=GITHUB_TOKEN -t ci:latest .`
 
-### Launch CI container
-Note: pass in environemnt variables like your `GITHUB_TOKEN` with the `-e` flag
+### Launch CI daemon
+Note: pass in environemnt variables like `GITHUB_TOKEN` with the `-e` flag for use at runtime
 
 1. Start the container as a daemon
    ```bash
    $ docker run --rm --privileged -e GITHUB_TOKEN -d --name ci ci:latest
    ```
-2. Interact with the container in one off commands
-   ```bash
-   $ docker exec -it ci <commands>
-   ```
-3. Shell in to work directly in the container
+2. Shell in to work directly in the container for temporary hacks
    ```bash
    $ docker exec -it ci /bin/bash
+
+   # Install tooling
+   $ apk add vim
+
+   # Configure github access to work around dependency syntax
+   $ cat <<EOF > ~/.gitconfig 
+   [url "https://oauth2:$GITHUB_TOKEN@github.com/<company>"]
+     insteadOf = git@github.com:<company>
    ```
-4. Kill the container once your happy
+3. Kill the container once your happy
    ```bash
    $ docker container kill ci
+   ```
+
+### Configure registry access
+1. Login to gcloud and follow steps in browser copy the code to terminal
+   ```bash
+   $ docker exec -it ci gcloud auth login --update-adc
+   ```
+2. Setup docker access to google registry
+   ```bash
+   $ docker exec -it ci gcloud auth configure-docker <company-docker.pkg.dev>
    ```
 
 ## Socket mount solution
