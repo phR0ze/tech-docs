@@ -87,6 +87,10 @@
     - [gcloud](cloud/google_cloud_platform/gcloud/README.md)
     - [IAP](cloud/google_cloud_platform/iap/README.md)
 
+- [Gaming](gaming/README.md)
+  - [Warcraft2](gaming/warcraft2/README.md)
+  - [Wine](gaming/wine/README.md)
+
 - [Hardware](hardware/README.md)
   - [Accelerated Graphics](hardware/accelerated_graphics/README.md)
   - [Tomato Router](hardware/tomator_router/README.md)
@@ -158,7 +162,6 @@
   - [Terminal](system/terminal/README.md)
     - [Terminal Emulators](system/terminal/terminal_emulators/README.md)
     - [Terminal Window Manager](system/terminal/terminal_window_manager/README.md)
-  - [Wine](system/wine/README.md)
   - [Window Managers](system/window_managers/README.md)
     - [i3](system/window_managers/i3/README.md)
 
