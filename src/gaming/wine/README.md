@@ -62,7 +62,7 @@ Wine by default creates a single `~/.wine` prefix as 64bit but often its old Win
 to run so we'll need a new 32bit prefix created.
 
 ```bash
-$ WINEARCH=win32 WINEPREFIX=~/.wine/prefixes/<prefix> wincfg
+$ WINEARCH=win32 WINEPREFIX=~/.wine/prefixes/<prefix> winecfg
 ```
 
 ### Delete a Wine prefix
