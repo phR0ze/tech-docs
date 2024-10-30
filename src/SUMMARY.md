@@ -90,9 +90,11 @@
 - [Gaming](gaming/README.md)
   - [Warcraft2](gaming/warcraft2/README.md)
   - [Wine](gaming/wine/README.md)
+  - [Wii Backup Manager](gaming/wii_backup_manager/README.md)
 
 - [Hardware](hardware/README.md)
   - [Accelerated Graphics](hardware/accelerated_graphics/README.md)
+  - [Storage](hardware/storage/README.md)
   - [Tomato Router](hardware/tomator_router/README.md)
 
 - [Multimedia](multimedia/README.md)
