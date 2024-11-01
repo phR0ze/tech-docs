@@ -10,6 +10,7 @@ components. Development specific technologies are in the top level
 * [.. up dir](..)
 * [Distros](distros)
 * [Flatpak](flatpak)
+* [Desktop components](#desktop-components)
 * [inital ramdisk](#initial-ramdisk)
   * [mkinitcpio](#mkinitcpio)
   * [tput colored output](#tput-colored-output)
@@ -32,6 +33,65 @@ components. Development specific technologies are in the top level
 * [Thunar](#thunar)
   * [Thunar webp thumbnails](#thunar-webp-thumbnails)
 * [Wine](wine)
+
+## Desktop components
+
+***Window Managers*** used by Desktop Environments usually provide:
+* Window placment on the screen
+* Window decorations
+* Workspace or virtual desktops
+
+***Desktop Managers*** used by Desktop Enviroments usually provide:
+* Desktop Wallpaper
+* Desktop root window menu
+* Desktop application and file manager icons
+
+***Panels*** used by Desktop Environments usually provide:
+* Switching between open windows
+* Launch applications
+* Switch workspaces
+* Menu plugins to browse applications or directories
+
+***Session Managers*** used by Desktop Environments usually provide:
+* Controls for login
+* Power managment
+* Multiple login sessions
+
+***Application Finders*** used by Desktop Environments usually provide:
+* View of the applications installed in categories
+
+***File Managers*** usec by Desktop Environments usually provide:
+* File management
+* Unique utilities like bulk renamer
+
+***Settings Managers*** used by Desktop Environments usually provide:
+* Tools to control various settings
+* Keyboard shortcuts
+* Appearance
+* Display settings
+
+* Appearance
+  * Themes
+* Desktop features
+* Desktop settings
+  * Desktop notifications
+
+* Screenshooter
+* PDF Viewer
+* Multi-monitor management
+
+## Desktop features
+One of the core paradigms in the Desktop Environment is the visible desktop surface and your
+interactions with it. Sometimes these features are abscent from a particular desktop environment,
+handled by a standalone appliation or simply a feature of a larger application.
+
+* Desktop wallpaper
+* Desktop application launcher icons
+* Desktop file management folder icons
+
+## Desktop settings
+Another typical desktop environment feature is 
+
 
 # initial ramdisk
 

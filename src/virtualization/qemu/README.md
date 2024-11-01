@@ -1,227 +1,273 @@
-# QEMU
-<img align="left" width="40" height="40" src="../../data/images/logo_256x256.png">
+# QEMU <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
 Documenting my experience with QEMU
 
-Fundamentally is a neat idea. CLI based, fast and reliable; but every time I try to do anything 
-complicated it takes forever to figure it out. Bridge networking is so much simpler with VirtualBox 
-so going back to that for now.
+Fundamentally QEMU is awesome. CLI based, fast and reliable; but every time I try to do anything 
+complicated it takes forever to figure it out. I'm coming from a VirtualBox background though which 
+made everything way simpler than this.
 
 ### Quick links
 * [Overview](#overview)
+  * [Keyboard Shortcuts](#keyboard-shortcuts)
   * [Install QEMU](#install-qemu)
-* [QEMU Monitor](#qemu-monitor)
-* [VM CRUD](#vm-crud)
-  * [Create VM](#create-vm)
-  * [Run VM](#run-vm)
-* [Networking](#networking)
-  * [Network Bridge](#network-bridge)
-  * [Port forwarding](#port-forwarding)
+  * [QEMU Monitor](#qemu-monitor)
+  * [Quickemu](#quickemu)
+* [Linked Pages]()
+  * [NIX QEMU](nix_qemu/README.md)
+* [Parameters](#parameters)
+  * [General params](#general-params)
+  * [CPU/Mem params](#cpu-mem-params)
+  * [Video params](#video-params)
+  * [Networking params](#networking-params)
+  * [Drive params](#drive-params)
+  * [Window display params](#window-display-params)
+* [VM Templates](#vm-templates)
+  * [Create Windows 7 VM](#create-windows-7-vm)
+  * [Create Windows 8 VM](#create-windows-8-vm)
+  * [Create Windows 10 VM](#create-windows-10-vm)
+* [VM Snapshots](#vm-snapshots)
+  * [Run in Immutable mode](#run-in-immutable-mode)
 
-# Overview
+## Overview
 Quick EMUlator is a command line virtual machine system. It is fast, portable and has excellent guest 
 support. It is the swiss army knife of virtualization. QEMU supports everything and more than other 
-hypervisors. Its one downside is that is is all command line driven and all the GUIs out there don't 
-do it justice.
+hypervisors. Its one downside is that its rather complicated to figure out how to do what you want to 
+do and the available GUIs don't help much.
 
 **References**
 * [Archlinux QEMU](https://wiki.archlinux.org/title/QEMU)
+* [Gentoo linux docs](https://wiki.gentoo.org/wiki/QEMU/Options)
+* [QEMU Essential commands](https://blog.usro.net/2024/10/essential-qemu-commands-a-quick-guide-for-beginners-and-power-users/)
 
-## Keyboard Shortcuts
+### Keyboard Shortcuts
 
-### Keyboard Capture
-Press `Ctrl+Alt+G` to release the keyboard control grab. Shows this in the window title bar as well 
-as a reminder.
+* **Keyboard Capture** - press `Ctrl+Alt+G` to release the keyboard control grab. Shows this in the 
+  window title bar as well as a reminder.
 
-## Install QEMU
+### Install QEMU
 Install the command line version only
 
-```bash
-$ sudo pacman -S qemu-base
-```
+* **Arch Linux**
+  ```bash
+  $ sudo pacman -S qemu-base
+  ```
 
-## QEMU Monitor
+* **NixOS** - see 
+[nixos-confi/options/virtualization/virt-manager](https://github.com/phR0ze/nixos-config/blob/main/options/virtualization/virt-manager.nix)
+
+### QEMU Monitor
 You can access the monitor console by pressing `Ctrl+Alt+2` and return to the normal window with 
 `Ctrl+Alt+1`.
 
-### Connect via TCP
 You can expose the monitor over TCP with the runtime argument `-monitor 
 tcp:127.0.0.1:<PORT>,server,nowait` then use netcat `nc 127.0.0.1 <PORT>` and send it commands.
 
-# VM CRUD
+### Quickemu
+[Quickemu](https://github.com/quickemu-project/quickemu), available in nixpkgs, is a set of wrapper 
+shell scripts that take the wildly configurable QEMU and try to do the ***right thing*** when 
+creating virtual machines.
 
-## Create VM
+* automatically download upsteam OS isos
+* automatically choose optimal configuration best suited for your computer when running the VM
+* store vm and configuration anywhere
+* VirGL acceleration
+* USB device pass-through
+* Network port forwarding
+
+Quickemu works off the assumption that there is a lot going on in QEMU and its hard to remember. 
+Quickemu will figure out a lot of it for you and store it in a config along side your `qcow2` image 
+so you can refer to that.
+
+## Parameters
+
+### General params
+
 | Parameters                                      | Description
 | ----------------------------------------------- | ---------------------------------------------------
+| `-name "Arch Linux"`                            | Set the window title of your VM
 | `-enable-kvm`                                   | Enables the KVM subsystem for hardware acceleration
-| `-m 2048`                                       | Specifies 2G of RAM 
-| `-nic user,model=virtio`                        | Add virtual nic with high speed virtio driver
-| `-drive file=alpine.qcow2,media=disk,if=virtio` | Attach your virtual disk to the guest as `/dev/vda`
+
+### CPU/MEM params
+
+| Parameters                                      | Description
+| ----------------------------------------------- | ---------------------------------------------------
+| `-m 4G`                                         | Specifies 4G of RAM 
+| `-cpu host`                                     | CPU model recommended for best performance
+| `-smp 4`                                        | Specifies the number of cores the guest is permitted to use
+
+**CPU Details backing selections above**
+https://www.qemu.org/docs/master/system/qemu-cpu-models.html
+
+***TL;DR*** use `-cpu host` then limit cores with `-smp NUMBER`
+
+QEMU provides two options here: either `Host passthrough` or `Named model`.
+1. `Host passthrough` is the recommended CPU config to use if live migration is not required as 
+   it most accurately takes advantage of the existing hardware for maximum performance. Despite being 
+   the recommendation though it is not the default.
+
+2. `Named model` allows for specifying a particular CPU type or generic type for more isolation 
+   from the host and provide live migration support.
+
+**Default x86 CPU models** the default CPU type is the `qemu32` or `qemu64` which are guaranteed to 
+work with maximum compatibility. Despite being the defaults though the community is discouraging 
+their use in production for security reasons as the compatibility also means security vulnerabilities 
+which make them unsuitable for production exposed systems. That said for internal testing this isn't 
+a concern.
+
+*libvirt* will choose a CPU model for you based that most closely matches your CPU's feature set.
+
+In any case it is possible to add or remove CPU features if needed but is only needed in advanced 
+cases.
+
+Run the following to see the list if support CPUs
+```bash
+$ qemu-system-x86_64 -cpu ?
+```
+
+### Video params
+
+| Parameters                                      | Description
+| ----------------------------------------------- | ---------------------------------------------------
+| `-vga virtio`                                   | Use improved graphics performance driver
+| `-device VGA,vgamem_mb=32`                      | Increase the default 16M of video memory
+
+### Networking params
+
+| Parameters                                      | Description
+| ----------------------------------------------- | ---------------------------------------------------
+| `-nic user,model=virtio`                        | Simple pass through networking with highspeed `virttio` driver
+| `-nic user`                                     | Simple pass through networking with generic driver
+| `-nic bridge,br=virbr0,helper=$(type -p qemu-bridge-helper)` | Bridged networking
+
+### Drive params
+
+| Parameters                                      | Description
+| ----------------------------------------------- | ---------------------------------------------------
+| `-drive file=arch1.qcow2,media=disk,if=virtio`  | Attach your virtual disk to the guest as `/dev/vda`
 | `-cdrom alpine-standard-3.8.0-x86_64.iso`       | Attach ISO as cdrom
-| `-sdl`                                          | Use standard graphical output window
 
-1. Download a test image
-   1. Navigate to [arch linux mirror](http://mirrors.acm.wpi.edu/archlinux/iso/latest/)
-   2. Download the latest `iso`
+### Window display params
 
-2. Create a new sparse qcow2 drive to install to
+| Parameters                                      | Description
+| ----------------------------------------------- | ---------------------------------------------------
+| `-display sdl,gl=on`                            | Use standard window for VM display with OpenGL support
+
+## VM Templates
+Documenting a few setups I can experiement with
+
+### Create Windows 7 VM
+see [Parameters](#paramters) for explanations
+
+Windows doesn't have drivers to support Virtio 
+* `-nic user` non virtio simple pass-through networking for install
+* `-hda` for simply generic hdd support without advanced virtio drivers
+
+Adding in bridge networking see [QEMU Networking >Create Network Bridge](qemu_networking/README.md#create-network-bridge)
+* `-nic bridge,br=virbr0,helper=$(type -p qemu-bridge-helper)`
+
+1. Create a new sparse qcow2 drive to install to
    ```bash
-   $ qemu-img create -f qcow2 arch1.qcow2 20G
+   $ cd ~/Projects/vms
+   $ qemu-img create -f qcow2 win7.qcow2 40G
    ```
 
 3. Create a new VM using the new drive and ISO
    ```bash
    $ qemu-system-x86_64 \
+       -name Win7 \
        -enable-kvm \
-       -m 4G \
-       -nic user,model=virtio \
-       -drive file=arch1.qcow2,media=disk,if=virtio \
-       -cdrom archlinux-2023.09.01-x86_64.iso
+       -m 4G -cpu host -smp 4 \
+       -nic user \
+       -vga virtio -display sdl,gl=on \
+       -hda win7.qcow2 \
+       -cdrom win7.iso
    ```
 
-## Run VM
-Pro tip to name your VMs so you can find them later
+4. Walk through the Windows installation wizard
+   * Configure as you like it and shutdown
 
+5. Ensure the network bridge is started
+   ```bash
+   $ virsh net-start default
+   ```
+
+6. Run that same VM later
+   ```bash
+   $ qemu-system-x86_64 -name Win7 -enable-kvm -m 4G -cpu host -smp 4 -vga virtio \
+      -nic bridge,br=virbr0,helper=$(type -p qemu-bridge-helper) \
+      -display sdl,gl=on -hda win7.qcow2
+   ```
+
+### Create Windows 8 VM
+see [Parameters](#paramters) for explanations
+
+Windows doesn't have drivers to support Virtio 
+* `-net nic -net user` non virtio simple pass-through networking for install
+* `-hda` for simply generic hdd support without advanced virtio drivers
+
+Adding in bridge networking see [QEMU Networking >Create Network Bridge](qemu_networking/README.md#create-network-bridge)
+* `-nic bridge,br=virbr0,helper=$(type -p qemu-bridge-helper)`
+
+1. Create a new sparse qcow2 drive to install to
+   ```bash
+   $ cd ~/Projects/vms
+   $ qemu-img create -f qcow2 win8.qcow2 40G
+   ```
+
+3. Create a new VM using the new drive and ISO
+   ```bash
+   $ qemu-system-x86_64 \
+       -name Win8 \
+       -enable-kvm \
+       -m 4G -cpu host -smp 4 \
+       -net nic -net user \
+       -vga virtio -display sdl,gl=on \
+       -hda win8.qcow2 \
+       -cdrom win8.iso
+   ```
+
+4. Walk through the Windows installation wizard
+   * Configure as you like it and shutdown
+
+5. Ensure the network bridge is started
+   ```bash
+   $ virsh net-start default
+   ```
+
+6. Run that same VM later
+   ```bash
+   $ qemu-system-x86_64 -name Win8 -enable-kvm -m 4G -cpu host -smp 4 -vga virtio \
+      -nic bridge,br=virbr0,helper=$(type -p qemu-bridge-helper) \
+      -display sdl,gl=on -hda win8.qcow2
+   ```
+
+### Create Windows 10 VM
+see [Parameters](#paramters) for explanations
+
+Quickemu will automate downloading all necessary drivers for a good experience as well as creating a 
+configuration file for you to then launch the VM with these drivers.
+
+1. Create windows 10 configuration and download needed drivers to `windows-10`
+   ```bash
+   $ quickget windows 10
+   ```
+
+2. 
+**Config**
 ```bash
-$ qemu-system-x86_64 -enable-kvm -m 4G -nic user,model=virtio -drive file=arch1.qcow2,media=disk,if=virtio
+guest_os="windows"
+iso="win10.iso"
+fixed_iso="virtio-win.iso"
+disk_img="win10.qcow2"
+tpm="on"
+secureboot="off"
 ```
 
-## Snapshots in QEMU
+## VM Snapshots
 
 ### Run in Immutable mode
 Running a VM in immutable mode will discard all changes when the VM is powered off just by running 
 with the `-snapshot` parameter. However you can still save the state as a snapshot if you run the 
 `commit all` from the monitor console.
-
-# Networking
-`-netdev bridge,br=br0,id=net0`
-* Configures the nic frontend to use bridge `br0` and ties to backend with id `net0`
-
-`-device virtio-net-pci,netdev=net0`
-* Configures the nic backend identified by `net0` to use a specific virtual driver `virtio-net-pci`
-
-# Network Bridge
-**References**
-* [Arch linux bridge](https://wiki.archlinux.org/title/Network_bridge)
-A network bridge is the virtual equivalent of a physical network switch you plug your ethernet cables 
-into. This allows your virtual network devices and your host machine to be part of the same network 
-when connected through the network bridge virtual switch.
-
-It's common for Docker and VirtualBox and other virtualization technologies to create network bridges 
-to allow for virtual devices to communicate. You can see the devices:
-```bash
-$ ip link
-...
-4: docker0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN mode DEFAULT group default 
-    link/ether 02:42:1d:c0:d6:0f brd ff:ff:ff:ff:ff:ff
-5: vboxnet0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
-    link/ether 0a:00:27:00:00:00 brd ff:ff:ff:ff:ff:ff
-```
-
-Libvirt, which many use to manage QEMU, will also create a bridge network similar to Docker or 
-VirtualBox named `virbr0` which QEMU is already setup in `/etc/qemu/bridge.conf` for users to access.
-
-Regardless of the virtualization manager used essentially what happens is that the virtualization 
-manager creates the bridge network then assigns it an IP so that the host OS can participate in the 
-network and talk to the VMs then assigns the VMs tap devices that are part of the bridge network.
-
-## Creating a bridge
-Although this is automatically managed by Docker, VirtualBox, Libvirt and others we can manually 
-create one as well. This guide is for NetworManager users using `nmcli`.
-
-* [Instructions via iproute2](https://wiki.archlinux.org/title/Network_bridge#With_iproute2)
-  * [iproute2 only](https://bbs.archlinux.org/viewtopic.php?id=231111)
-* [Instructions via network manager](https://wiki.archlinux.org/title/Network_bridge#With_NetworkManager)
-  * [Redhat nmcli](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/configuring_and_managing_networking/configuring-a-network-bridge_configuring-and-managing-networking)
-
-**Note on bridge permissions**:  
-By default QEMU is configured for only a specific named bridge `virbr0` to be accessible by any user. 
-You can fix this by:
-* Editing `/etc/qemu/bridge.conf` and changing `virbr0` to `all`
-* But the simplest solution is to just use a bridge with the same name `virbr0`
-* Note: disable STP to not advertise it on the network
-
-1. Create a new empty bridge named `virbr0` and set to UP
-   ```bash
-   $ sudo nmcli con add type bridge con-name virbr0 ifname virbr0 stp no
-   $ sudo nmcli con add type bridge con-name virbr0 ifname virbr0 stp no ipv4.method auto ipv6.method disabled connection.autoconnect yes
-   ```
-
-2. Assign your NIC to the bridge i.e. add it as a slave to the bridge
-   ```bash
-   $ nmcli con add type bridge-slave ifname enp1s0 master virbr0
-
-   OR
-
-   $  nmcli con modify enp1s0 master virbr0
-
-# use as port of other device
-   $ nmcli con modify virbr0 ipv4.method disabled ipv6.method disabled connection.autoconnect yes stp no
-   $ nmcli con modify bridge0 connection.autoconnect-slaves 1
-   ```
-
-3. Enable the new bridge interface
-   ```bash
-   $ sudo nmcli con down enp1s0
-   $ sudo nmcli con up virbr0
-   ```
-
-2. Assign an IP address to the bridge
-   ```bash
-   $ sudo nmcli conn modify virbr0 ipv4.addresses IP_ADDRE
-   # OR
-   $ sudo ip address add 192.168.1.4/24 dev virbr0
-   ```
-2. Setup your bridge e.g. `virbr0` to route to your default gateway for your NIC e.g. `enp1s0`
-   1. First determine your NIC's ip e.g. `192.168.1.4/24` and add it to your bridge e.g. `virbr0`
-      ```bash
-      $ ip a show enp1s0
-      ...
-      inet 192.168.1.4/24...
-      $ sudo ip address add 192.168.1.4/24 dev virbr0
-      ```
-   2. Determine your NIC's default gateway
-      ```bash
-      $ ip route show dev enp1s0
-      default via 192.168.1.1...
-      $ sudo ip route append default via 192.168.1.1 dev virbr0
-      ```
-
-3. Now add your NIC e.g. `enp1s0` to the bridge which will have 
-
-4. Add the following flags to you QEMU VM to expose it on the bridge
-   ```
-   -nic bridge,br=virbr0
-   ```
-
-You can change your qemu nic settings to use a bridge with `-nic bridge,br=br0`; however you'll 
-immediately hit a `access denied by acl file` error:
-```bash
-$ qemu-system-x86_64 -enable-kvm -m 4G -nic bridge,br=br0,model=virtio-net-pci -drive file=nix1.qcow2,media=disk,if=virtio
-access denied by acl file
-qemu-system-x86_64: -nic bridge,br=br0: bridge helper failed
-```
-
-This is controlled by the setting in `/etc/qemu/bridge.conf`
-```
-allow virbr0
-```
-
-
-Boot your VM and notice that it automatically creates the `tap0` network device.
-```bash
-$ qemu-system-x86_64 -enable-kvm -m 4G -netdev bridge,br=br0,id=net0 -device virtio-net-pci,netdev=net0 \
-    -drive file=nix1.qcow2,media=disk,if=virtio
-```
-
-## Port forwarding
-This mechanism it good for connecting to a single service from the VM. However if you'd like to allow 
-the VM to interact fully on your network then you'd want to configure a Bridge network for it.
-
-Port forward VM's port 22 to host port 2222 such that any requests over host:2222 would get 
-redirected to the VM on port 22.
-```
--netdev user,id=net0,hostfwd=tcp::2222-:22
-```
 
 <!-- 
 vim: ts=2:sw=2:sts=2

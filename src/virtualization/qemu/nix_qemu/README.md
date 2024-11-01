@@ -1,6 +1,5 @@
-# NIX QEMU
+# NIX QEMU <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 NixOS has the ability to build VMs from a nix system closure for testing. 
-
 
 **References**
 * [Custom Images - Mayflower](https://nixos.mayflower.consulting/blog/2018/09/11/custom-images/)
@@ -28,6 +27,12 @@ $ clu build vm
 This will automatically create a disk named for your host e.g. `nixos.qcow2` in my case for the new 
 VM to persist any changes on disk. It will use the VM host's nix store.
 
+**Directly**
 ```bash
 $ ./result/bin/run-nixos-vm
+```
+
+**Using clu**
+```bash
+$ clu run vm
 ```

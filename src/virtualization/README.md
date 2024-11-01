@@ -1,10 +1,10 @@
-# Virtualization
-<img align="left" width="48" height="48" src="../data/images/logo_256x256.png">
+# Virtualization <img style="margin: 6px 13px 0px 0px" align="left" src="../data/images/logo_36x36.png" />
 Documenting various virtualization technologies
 
 ### Quick links
 * [Overview](#overview)
   * [Virt Manager vs Libvirt vs QEMU vs KVM](#virt-manager-vs-libvirt-vs-qemu-vs-kvm)
+* [QEMU](qemu/README.md)
 * [Network Bridge](network_bridge/README.md)
 * [ProxMox](#prox-mox)
 * [Virtual Box](#virtual-box)
