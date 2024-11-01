@@ -9,6 +9,11 @@ disk.
   * [Create new 32bit Wine Prefix](#create-new-32bit-wine-prefix)
 
 ## Install Wii Backup Manager
+Rated Gold on WineHQ for emulation on Linux
+
+### Download Wii Backup Manger
+1. Navigate to https://wiibackupmanager.co.uk/downloads.html 
+2. Download build 78
 
 ### Create new 32bit Wine Prefix
 1. Run `WINEARCH=win32 WINEPREFIX=~/.wine/prefixes/wiibm winecfg`

@@ -2,6 +2,12 @@
 
 ### Quick links
 
+## XFWM vs Openbox
+* Both wrote in C
+* Openbox is standalone
+* XFWM is part of a DE
+* XFWM has a compositor built in for true transparency
+
 ## Stacking Window Managers
 
 ## Tiling Window Managers

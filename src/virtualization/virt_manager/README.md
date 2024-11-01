@@ -45,12 +45,6 @@ libvirt-based containers.
 
 
 
-
-
-
-
-
-
 ## Connect to a Virtual Machine
 You can connect to a virtual machine with virt manager directly or with virt-viewer. virt-viewer is a 
 slimmed down UI for the guest without all the extra VM management controls.
