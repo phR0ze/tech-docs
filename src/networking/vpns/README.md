@@ -2,9 +2,7 @@
 
 ### Quick links
 * [OpenConnect](#openconnect)
-* [OpenVPN](#openvpn)
-  * [Connect via Commandline](#connect-via-commandline)
-  * [Connect via NetworkManager](#connect-via-command-line)
+* [OpenVPN](openvpn/README.md)
 * [WireGuard](#wireguard)
   * [WireGuard Client](#wireguard-client)
   * [WireGuard Server](#wireguard-server)
@@ -40,109 +38,6 @@ $ route
 # Check correct dns
 $ systemd-resolved --status
 ```
-
-## OpenVPN
-Many VPN services are based on OpenVPN. In this section I'll be working through common configuration
-options. OpenVPN client configuration files are stored in `/etc/openvpn/client` usually with the `.ovpn`
-extension.
-
-### Connect via Commandline
-This is a `Split DNS` solution meaning we will use the VPN's DNS resolver for all things over the VPN 
-and your normal DNS resolver for everything else. This is accomplished using the helper 
-[update-systemd-resolved](https://github.com/jonathanio/update-systemd-resolved) script
-that reads from the `dhcp-option` field in the server or client config then applies them dynamically 
-to `systemd` via the `dbus`.
-
-1. Install from the cyberlinux repo:
-   ```bash
-   $ sudo pacman -S openvpn-update-systemd-resolved
-   ```
-
-2. Install OpenVPN client configuration file:
-   ```bash
-   $ sudo mv <client>.ovpn /etc/openvpn/client
-   ```
-
-3. Revoke read permissions on the client config to keep secrets secure:
-   ```bash
-   $ sudo chmod og-r /etc/openvpn/client/<client>.ovpn
-   ```
-
-4. Establish the VPN connection with Split DNS Resolution:
-   ```bash
-   $ sudo openvpn --config /etc/openvpn/client/<client>.ovpn --setenv PATH \
-       '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' \
-       --script-security 2 --up /etc/openvpn/scripts/update-systemd-resolved --up-restart \
-       --down /etc/openvpn/scripts/update-systemd-resolved --down-pre
-   ```
-
-5. Check that the Split DNS was configured correctly:
-   ```bash
-   # Look for new nameserver entries for the vpn
-   $ sudo resolvectl status
-   Link 3 (enp1s0)
-   ...
-   Current DNS Server: 1.1.1.1
-   ...
-   Link 6 (tun0)
-   ...
-   Current DNS Server: <NAMESERVER 1>
-   ```
-
-### Connect via NetworkManager
-1. Install NetworkManager openvpn plugin
-   ```bash
-   $ sudo pacman -S networkmanager-openvpn gnome-keyring
-   ```
-2. Left click on the NetworkManager applet in the tray and choose `VPN Connections > Add a VPN 
-   connection...`
-3. Choose the VPN Connection Type as `Import a saved VPN configuration...` and choose `Create...`
-4. Navigate to your `ovpn` file e.g. `~/Downloads/TARGET.ovpn`
-   * Note that NetworkManager will be copying out of `~/Downloads/TARGET.ovpn` the configuration it 
-   needs into `~/.cert` and `/etc/NetworkManager/system-connections`
-5. Set your `User name` and `Password`
-   * Change the password option to `Store the password for all users` or it doesn't save at all
-6. Switch to the `IPv4 Settings tab`
-7. Change the `Method` drop down from `Automatic (VPN)` i.e. send all traffic over the VPN to 
-   `Automatic (VPN) addresses only` which will only send vpn address ranges over the VPN.
-8. Also set the `DNS servers` and `search domains` to use as desired
-9. Click `Save`
-
-
-VPN connections can be configured to only receive traffic for internal company resources. To use this 
-mode with NetworkManager check the box `Use this connection only for resources on its network` at the 
-bottom of the IPv4 VPN's configuration.
-
-**Example:**  
-Your VPN interface `tun0` has a search domain of `private.company.com` and a routing domain of 
-`~company.com`. If you ask for `mail.private.company.com` it is matched by both domains and will be 
-routed to `tun0`. Additionally requests for `www.company.com` would match the routing domain and be 
-routed over `tun0` as well.
-
-Determine current domain routing with:
-```bash
-$ resolvectl domain
-Global:
-Link 2 (eno1):
-Link 18 (tun0): company.com
-```
-
-In the domain routing list above anything ending in `company.com` would resolve over the `tun0` link. 
-And you can check the name servers that will be used per link as well.
-```bash
-$ resolvectl dns
-Global: 1.1.1.1 1.0.0.1
-Link 2 (eno1): 1.1.1.1 1.0.0.1
-Link 18 (tun0): 10.45.248.15 10.38.5.26
-```
-
-### systemd-resolved and vpn dns
-`systemd-resolved` first checks for system overrides at `/etc/systemd/resolved.conf` then for network
-configuration at `/etc/systemd/network/*.network`, then vpn dns configuration and finally falls back
-on the fallback configuration in `/etc/systemd/resolved.conf`. I've found the most reliable way to
-get vpn dns to work correctly is to not set anything except the fallback configuration so that dns is
-configured by the vpn and when not on the vpn dns is configured by the fallback.
-
 
 # WireGuard
 [WireGuard](https://www.wireguard.com/) is a secure networking tunnel. It can be used as a VPN, for 

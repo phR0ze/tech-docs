@@ -122,6 +122,7 @@
   - [Privoxy](networking/privoxy/README.md)
   - [Remoting](networking/remoting/README.md)
   - [VPNs](networking/vpns/README.md)
+    - [OpenVPN](networking/vpns/openvpn/README.md)
 
 - [Productivity](productivity/README.md)
   - [Office](productivity/office/README.md)

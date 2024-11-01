@@ -1,30 +1,29 @@
 # DNS
 
-### Quick links
-* [DNS systemd-resolved](#dns-systemd-resolved)
-  * [resolved overview](#resolved-overview)
-    * [Modern DNS with nss-resolve](#modern-dns-with-nss-resolve)
-    * [Traditional DNS with nss-dns](#traditional-dns-with-nss-dns)
-  * [DNS routing](#dns-routing)
-    * [Default Route](#default-route)
-    * [Split DNS](#split-dns)
-    * [Add domain route](#add-domain-route)
-  * [Nameservers](#nameservers)
-    * [Quad9 DNS](#quad9-dns)
-    * [Cloudflare DNS](#cloudflare-dns)
-    * [Google DNS](#google-dns)
-    * [DNSSEC Validation Failures](#dnssec-validation-failures)
-  * [DNS commands](#dns-commands)
-    * [DNS status](#dns-status)
-    * [DNS lookup](#dns-lookup)
-    * [DNS flush](#dns-flush)
+Documentation for `systemd-resolved`
 
-# DNS systemd-resolved
+### Quick links
+* [resolved overview](#resolved-overview)
+  * [Modern DNS with nss-resolve](#modern-dns-with-nss-resolve)
+  * [Traditional DNS with nss-dns](#traditional-dns-with-nss-dns)
+* [DNS routing](#dns-routing)
+  * [Default Route](#default-route)
+  * [Split DNS](#split-dns)
+  * [Add domain route](#add-domain-route)
+* [Nameservers](#nameservers)
+  * [Quad9 DNS](#quad9-dns)
+  * [Cloudflare DNS](#cloudflare-dns)
+  * [Google DNS](#google-dns)
+  * [DNSSEC Validation Failures](#dnssec-validation-failures)
+* [DNS commands](#dns-commands)
+  * [DNS status](#dns-status)
+  * [DNS lookup](#dns-lookup)
+  * [DNS flush](#dns-flush)
+
+## resolved overview
 
 **References**
 * [systemd-resolved split dns](https://blogs.gnome.org/mcatanzaro/2020/12/17/understanding-systemd-resolved-split-dns-and-vpn-configuration/)
-
-## resolved overview
 
 ### Modern DNS with nss-resolve
 **/etc/nsswitch.conf**  
@@ -116,14 +115,41 @@ domains. Finally an interface that doesn't have this property is automatically c
 lookups if a match has not been found yet.
 
 ### Split DNS
-Split DNS is a common way to refer to sending some DNS requests to one DNS names server while sending 
+Split DNS is a common way to refer to sending some DNS requests to one DNS name server while sending 
 other DNS requests to another DNS name server. A common use case for this is when using a corporate 
 VPN to connect to company resources. DNS would be configured to send DNS requests for resources on 
 the VPN to use DNS for the VPN. Failure to devide the DNS requests will result in being unable to 
 connect to coporate resources on the VPN or worse flowing personal DNS requests over the corporate 
-VPN to be monitored by coporate IT.
+VPN using corporate bandwidth and being scrutinized by corporate IT monitoring.
 
-see 
+1. Check that `resolvectrl status tun0` shows your VPN connection with the correct DNS and search domains
+   ```
+   $ resolvectl status tun0
+   Link 8 (tun0)
+       Current Scopes: DNS LLMNR/IPv4 mDNS/IPv4
+            Protocols: -DefaultRoute +LLMNR +mDNS -DNSOverTLS DNSSEC=no/unsupported
+   Current DNS Server: 10.2.3.53
+          DNS Servers: 10.2.3.53 10.2.4.54
+           DNS Domain: test.company.com foo.company.com
+   ```
+2. Ensure dns requests to the VPN name servers works e.g. `resolvectl query test.company.com`
+   ```bash
+   $ resolvectl query test.company.com
+   test.company.com: resolve call failed: DNSSEC validation failed: incompatible-server
+   ```
+   * If you see the `DNSSEC validation error` try turning off DNSSEC first `sudo resolvectl dnssec tun0 off`
+   * To persistently fix it add the `services.resolved.dnssec = "allow-downgrades"` 
+
+3. Check that the `/etc/resolv.conf` was automatically updated by Network Manager to contain the search 
+   domain you added in the VPN connection e.g. `company.com` as the last entry in the file.
+   
+   **Exmaple**
+   ```
+   nameserver 127.0.0.53
+   options edns0 trust-ad
+   search company.com
+   ```
+4. Check that `ip route` shows your company.com addressed routed over `tun0`
 
 ### Configure DNS for all links
 ```bash
