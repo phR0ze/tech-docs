@@ -143,7 +143,7 @@ VPN using corporate bandwidth and being scrutinized by corporate IT monitoring.
 3. Check that the `/etc/resolv.conf` was automatically updated by Network Manager to contain the search 
    domain you added in the VPN connection e.g. `company.com` as the last entry in the file.
    
-   **Exmaple**
+   **Example**
    ```
    nameserver 127.0.0.53
    options edns0 trust-ad

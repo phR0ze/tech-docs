@@ -6,6 +6,11 @@
   - [Copilot](ai/copilot/README.md)
   - [Duet](ai/duet/README.md)
 
+- [Databases](databases/README.md)
+  - [MySQL](databases/mysql/README.md)
+    - [mycli](databases/mysql/mycli/README.md)
+    - [DBeaver](databases/mysql/dbeaver/README.md)
+
 - [Development](development/README.md)
   - [Android](development/android/README.md)
     - [Emulator](development/android/emulator/README.md)
@@ -107,6 +112,9 @@
   - [MKV](multimedia/mkv/README.md)
 
 - [Networking](networking/README.md)
+  - [Content Control](networking/content_control/README.md)
+    - [Ad blocking](networking/content_control/ad_blocking/README.md)
+    - [Privoxy](networking/content_control/privoxy/README.md)
   - [DNS](networking/dns/README.md)
   - [Browsers](networking/browsers/README.md)
     - [Firefox](networking/browsers/firefox/README.md)
@@ -119,7 +127,6 @@
   - [Network managers](networking/network_managers/README.md)
     - [NetworkNanager](networking/network_managers/networkmanager/README.md)
     - [systemd-networkd](networking/network_managers/systemd_networkd/README.md)
-  - [Privoxy](networking/privoxy/README.md)
   - [Remoting](networking/remoting/README.md)
   - [VPNs](networking/vpns/README.md)
     - [OpenVPN](networking/vpns/openvpn/README.md)
@@ -133,7 +140,7 @@
   - [Password Managers](security/password_managers/README.md)
 
 - [System](system/README.md)
-  - [Android](system/android/README.md)
+ - [Android](system/android/README.md)
     - [Rooting](system/android/rooting/README.md)
   - [Desktop Environments](system/desktop_environments/README.md)
     - [System 76](system/desktop_environments/system_76/README.md)
