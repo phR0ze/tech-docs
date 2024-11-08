@@ -3,6 +3,8 @@ Develop with Visual Studio Code
 
 ### Quick links
 * [Install](#install)
+  * [Install on NixOS](#install-on-nixos)
+  * [Install on Arch Linux](#install-on-arch-linux)
 * [Install Extensions](#install-extensions)
   * [Export Extensions for Nix](#export-extensions-for-nix)
 * [Keyboard Shortcuts](#keyboard-shortcuts)
@@ -13,11 +15,29 @@ Develop with Visual Studio Code
   * [Remove All Extensions](#remove-all-extensions)
 
 ## Install
-```bash
-# Install from the cyberlinux repo
-$ sudo pacman -S visual-studio-code-bin ripgrep
 
-# Build and install from source
+### Install on NixOS
+
+**Run in a shell**
+```bash
+$ nix-shell -p vscode
+```
+
+**Add to your installation**
+```nix
+environment.systemPackages = [
+  pkgs.vscode
+];
+```
+
+### Install on Arch Linux
+**Install from the cyberlinux repo**
+```bash
+$ sudo pacman -S visual-studio-code-bin ripgrep
+```
+
+**Build and install from source**
+```bash
 $ yay -Ga visual-studio-code-bin
 $ cd visual-studio-code-bin; makepkg -s
 $ sudo pacman -U visual-studio-code-bin-1.8.1-3x86_64.pkg.tar.xz
