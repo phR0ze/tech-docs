@@ -2,64 +2,87 @@
 Documenting various virtualization technologies
 
 ### Quick links
-* [Overview](#overview)
-  * [Virt Manager vs Libvirt vs QEMU vs KVM](#virt-manager-vs-libvirt-vs-qemu-vs-kvm)
-* [QEMU](qemu/README.md)
+* [../](../README.md)
 * [Network Bridge](network_bridge/README.md)
-* [ProxMox](#prox-mox)
-* [Virtual Box](#virtual-box)
-  * [USB Access in VM](#usb-access-in-vm)
+* [ProxMox](proxmox/README.md)
 
 ## Overview
 
-### Virt Manager vs libvirt vs QEMU vs KVM
-Libvirt is a collection of software that provides a convenient way to manage virtual machines and 
-other virtualization functionality. `libvirtd` provides a daemon and API library and `virsh` provides 
-a command line utility. The project's primary goal is to provide a single way to manage multiple 
-different virtualization providers/hypervisors regardless of the implementation e.g. `KVM`, `Xen`, 
-`LXC`, `VirtualBox` etc... `Virt Manager` was created to provide a GUI interface for libvirt.
+### Apps to evaluate
+[Proxmox related Helper Scripts repo](https://community-scripts.github.io/ProxmoxVE/scripts) has some 
+great applications packaged up for easy deployment and gives some exposure to the current open source 
+landscape.
 
-KVM isn't fully functional on its own. It only provice a kernel API to userspace. The most popular 
-way to make KVM fully functional is to use QEMU which provides the rest of the pieces and a command 
-line interface. libvirt in turn uses QEMU to then manage KVM. `qemu-kvm` was a fork of QEMU with KVM 
-acceleration built in that was merged back in as `qemu -enable-kvm`. So your tools stack will look 
-something like.
+| App           | Deployment methods        | Description
+| ------------- | ------------------------- | ----------------------------------------------------
+| AdGuard Home  | Docker, tar, deb          | DNS blocker with more features than Pi-Hole
+| Dashy         | Docker, Nixpkgs, deb, LXC | DNS blocker with more features than Pi-Hole
+| Nextcloud     | Docker, LXC               | Private Google Suite alternative
+| Jellyfin      | LXC               | Plex like media server
 
-`Virt Manager` => `libvirtd` => `QEMU` => `KVM` 
+* Servarr Suite a.k.a ARR stack - media automation
+  * Lidarr
+  * Prowlarr - 
+  * Radarr - 
+  * Readarr
+  * Sonarr - 
+  * Whisparr
+  * Bazarr
+  * Notifiarr
+* Dashboards
+  * Dashy
+  * Homarr
+    * said to be better than Heimdall
+    * Integration with `Sevarr` suite of apps
+* emby
+* plex
+* home assistant os
+* Nextcloud
+* Cockpit
+  * Easy to use Web GUI for linux servers
+  * Provides support for creating network shares
+  * `apt install --no-install-recommends cockpit -y`
+  * Add Cockpit plugins: `File Sharing`, `Identities`, `Navigator`
+  * wget them then `apt install ./*deb`
+* Services (UNRAID)
+  * Plex - exellent for streaming externally
+  * Lidarr - 
+  * Sonarr - Shows, same as Radarr
+  * Radarr - Movies, same as Sonarr
+  * Prowlarr - track your indexers for Sonarr and Radarr
+  * Overseerr - use for discovering new media and tracks requests for aquiring them
+  * Kavita - ebook management and reader
+  * Tautulli - plex server metrics on play counts, duration, last 30 days.
+  * FreshRSS - news collection and management
+  * Mealie - Recipies collection management
+  * Audiobookshelf - audio streaming, own version of audible
+  * NZBGet - News server download client using delugevpn network
+    * Uses index to download all components of upload then unzip together
+  * DelugeVPN - Deluge with built in VPN (OpenVPN with PIA)
+  * Jellyfin
+  * Kasm
+  * Portainer
+  * Watchtower
+* Hardware
+  * Intel Nuc with Ubuntu and Portainer
+  * UNRAID
+  * Synology NAS
 
-## ProxMox
-ProxMox Virtual Environment is an open source server virtualization management solution based on 
-QEMU/KVM and LXC. Users can manage virtual machines, containers, highly available clusters, storage 
-and networks via a web interface or CLI.
+## Kasm
+[Kasm](https://www.kasmweb.com/) is a virtualization system for running containers. You can even 
+self-host it in a Proxmox VM. It allows for launching single applications to full linux distributions 
+as Containers. I see Kasm as a Portainer like solution that does a better job than Portainer. 
+Although, depending on your needs, it might work as a Proxmox replacement; Proxmox provides better 
+Hypervisor VM support for general purpose needs.
 
-**References**
-* [ProxMox VE linux course](https://www.youtube.com/watch?v=LCjuiIswXGs)
+Docker container streaming to your Browser
 
 **Features**
-* Web UI
-* Virtualization platform
-* Super low resource overhead
-* Manage VMs as well as Containers
-* Self contained full solution
+* Self-hosting free Community option is limited to 5 concurrent sessions
+* Registry with pre-packaged containers
+* Custom containers
 
-Need to research this. Seems like a nice way to manage VMs and containers
-
-## Virtual Box
-There are a number of solutions in the Linux world for Virtual Machine creation and managment, but 
-I've found for a number of years that Virtual Box is the simplest cross platform way to deal with 
-Virtual Machines.
-
-### USB Access in VM
-[Accessing host USB devices in guest](https://wiki.archlinux.org/index.php/VirtualBox#Accessing_host_USB_devices_in_guest)
-requires that your user be part of the vboxusers group.
-
-```bash
-# Check which groups your user is in
-$ groups
-
-# Add your use to the vboxusers group
-$ sudo usermod -a -G vboxusers <USER>
-```
+### 
 
 <!-- 
 vim: ts=2:sw=2:sts=2

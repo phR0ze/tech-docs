@@ -1,30 +1,27 @@
 # Storage
 
 ### Quick links
-* [Add Drive](#add-drive)
-* [Clone Drive](#clone-drive)
-* [Backup Drive](#backup-drive)
-* [Securely Wipe Drive](#securely-wipe-drive)
+* [Drives](#drives)
+  * [Add Drive](#add-drive)
+  * [Automount drive](#automount-drive)
+  * [Clone Drive](#clone-drive)
+  * [Backup Drive](#backup-drive)
+  * [Securely Wipe Drive](#securely-wipe-drive)
+  * [Test Drive](#test-drive)
+  * [Test USB Drive](#test-usb-drive)
 * [RAID Drives](#raid-drives)
-* [Test Drive](#test-drive)
-* [Test USB Drive](#test-usb-drive)
+  * [Destroy RAID info](#destroy-raid-info)
+  * [Software RAID](#software-raid)
 
-## Add Drive
+## Drives
+
+### Add Drive
 1. Get device names
    ```bash
    $ lsblk
    ```
-
-2. Destroy any RAID information if reusing the drive
-   ```bash
-   # Destroy RAID info from the begining of the drive
-   $ sudo dd if=/dev/zero of=/dev/sdX bs=512 count=2048
-
-   # Destroy RAID info from the end of the drive
-   $ sudo bash -c 'dd if=/dev/zero of=/dev/sdX bs=512 count=2048 seek=$((`blockdev --getsz /dev/sdX` - 2048))'
-   ```
-
-2. Partition the drive via `gdisk`
+2. [Destroy any RAID information](#destroy-raid-info) if reusing the drive
+3. Partition the drive via `gdisk`
    ```bash
    $ sudo gdisk /dev/sdb
    # n to start create a new partition wizard
@@ -33,38 +30,72 @@
    # Accept default Hex code 8300 for Linux filesystem
    # w to write out the changes
    ```
-
-3. To tell kernel about changes
+4. To tell kernel about changes
    ```bash
    $ sudo partprobe /dev/sdb
    ```
-
-4. Format drive for `ext4`
+5. Format drive for `ext4`
    ```bash
    $ sudo mkfs.ext4 /dev/sdb1
    ```
-
-5. Tune the drive to use its full capacity
+6. Tune the drive to use its full capacity
    ```bash
    # For storage only set reserved blocks which defaults to 5% to 0 as it is unneeded.  These
    # reserved blocks are only used as a security measure on boot disks to that system functions can
    # continue to operate correctly even if a user has stuffed the drive.
    $ sudo tune2fs -m 0 /dev/sdb1
    ```
+7. see [Automount drive](#automount-drive)
 
-6. [Automount using FSTAB](#add-automount-using-fstab)
+### Automount drive
+Updated for NixOS
 
-## Clone Drive
+1. Find the ids of your storage drives
+   1. List their details with
+      ```bash
+      $ lsblk -o +MODEL,SERIAL
+      NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS MODEL         SERIAL
+      sda      8:0    0  3.6T  0 disk             QEMU HARDDISK drive-scsi1
+      └─sda1   8:1    0  3.6T  0 part
+      ```
+   2. List out disks by id `ll /dev/disk/by-uuid/`
+      ```bash
+      $ ll /dev/disk/by-uuid/
+      lrwxrwxrwx 1 root root  10 Nov 14 14:32 17b2d3ba-7db5-4707-a346-dffbc3e27f97 -> ../../sdb3
+      lrwxrwxrwx 1 root root  10 Nov 14 14:32 4f524d6b-c988-44ac-8179-4d12442e9404 -> ../../sda1
+      lrwxrwxrwx 1 root root  10 Nov 14 14:32 4fc61204-a3d2-44ab-a93c-91ee61738b15 -> ../../sdb2
+      ```
+   3. Note the id linked to the target dev partition to mount e.g. `sda1`
+      ```
+      lrwxrwxrwx 1 root root  10 Nov 14 14:32 4f524d6b-c988-44ac-8179-4d12442e9404 -> ../../sda1
+      ```
+2. Edit your `/etc/nixos/hardware-configuration.nix` and add that id as a mount
+   ```nix
+   fileSystems."/mnt/cache" = {
+     device = "/dev/disk/by-uuid/4f524d6b-c988-44ac-8179-4d12442e9404";
+     fsType = "ext4";
+   };
+   ```
+3. Apply the new configuration
+   ```bash
+   $ git add hardware-configuration.nix
+   $ ./clu update system
+   ```
+
+### Clone Drive
+conv=sync,noerror means in the case of an error ensure length of original data is preserved and don't fail
+
+**Kick off clone in one terminal**
 ```bash
-# Kick off clone in one terminal
-# conv=sync,noerror means in the case of an error ensure length of original data is preserved and don't fail
-sudo dd if=/dev/sdX of=/dev/sdY bs=1M conv=sync,noerror
-
-# Watch clone in another with
-watch -n10 'sudo kill -USR1 $(pgrep ^dd)'
+$ sudo dd if=/dev/sdX of=/dev/sdY bs=1M conv=sync,noerror
 ```
 
-## Backup Drive
+**Watch clone in another with**
+```bash
+$ watch -n10 'sudo kill -USR1 $(pgrep ^dd)'
+```
+
+### Backup Drive
 One of the simplest and least expensive ways to backup your data is to buy a single hot swappable 
 bay and a couple of large drives. Then just load one in and copy your data as desired then pull it 
 out and store it in an anti-static/shock proof caddy.
@@ -82,7 +113,7 @@ out and store it in an anti-static/shock proof caddy.
    ```
 6. Launch `FileZilla` or your transfer app of choice and copy your data over
 
-## Securely Wipe Drive
+### Securely Wipe Drive
 To securely shred all data on a drive you can use the shred tool:
 * `-v` - verbose output
 * `-z` - add a final pass of zeros to hide shredding
@@ -92,13 +123,7 @@ To securely shred all data on a drive you can use the shred tool:
 sudo shred -vzn 3 --random-source=/dev/urandom /dev/sdX
 ```
 
-## RAID Drives
-The standard URE rate of 1 in 10^14 failure in modern drives has made RAID 5 an almost 100% fail with
-larger drives. RAID 6 although tolerable will also be too high a risk with larger drives.  The only
-option for RAID is RAID 10 if you value your data.  Otherwise forget RAID and make regular backups.
-Once configured partition and format like any other drive.
-
-## Test Drive
+### Test Drive
 Using the SMART monitor tools and the built in diagnostics in drives we can determine their health.
 SMART offers two different tests, according to specification type. Each of these tests can be
 performed in two modes:
@@ -158,7 +183,7 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 # 3  Extended offline    Aborted by host               90%         2         -
 ```
 
-## Test USB Drive
+### Test USB Drive
 1. Locate your drive with `lsblk`
    ```bash
    $ lsblk
@@ -184,6 +209,53 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
    # Execute the tests on the automount location
    $ sudo f3write /run/media/USER/AB4C-86A3
    $ sudo f3read /run/media/USER/AB4C-86A3
+   ```
+
+## RAID Drives
+The standard URE rate of 1 in 10^14 failure in modern drives has made RAID 5 an almost 100% fail with
+larger drives. RAID 6 although tolerable will also be too high a risk with larger drives.  The only
+option for traditional RAID is RAID 1 or 10.  Otherwise forget RAID and make regular backups. Beyond 
+traditional means though there is ZFS and other NAS type solutions that overcome this issue.
+
+### Destroy RAID info
+RAID systems store RAID information at the begining and end of a drive. If you are reusing the drive 
+for another purpose you'll need to destroy this information to avoid miss-identifying the drives.
+
+```bash
+# Destroy RAID info from the begining of the drive
+$ sudo dd if=/dev/zero of=/dev/sdX bs=512 count=2048
+
+# Destroy RAID info from the end of the drive
+$ sudo bash -c 'dd if=/dev/zero of=/dev/sdX bs=512 count=2048 seek=$((`blockdev --getsz /dev/sdX` - 2048))'
+```
+
+### Build Software RAID
+Linux provides support for Software RAID with the `mdadm` package.
+
+### Migrate Software RAID
+To move your software RAID to another server i.e. physically moving the drives then setting back up 
+the RAID on the new server while keeping your data intact do the following:
+
+**References**
+* [NixOS mdadm](https://discourse.nixos.org/t/i-want-to-create-a-raid0-for-var-but-im-unable-to-figure-how-to-load-mdamd-on-boot/30381/4)
+
+1. Store your current mdadm raid info on the original system
+   ```bash
+   $ sudo mdadm --detail --scan >> /etc/mdadm.conf
+   ```
+
+2. Migrate to the new system
+   1. Physically install the drives in the new system
+   2. Copy over the `/etc/mdadm.conf` to a temp dir
+
+3. Assemble the RAID from the previously created array
+   ```bash
+   $ sudo mdadm --assemble
+   ```
+
+   ```nix
+   boot.swraid.enable = true;
+   boot.swraid.mdadmConf
    ```
 
 <!-- 

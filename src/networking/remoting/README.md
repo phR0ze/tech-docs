@@ -4,16 +4,23 @@ solutions used `VNC`, `XRDP` or remote `X11`. None of these technologies though 
 Yes it was possible to carefully tune them to provide a decent solution; but out of the box usage for 
 non-experts was painful at best resulting in tearing, choppy, kludgy solutions that we're difficult 
 to setup and maintain. There were a few paid options (`Zoho Assist`, `Remote Access Plus`, and 
-others) that had better results.
+others) that had better results but they are paid.
 
 ### Quick links
+* [../](../README.md)
 * [Lightdm remote login](#lightdm-remote-login)
+* [Guacamole](#guacamole)
 * [RustDesk](#rustdesk)
 * [Teamviewer](#teamviewer)
 * [Clients](#clients)
   * [Remmina](#remmina)
 * [Local Device Sharing](#local-device-sharing)
   * [Barrier](#barrier)
+
+## Overview
+**References**
+* [NixOS Remoting](https://nixos.wiki/wiki/Remote_Desktop)
+
 
 ## Lightdm remote login
 Some VNC servers like `x11vnc` and TigerVNC's `x0vncserver` make the primary X session available for 
@@ -59,9 +66,13 @@ Modified NX 3 protocol
 ## xdmcp
 Is similar to telnet, using unencrypted authentication.
 
-## xpra
+## Guacamole
+Guacamole doesn't require anything but a browser. No plugins, nada. Guacamole can be used to setup a 
+self-hosted access gateway. It is a clientless remote desktop gateway. It uses standard protocols 
+like RDP, VNC and SSH. Supports one-time-passwords and 2FA.
 
-## xrdp
+### Install Guacamole
+1. 
 
 ## RustDesk
 Open source project written in Rust providing both a client and server. The project is cross platform 

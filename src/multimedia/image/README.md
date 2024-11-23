@@ -1,12 +1,21 @@
 # Image
 
 ### Quick links
+* [Printing](#printing)
+  * [Print Size](#print-size)
 * [Metadata](#metadata)
 * [Formats](#formats)
   * [JPEG](#jpeg)
 * [Libs](#libs)
 * [Tools](#tools)
   * [Exiftool](#exiftool)
+
+## Printing
+
+### Print Size
+Print Size = Resolution / DPI, thus 1200x1800 image printed at 300 DPI will be `4"x6"`
+* 1200/300 = 4"
+* 1800/300 = 6"
 
 ## Metadata
 Images usually store a compressed encoded image. However they can also contain metadata about the 

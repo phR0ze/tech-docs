@@ -1,11 +1,36 @@
-# VPNs
+# VPNs <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
+
+Virtual Private Networks provide an encrypted connection to a remote network. Your machine gets 
+assigned an IP address on that network and you can access services on that network.
+
+Overlay networks take a different approach. Rather than tunneling all traffic through a centralized 
+VPN server, they create a secure peer-to-peer encrypted mesh network.
+
+From a practical perspective it ends up being a similar outcome. Your able to securely connect to a 
+remote network and use the resources there.
 
 ### Quick links
+* [Overview](#overview)
+  * [Overlay networks](#overlay-networks)
 * [OpenConnect](#openconnect)
 * [OpenVPN](openvpn/README.md)
-* [WireGuard](#wireguard)
-  * [WireGuard Client](#wireguard-client)
-  * [WireGuard Server](#wireguard-server)
+* [WireGuard](wireguard/README.md)
+
+## Overview
+
+### Overlay networks
+Overlay networks require a coordination server to allow peers to find each other. The coordination 
+servers will broker connections and hands off the connection to the peers.
+
+Key: Open Source (OS)
+
+| Name          | Wireguard | OS Client | OS server      | Client Support
+| ------------- | --------- | --------- | -------------- | --------------------
+| Tailscale     | yes       | yes       | no, headscale  | Win, Mac, Linux, Android, pfSense, ISO, BSD, Synology
+| Netbird       | yes       | yes       | yes            | Win, Mac, Linux, Android, IOS
+| Netmaker      | yes       | yes       | yes            | Win, Mac, Linux, BSD
+| Zerotier      | no        | yes       | yes, no web ui | Win, Mac, Linux, BSD, Android, IOS, Synology
+| Twingate      | no        | no        | no             | Win, Mac, Linux, Android, IOS, ChromeOS
 
 ## OpenConnect
 https://wiki.archlinux.org/index.php/OpenConnect  
@@ -38,66 +63,6 @@ $ route
 # Check correct dns
 $ systemd-resolved --status
 ```
-
-# WireGuard
-[WireGuard](https://www.wireguard.com/) is a secure networking tunnel. It can be used as a VPN, for 
-connecting datacenters together across the internet any place where you need to join two networks 
-together. It was initially released for the Linux kernel, it is now cross-platform (Windows, macOS, 
-BSD, iOS, Android) and is widely deployable. WireGuard aims to be as easy to configure and deploy 
-as SSH. A VPN connection is made simply by exchanging very simple public keys exactly like exchanging 
-SSH keys and all the rest is transparently handled by WireGuard.
-
-WireGuard uses modern ciphers like the `Noise protocol framework`, `Curve25519`, `ChaCha20`, 
-`Poly1305`, `BLAKE2`, `SipHash24`, `HKDF`. It works by adding a network interface like `eth0` or 
-`wlan0` called `wg0`. This network interface can then be configured normally using `ip` with routes 
-for it added and removed via `route` or `ip-route` and so on using all the normal networking 
-utilities.
-
-References:
-* [Arch Linux WireGuard](https://wiki.archlinux.org/title/WireGuard)
-
-Features:
-* Faster, lighter and better than OpenVPN and IPsec and other VPN tech made in the 90s.
-* Can't scan for it on the internet, its undetectable unless you know where it is
-* Has a very small code base that can fit into the kernel
-
-## WireGuard Client
-
-### Install WireGuard
-```bash
-$ sudo pacman -S wireguard-tools
-```
-
-### Generate private/public key pair
-
-### Configure all traffic tunnel
-```
-cat /etc/wireguard/wg0.conf
-[Interface]
-PrivateKey = `PRIVATEKEY`
-Address = `IPV4FROMVPNPROVIDER`,`IPV6FROMVPNPROVIDER`
-DNS = `VPNDNS4`,`VPNDNS6`
-PostUp = ip route add `192.168.1.0/24 via 192.168.1.1`;
-PreDown = ip route delete `192.168.1.0/24`;
-
-[Peer]
-PublicKey = `PUBLICKEY`
-AllowedIPs = `0.0.0.0/0`,`::0/0`
-Endpoint = `PUBLICVPNSERVERIP`:`PORT`
-PersistentKeepalive = 25
-```
-
-### Starting WireGuard
-```bash
-$ sudo systemctl enable wg-quick@wg0
-$ sudo systemctl start wg-quick@wg0
-```
-
-## WireGuard Server
-1. Enable kernel ipv4 forwarding
-   ```bash
-   $ echo "net.ipv4.ip_forward = 1" | sudo tee -a /etc/sysctl.d/10-ipv4-forwarding.conf
-   ```
 
 <!-- 
 vim: ts=2:sw=2:sts=2

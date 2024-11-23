@@ -1,4 +1,5 @@
-# Network Bridge
+# Network Bridge <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
+
 A network bridge is a virtual network device that behaves like a switch allowing virtual devices to 
 be connected to your network and behave as if they were real devices. 
 
@@ -13,22 +14,20 @@ by niche segments of the community.
 * [Prerequisites](#prerequisites)
   * [Disable netfiltering for bridges](#disable-netfiltering-for-bridges)
 * [Creating a bridge](#creating-a-bridge)
+  * [on NixOS](#on-nixos)
+  * [on Ubuntu](#on-ubuntu)
   * [via nm-applet](#via-nm-applet)
   * [via nmcli](#via-nmcli)
   * [via-iproute2](#via-iproute2)
 
 ## Overview
 
-### Terms
-* Controller - refers to the bridge itself
-* Ports - refer to the devices the bridge is connecting
-* Bind - process of connecting devices to the bridge
-* STP (Spanning Tree Protocol) - is only useful for large complicated networks
-* Autoconnect
-
 ### IP address of bridge
 A virtual bridge interface will essentially be replacing your existing NIC configuration, using the 
-same IP address, DNS etc.. and adds on the functionality of allowing virtual devices 
+same IP address, DNS etc.. and adds on the functionality of allowing virtual devices.
+
+Normally this means your new `bridge0` virtual switch gets your IP address and your physical NIC 
+`eno1` won't have an address assigned to it anymore eventhough its being used by the bridge.
 
 Note: `VirtualBox` gets around this concept of the network bridge replacing the host's typical 
 networking (i.e. having to have an IP address assigned to the bridge and disable the original NIC's 
@@ -41,38 +40,78 @@ circumventing the host operating system's network stack. [see VirtualBox manual]
 ## Prerequisites
 
 ### Enable forwarding of traffic to VMs
-1. Edit the `/etc/sysctl.d/10-vms.conf`
-2. Add the following:
-   ```
-   net.ipv4.ip_forward = 1
-   ```
+[Updated for NixOS](https://github.com/phR0ze/nixos-config/blob/62850b8b1772c952104c3f07d26d9515fc52b1bf/modules/boot/kernel.nix#L8)
+
+```nix
+boot.kernel.sysctl = {
+  "net.ipv4.ip_forward" = 1;                  # Enable ipv4 forwarding for running containers
+};
+```
 
 ### Disable netfiltering for bridges
 [netfilter is currently enabled on bridges by default](https://bugzilla.redhat.com/show_bug.cgi?id=512206#c0).
 This is unneeded additional overhead that can be confusing when trouble shooting. The libvirt team 
 recommends disabling it for all bridge devices.
 
-Add a sysctl entry to disable this e.g:
-1. Edit the `/etc/sysctl.d/10-bridges.conf`
-2. Add the following:
-   ```
-   net.bridge.bridge-nf-call-ip6tables = 0
-   net.bridge.bridge-nf-call-iptables = 0
-   net.bridge.bridge-nf-call-arptables = 0
-   ```
-3. Create a udev rule `/etc/udev/rules/99-bridges.rules` to apply the sysctl settings when the bridge module is loaded
-   ```
-   ACTION=="add", SUBSYSTEM=="module", KERNEL=="bridge", RUN+="/sbin/sysctl -p /etc/sysctl.d/10-bridges.conf"
-   ```
-4. You can test that the sysctl config took affect after starting up the bridge with
-   ```bash
-   $ sudo sysctl -a | grep bridge
-   net.bridge.bridge-nf-call-arptables = 0
-   net.bridge.bridge-nf-call-ip6tables = 0
-   net.bridge.bridge-nf-call-iptables = 0
-   ```
+```nix
+boot.kernel.sysctl = {
+  "net.bridge.bridge-nf-call-ip6tables" = 0;
+  "net.bridge.bridge-nf-call-iptables" = 0;
+  "net.bridge.bridge-nf-call-arptables" = 0;
+};
+```
+
+You can verify they took affect by running
+```bash
+$ sudo sysctl -a | grep bridge
+net.bridge.bridge-nf-call-arptables = 0
+net.bridge.bridge-nf-call-ip6tables = 0
+net.bridge.bridge-nf-call-iptables = 0
+```
 
 ## Creating a bridge
+
+### on NixOS
+```nix
+
+```
+
+### on Ubuntu
+Physical NICs can't be shared amongst multiple systems without first virtualizing it.
+
+1. Install `openvswitch-switch`
+   ```bash
+   $ sudo apt install openvswitch-switch
+   ```
+2. Edit `sudo vim /etc/netplan/50-cloud-init.yaml` and change it to
+   ```yaml
+   network:
+     version: 2
+     ethernets:
+       ens18:
+         dhcp4: false
+     bridges:
+       bridge0:
+         interfaces: [ens18]
+         addresses: [192.168.1.208/24]
+         routes:
+           - to: default
+             via: 192.168.1.1
+         nameservers:
+           addresses:
+             - 1.1.1.1
+             - 8.8.8.8
+         parameters:
+           stp: true
+           forward-delay: 4
+         dhcp4: no
+   ```
+   Note:
+   * Use the same IP address for your bridge as your NIC already is using
+3. Apply the new netplan configuration
+   1. Run: `sudo netplan apply`
+   2. Note that `ip a` shows the NIC as not having an address and a new `bridge0` as having the 
+      address instead.
 
 ### via nm-applet
 **References**
