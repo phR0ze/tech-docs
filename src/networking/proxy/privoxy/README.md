@@ -18,6 +18,7 @@ ads and other obnoxious internet junk.
   * [Block Sites](#block-sites)
 
 ## Overview
+Written in C the source can be found at https://github.com/ssrlive/Privoxy
 
 ### Features
 * Block ads
