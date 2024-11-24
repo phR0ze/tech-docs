@@ -2,7 +2,7 @@
 Documenting various virtualization technologies
 
 ### Quick links
-* [../](../README.md)
+* [.. up dir](../README.md)
 * [Network Bridge](network_bridge/README.md)
 * [ProxMox](proxmox/README.md)
 

@@ -1,15 +1,17 @@
 # Incus <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
-Incus is a moder, secure and powerful system container and virtual machine manager.
+Incus is a modern, secure and powerful system container and virtual machine manager. It provides a 
+unified experience for running and managing full Linux systems inside containers or virtual machines. 
+Incus supports images for a large number of Linux distributions. Incus can scale from a single 
+instance to data center scale size.
 
-It provides a unified experience for running and managing full Linux systems inside containers or 
-virtual machines. Incus supports images for a large number of Linux distributions. Incus can scale 
-from a single instance to data center scale size.
+NixOS images are available via Incus images.
 
 ### Quick links
 * [../](../README.md)
 * [Overview](#overview)
   * [Install Incus](#install-incus)
+  * [Initialize Incus](#initialize-incus)
   * [Incus Storage Pools](#incus-storage-pools)
   * [Create Virtual Bridge Device](#create-virtual-bridge-device)
 * [Templates](#templates)
@@ -38,6 +40,16 @@ Hardware requirements: 4 core cpu and 16 GB memory minimum
 **References**
 * [Incus step by step by Scotti-BYTE](https://www.youtube.com/watch?v=ULPuU9aKyoU)
 
+**Install on NixOS**
+```nix
+environment.systemPackages = with pkgs; [
+  pkgs.incus
+];
+virtualisation.incus.enable = true;
+networking.firewall.trustedInterfaces = [ "incusbr0" ];
+```
+
+**Install on Ubuntu**
 1. Create an Ubuntu Server 22.04 LTS 
    1. Download the ISO from Ubuntu
    2. Create a new VM with 4 cores, 8 GB ram
@@ -79,22 +91,23 @@ Hardware requirements: 4 core cpu and 16 GB memory minimum
    $ sudo usermod -aG incus-admin $USER
    $ newgrp incus-admin
    ```
-7. Initialize Incus
-   1. Run: `incus admin init`
-   2. `Would you like to use clustering`: choose `no`
-   3. `Do you want to configure a new storage pool` choose `yes`
-   4. `Name of the new storage pool` choose `default`
-   5. `Name of the storage backend to use` choose `dir`
-   6. `Where should this storage pool store its data` choose `/data/incus`
-   7. `Would you like to create a new local network bridge` choose `yes`
-   8. `What should the new bridge be called` choose `incusbr0`
-   9. `What IPv4 address should be used` choose `auto`
-   10. `What IPv6 address should be used` choose `auto`
-   11. `Would you like the server to be available over the network` choose `yes`
-   12. `Address to bind to` choose `all`
-   13. `Port to bind to` choose `8443`
-   14. `Would you like stale cached image to be updated automatically` choose `yes`
-   15. `Would you like your YAML "init" preseed to be printed` choose `no`
+
+### Initialize Incus
+1. Run: `incus admin init`
+2. `Would you like to use clustering`: choose `no`
+3. `Do you want to configure a new storage pool` choose `yes`
+4. `Name of the new storage pool` choose `default`
+5. `Name of the storage backend to use` choose `dir`
+6. `Where should this storage pool store its data` choose `/data/incus`
+7. `Would you like to create a new local network bridge` choose `yes`
+8. `What should the new bridge be called` choose `incusbr0`
+9. `What IPv4 address should be used` choose `auto`
+10. `What IPv6 address should be used` choose `auto`
+11. `Would you like the server to be available over the network` choose `yes`
+12. `Address to bind to` choose `all`
+13. `Port to bind to` choose `8443`
+14. `Would you like stale cached image to be updated automatically` choose `yes`
+15. `Would you like your YAML "init" preseed to be printed` choose `no`
 
 ### Incus Storage Pools
 Sharing the file system with the host is usually the most space-efficient way to run Incus. This 
@@ -109,7 +122,6 @@ setup with Btrfs or ZFS.
 ```bash
 $ incus storage create default dir source=/data/incus
 ```
-
 
 ### Create Virtual Bridge Device
 Physical NICs can't be shared amongst multiple systems without first virtualizing it.

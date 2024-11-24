@@ -1,4 +1,20 @@
-# Docker
+# Docker <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
+
+### Quick links
+* [Docker overview](#docker-overview)
+  * [Install Docker](#install-docker)
+
+## Docker overview
+
+### Install Docker
+
+**Install on NixOS**
+```nix
+environment.systemPackages = with pkgs; [
+  pkgs.docker
+];
+virtualisation.docker.enable = true;
+```
 
 ## Build Secrets
 A build secret is any piece of sensitive information, such as a password or API token, consumed as 

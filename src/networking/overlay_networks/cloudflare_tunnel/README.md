@@ -1,4 +1,4 @@
-# Cloudflare <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
+# Cloudflare Tunnel <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
 Cloudflare tunnel provides the ability to securely expose anything on your home network to the 
 outside world. Using certificate based authentication to secure it.

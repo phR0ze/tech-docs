@@ -1,13 +1,14 @@
-# VPNs <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
+# Overlay Networks <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
 
-Virtual Private Networks provide an encrypted connection to a remote network. Your machine gets 
-assigned an IP address on that network and you can access services on that network.
-
-Overlay networks take a different approach. Rather than tunneling all traffic through a centralized 
-VPN server, they create a secure peer-to-peer encrypted mesh network.
+Overlay networks are a super set of VPNs, Mesh technologies like Istio and other types of virtualized 
+networks that overlay lower level networks. There is potentially some distinction between VPNs and 
+Overlays in that VPNs typically have a client connect to a remote server which then assigns your 
+machine an IP from the remote network and you access those services remotely while more modern 
+overlay networks often connect peer-to-peer using an encrypted mesh, but there are many variations as 
+well.
 
 From a practical perspective it ends up being a similar outcome. Your able to securely connect to a 
-remote network and use the resources there.
+remote network and use the resources there regardless of how that network is composed.
 
 ### Quick links
 * [Overview](#overview)
