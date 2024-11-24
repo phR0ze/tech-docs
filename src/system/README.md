@@ -9,7 +9,6 @@ components. Development specific technologies are in the top level
 ### Quick links
 * [.. up dir](..)
 * [Distros](distros)
-* [Flatpak](flatpak)
 * [Desktop components](#desktop-components)
 * [inital ramdisk](#initial-ramdisk)
   * [mkinitcpio](#mkinitcpio)
