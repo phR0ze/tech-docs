@@ -1,7 +1,7 @@
 # Warcraft 2 <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
 
 Warcraft2 is a classic real time strategy game that Blizzard Entertainment made back in the 90s. This 
-documentation is for the ***Battle.net Edition** from ***GOG***.
+documentation is for the ***Battle.net Edition*** from ***GOG***.
 
 Note: these directions should work regardless of your particular version of Linux once you get Wine 
 installed that is.
@@ -34,8 +34,8 @@ will be `~/.wine/prefixes/warcraft2/drive_c/GOG\ Games/Warcraft\ II\ BNE/`
 
 3. Create and configure new ***win32*** wine prefix
    ```bash
-   $ mkdir -p ~/.wine/prefixes
-   $ WINEARCH=win32 WINEPREFIX=~/.wine/prefixes/warcraft2 winecfg
+   mkdir -p ~/.wine/prefixes
+   WINEARCH=win32 WINEPREFIX=~/.wine/prefixes/warcraft2 winecfg
    ```
 
 4. Set the target windows version:
@@ -52,7 +52,7 @@ will be `~/.wine/prefixes/warcraft2/drive_c/GOG\ Games/Warcraft\ II\ BNE/`
 6. Install the game
    1. Launch the installer
       ```bash
-      $ WINEARCH=win32 WINEPREFIX=~/.wine/prefixes/warcraft2 wine ./setup_warcraft_ii_2.02_v4_\(28734\).exe
+      WINEARCH=win32 WINEPREFIX=~/.wine/prefixes/warcraft2 wine ./setup_warcraft_ii_2.02_v4_\(28734\).exe
       ```
    2. Select Setup Language: `English` and click `OK`
    3. Check `Yes, I have read and accept EULA` then click `Install`
@@ -61,7 +61,7 @@ will be `~/.wine/prefixes/warcraft2/drive_c/GOG\ Games/Warcraft\ II\ BNE/`
 7. Setup Direct X windowing:  
    1. Launch the direct x config tool  
       ```
-      $ WINEARCH=win32 WINEPREFIX=~/.wine/prefixes/warcraft2 wine ~/.wine/prefixes/warcraft2/drive_c/GOG\ Games/Warcraft\ II\ BNE/dxcfg.exe
+      WINEARCH=win32 WINEPREFIX=~/.wine/prefixes/warcraft2 wine ~/.wine/prefixes/warcraft2/drive_c/GOG\ Games/Warcraft\ II\ BNE/dxcfg.exe
       ```
    2. Set `Display mode> 1280x1024` with the fastest `Hz` refresh your display supports 
    3. Set `Presentation >Windowed`  
@@ -74,7 +74,7 @@ will be `~/.wine/prefixes/warcraft2/drive_c/GOG\ Games/Warcraft\ II\ BNE/`
    automatically find the correct one and work. 
    1. Launch wine config to override the dll  
       ```
-      $ WINEARCH=win32 WINEPREFIX=~/.wine/prefixes/warcraft2 winecfg
+      WINEARCH=win32 WINEPREFIX=~/.wine/prefixes/warcraft2 winecfg
       ```
    2. Select the `Libraries` tab
    3. Enter `wsock32` into the `New override for library` drop down
@@ -84,7 +84,7 @@ will be `~/.wine/prefixes/warcraft2/drive_c/GOG\ Games/Warcraft\ II\ BNE/`
 9. Setup IPX Configuration:  
    1. Launch the IPX configuration binary sitting along side the game files:
       ```
-      $ WINEARCH=win32 WINEPREFIX=~/.wine/prefixes/warcraft2 wine ~/.wine/prefixes/warcraft2/drive_c/GOG\ Games/Warcraft\ II\ BNE/ipxconfig.exe
+      WINEARCH=win32 WINEPREFIX=~/.wine/prefixes/warcraft2 wine ~/.wine/prefixes/warcraft2/drive_c/GOG\ Games/Warcraft\ II\ BNE/ipxconfig.exe
       ```
    2. Select your `Primary Interface` e.g. `enp1s0`  
    3. Select your `Network adapters` e.g. `enp1s0`  
@@ -98,7 +98,7 @@ will be `~/.wine/prefixes/warcraft2/drive_c/GOG\ Games/Warcraft\ II\ BNE/`
 ### Single player game
 1. Launch warcraft 2:
    ```
-   $ WINEARCH=win32 WINEPREFIX=~/.wine/prefixes/warcraft2 wine ~/.wine/prefixes/warcraft2/drive_c/GOG\ Games/Warcraft\ II\ BNE/Warcraft\ II\ BNE_dx.exe
+   WINEARCH=win32 WINEPREFIX=~/.wine/prefixes/warcraft2 wine ~/.wine/prefixes/warcraft2/drive_c/GOG\ Games/Warcraft\ II\ BNE/Warcraft\ II\ BNE_dx.exe
    ```
 
 2. Click through the intro
@@ -109,7 +109,7 @@ will be `~/.wine/prefixes/warcraft2/drive_c/GOG\ Games/Warcraft\ II\ BNE/`
 ### Host LAN multi-player game
 1. Launch warcraft 2:
    ```
-   $ WINEARCH=win32 WINEPREFIX=~/.wine/prefixes/warcraft2 wine ~/.wine/prefixes/warcraft2/drive_c/GOG\ Games/Warcraft\ II\ BNE/Warcraft\ II\ BNE_dx.exe
+   WINEARCH=win32 WINEPREFIX=~/.wine/prefixes/warcraft2 wine ~/.wine/prefixes/warcraft2/drive_c/GOG\ Games/Warcraft\ II\ BNE/Warcraft\ II\ BNE_dx.exe
    ```
 2. Click through the intro
 3. Navigate to `Multi Player Game > Enhanced >IPX network`
