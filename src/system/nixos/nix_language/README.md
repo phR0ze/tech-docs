@@ -2,7 +2,7 @@
 
 ### Quick links
 * [Overview](#overview)
-  * [Example configs](#example-configs)
+* [repl](#repl)
 * [system.build](#system-build)
 * [Adding one off dotfiles](#adding-one-off-dotfiles)
 * [nixos-rebuild](#nixos-rebuilt)
@@ -27,8 +27,16 @@
 * [Nix Reference Manual](https://nixos.org/manual/nix/stable/language/)
 * [Flakes aren't real](https://jade.fyi/blog/flakes-arent-real/)
 
-### Example configs
-* [NobbZ](https://github.com/NobbZ/nixos-config)
+## repl
+```
+nix repl -f '<nixpkgs>'
+ip = lib.splitString "/" "192.168.1.50/24
+{ address = builtins.elemAt list 0; cidr = builtins.elemAt 1; }
+
+toIP = x:
+  let ip = lib.splitString "/" x;
+  in { address = builtins.elemAt ip 0; cidr = builtins.elemAt ip 1; }
+```
 
 ## environment.etc
 [environment.etc](https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/system/etc/etc.nix) is 

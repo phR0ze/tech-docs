@@ -16,6 +16,8 @@ environment.systemPackages = with pkgs; [
 virtualisation.docker.enable = true;
 ```
 
+## Buid Docker Image
+
 ## Build Secrets
 A build secret is any piece of sensitive information, such as a password or API token, consumed as 
 part of your application's build process.

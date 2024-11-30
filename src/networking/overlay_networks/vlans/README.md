@@ -15,4 +15,6 @@ on top of your LAN such as:
   * e.g. guest network that only has access to the internet and not other devices
   * e.g. IoT network to quarantine publically connected devices from your personal devices
 
-## VLANs
+**References**
+* [VLANs - NixOS wiki](https://nixos.wiki/wiki/Networking#VLANs)
+* [VLANs - NixOS manual](https://nixos.org/manual/nixos/stable/options.html#opt-networking.vlans)
