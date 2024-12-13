@@ -1,6 +1,13 @@
 # NIX QEMU <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
+
 NixOS has the ability to build VMs from a nix system closure for testing. 
 
+### Quick links
+- [.. up dir](../README.md)
+- [Overview](#overview)
+- [Run test VM](#run-test-vm)
+
+## Overview
 **References**
 * [Custom Images - Mayflower](https://nixos.mayflower.consulting/blog/2018/09/11/custom-images/)
 * [NixOS Virtual Machines](https://nix.dev/tutorials/nixos/nixos-configuration-on-vm.html)

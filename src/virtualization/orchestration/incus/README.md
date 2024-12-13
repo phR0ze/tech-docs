@@ -1,22 +1,21 @@
 # Incus <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
+**Synopsis**: although interesting and a potential solution in its own right, I've found that using 
+NixOS to manage my containers directly and QEMU for my virtual machines to be a better fit for my 
+needs.
+
 Incus is a modern, secure and powerful system container and virtual machine manager. It provides a 
 unified experience for running and managing full Linux systems inside containers or virtual machines. 
 Incus supports images for a large number of Linux distributions. Incus can scale from a single 
 instance to data center scale size.
 
-NixOS images are available via Incus images.
-
 ### Quick links
-* [../](../README.md)
+* [.. up dir](../README.md)
 * [Overview](#overview)
   * [Install Incus](#install-incus)
-  * [Initialize Incus](#initialize-incus)
-  * [Incus Storage Pools](#incus-storage-pools)
-  * [Create Virtual Bridge Device](#create-virtual-bridge-device)
-* [Templates](#templates)
 * [Using Incus](#using-incus)
   * [Create a container](#create-a-container)
+  * [Create a VM from a custom ISO](#create-a-vm-from-a-custom-iso)
   * [Create a bridge network profile](#create-a-bridge-network-profile)
 * [LXConsole](#lxconsole)
   * [Install LXConsole](#install-lxconsole)
@@ -40,151 +39,83 @@ Hardware requirements: 4 core cpu and 16 GB memory minimum
 **References**
 * [Incus step by step by Scotti-BYTE](https://www.youtube.com/watch?v=ULPuU9aKyoU)
 
-**Install on NixOS**
-```nix
-environment.systemPackages = with pkgs; [
-  pkgs.incus
-];
-virtualisation.incus.enable = true;
-networking.firewall.trustedInterfaces = [ "incusbr0" ];
-```
-
-**Install on Ubuntu**
-1. Create an Ubuntu Server 22.04 LTS 
-   1. Download the ISO from Ubuntu
-   2. Create a new VM with 4 cores, 8 GB ram
-2. Login and upgrade machine
+1. Install incus
+   ```nix
+   virtualisation.incus.enable = true;
+   networking.firewall.trustedInterfaces = [ "incusbr0" ];
    ```
-   $ sudo su
-   $ apt update && apt upgrade -y
-   ```
-3. [Create Virtual Bridge Device](#create-virtual-bridge-device)
-4. Import the Zabbly Incus GPG keys
-   1. List them out
-      ```bash
-      $ curl -fsSL https://pkgs.zabbly.com/key.asc | gpg --show-keys --fingerprint
-      ```
-   2. Create a folder to store them 
-      ```bash
-      $ mkdir -p /etc/apt/keyrings
-      ```
-   3. Download the keys
-      ```bash
-      $ curl -fsSL https://pkgs.zabbly.com/key.asc -o /etc/apt/keyrings/zabbly.asc
-      ```
-5. Add zabbly respository
-   ```
-   sh -c 'cat <<EOF > /etc/apt/sources.list.d/zabbly-incus-stable.sources
-   Enabled: yes
-   Types: deb
-   URIs: https://pkgs.zabbly.com/incus/stable
-   Suites: $(. /etc/os-release && echo ${VERSION_CODENAME})
-   Components: main
-   Architectures: $(dpkg --print-architecture)
-   Signed-By: /etc/apt/keyrings/zabbly.asc
-   EOF'
-   ```
-6. Install Incus and add your user to the `incus-admin` group
-   ```bash
-   $ apt update
-   $ apt install incus
-   $ sudo usermod -aG incus-admin $USER
-   $ newgrp incus-admin
-   ```
-
-### Initialize Incus
-1. Run: `incus admin init`
-2. `Would you like to use clustering`: choose `no`
-3. `Do you want to configure a new storage pool` choose `yes`
-4. `Name of the new storage pool` choose `default`
-5. `Name of the storage backend to use` choose `dir`
-6. `Where should this storage pool store its data` choose `/data/incus`
-7. `Would you like to create a new local network bridge` choose `yes`
-8. `What should the new bridge be called` choose `incusbr0`
-9. `What IPv4 address should be used` choose `auto`
-10. `What IPv6 address should be used` choose `auto`
-11. `Would you like the server to be available over the network` choose `yes`
-12. `Address to bind to` choose `all`
-13. `Port to bind to` choose `8443`
-14. `Would you like stale cached image to be updated automatically` choose `yes`
-15. `Would you like your YAML "init" preseed to be printed` choose `no`
-
-### Incus Storage Pools
-Sharing the file system with the host is usually the most space-efficient way to run Incus. This 
-option is supported for the `dir` driver and the `btrfs` driver (if the host is using Btrfs and you 
-point Incus to a dedicated sub-volumn) and the `zfs` driver (if the host is ZFS and you point Incus 
-to a dedicated zpool).
-
-You must use `dir`, which is slower, if you want to share the host drive and the host drive is not 
-setup with Btrfs or ZFS.
-
-**dir driver**
-```bash
-$ incus storage create default dir source=/data/incus
-```
-
-### Create Virtual Bridge Device
-Physical NICs can't be shared amongst multiple systems without first virtualizing it.
-
-Note: netplan is Canonical's abstraction over `networkd` and `NetworkManager` its two supported 
-backends that allows configuration via a yaml file.
-
-1. Install `openvswitch-switch`
-   ```bash
-   $ sudo apt install openvswitch-switch
-   ```
-2. Edit `sudo vim /etc/netplan/50-cloud-init.yaml` and change it to
-   ```yaml
-   network:
-     version: 2
-     ethernets:
-       ens18:
-         dhcp4: false
-     bridges:
-       bridge0:
-         interfaces: [ens18]
-         addresses: [192.168.1.208/24]
-         routes:
-           - to: default
-             via: 192.168.1.1
-         nameservers:
-           addresses:
-             - 1.1.1.1
-             - 8.8.8.8
-         parameters:
-           stp: true
-           forward-delay: 4
-         dhcp4: no
-   ```
-   Note:
-   * Use the same IP address for your bridge as your NIC already is using
-3. Apply the new netplan configuration
-   1. Run: `sudo netplan apply`
-   2. Note that `ip a` shows the NIC as not having an address and a new `bridge0` as having the 
-      address instead.
-
-## Templates
-LXC templates from the likes of TurnKey
+2. Create Virtual Bridge Device
+   * see `nixos-configs/options/network/default.nix`
+3. Intialize Incus
+   * see `nixos-configs/options/virtualization/incus.nix`
 
 ## Using Incus
 
 ### Create a container
-```bash
-$ incus launch images:ubuntu/22.04 first
-```
+1. Create your first LXC container
+   ```bash
+   $ incus launch images:ubuntu/22.04 first
+   ```
+2. List out the containers
+   ```bash
+   $ incus list
+   ```
+
+### Create a VM from a custom ISO
+To launch a VM that boots from an ISO, you must first create a VM.
+
+**References**
+* [Incus instance create](https://linuxcontainers.org/incus/docs/main/howto/instances_create/)
+
+1. Create the empty VM
+   ```bash
+   $ incus init iso-vm --empty --vm -c limits.cpu=4 -c limits.memory=8GiB -d root,size=50GiB 
+   ```
+2. Add the local ISO as a disk to the VM by absolute path
+  ```bash
+  $ incus config device add iso-vm iso-volume disk source=/home/<user>/Downloads/cyberlinux-24.05.20240229.1536926-light.iso boot.priority=0
+  ```
+2. Import the ISO image so it can be later attached to the VM as a storage volume
+   ```bash
+   $ incus storage volume import <pool> <path-to-image.iso> iso-volume --type=iso
+   ```
+3. You can see your new ISO storage volume with
+   ```bash
+   $ incus storage volume list default
+   +-----------------+------------+-------------+--------------+---------+
+   |      TYPE       |    NAME    | DESCRIPTION | CONTENT-TYPE | USED BY |
+   +-----------------+------------+-------------+--------------+---------+
+   | custom          | iso-volume |             | iso          | 0       |
+   +-----------------+------------+-------------+--------------+---------+
+   | virtual-machine | iso-vm     |             | block        | 1       |
+   +-----------------+------------+-------------+--------------+---------+
+   ```
+4. Attach the custom ISO volume to the VM
+   ```bash
+   $ incus config device add iso-vm iso-volume disk pool=<pool> source=iso-volume boot.priority=10
+   ```
+5. Start the VM in LXConsole and attach to the VGA console and walk through the wizard
+   * Note: takes forever to work through PXE boot first before booting into the ISO
+6. Once installed detach the ISO volume with
+   ```bash
+   $ incus storage volume detach <pool> iso-volume iso-vm
+   ```
 
 ### Create a bridge network profile
+Create a bridge profile for our `br0` bridge so that VMs and container can use it to get an address 
+from your local router and be present on the LAN.
+
 1. Create a new profile
    ```
-   $ incus profile create bridgeprofile
+   $ incus profile create bridged
    ```
-2. Add bridge configuration to expose container IPs on your LAN
+2. Add bridge configuration, called `bridged`, to expose container IPs on your LAN
    ```bash
-   $ incus profile device add bridgeprofile eth0 nic nictype=bridged parent=bridge0
+   $ incus profile device add bridged eth0 nic nictype=bridged parent=br0
    ```
 3. Create a container using this profile
    ```bash
-   $ incus launch images:ubuntu/22.04 second --profile default --profile bridge
+   $ incus launch images:ubuntu/22.04 second --profile default --profile bridged
    ```
 4. Takes a min but will get a LAN IP
    ```bash
@@ -260,15 +191,13 @@ Docker installed on it.
       $ docker compose up -d
       ```
 4. Login to the UI
-   1. Open a browser to the LXC container IP e.g. `http://192.168.1.199`
+   1. Open a browser to the LXC container IP e.g. `http://192.168.1.40`
    2. Configure a user account for LXConsole through the web UI
    3. Add your Incus server to the console 
       1. Click `+ Server`
-      2. Set `Host Addr:` to the server hosting LXC e.g. `192.168.1.208`
-         * Now click the `here` link at the top to get the lxconsole cert
-         * Save the cert as `lxconsole.crt` on the incuse server
-         * Run: `incus config trust add-certificate lxconsole.crt`
-         * Run: `incus config set core.https_address=[::]:8443`
+      2. Set `Host Addr:` to the server hosting LXC e.g. `192.168.1.40`
+         * Run: `incus config trust add-certificate /var/lib/lxconsole/certs/client.crt`
+         * Run: `incus config set core.https_address=192.168.1.50:8443`
       3. Leave `8443` for the port
       4. Leave `Proxy` empty
       5. Leave `SSL Verify` set to `False`

@@ -29,7 +29,7 @@
 
 ## repl
 ```
-nix repl -f '<nixpkgs>'
+$ nix repl -f '<nixpkgs>'
 ip = lib.splitString "/" "192.168.1.50/24
 { address = builtins.elemAt list 0; cidr = builtins.elemAt 1; }
 

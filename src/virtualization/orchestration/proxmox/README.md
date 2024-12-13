@@ -1,4 +1,4 @@
-# Proxmox <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
+# Proxmox <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
 Proxrox provides a really slick Hypervisor providing aggregation of Virtual Machine capabilities and 
 community support to allow for building out almost anything super fast. It also supports LXC 
@@ -17,28 +17,29 @@ can still have my rock solid upgrade base with rollbacks if necessary while stil
 flexibility taking advantage of virtualization solutions.
 
 ### Quick link
-* [Proxmox Overview](#proxmox-overview)
-  * [Features](#features)
-  * [Proxmox vs NAS](#proxmox-vs-nas)
-  * [Potential NAS Hardware](#potential-nas-hardware)
-  * [Install Proxmox](#install-proxmox)
-* [Proxmox Configuration](#proxmox-configuration)
-  * [First run configuration](#first-run-configuration)
-  * [Disable enterprise package repository](#disable-enterprise-package-repository)
-  * [Update Proxmox](#update-proxmox)
-  * [Change hostname](#change-hostname)
-* [Proxmox Storage](#proxmox-storage)
-  * [Passthrough storage](#passthrough-storage)
-  * [Add mount point](#add-mount-point)
-  * [Local drive storage](#local-drive-storage)
-* [Container Management](#container-management)
-  * [Download container template](#download-container-template)
-  * [Create container](#create-a-container)
-  * [Delete container manually](#delete-container-manually)
-* [Virtual Machine Management](#virtual-machine-management)
-  * [Create VM](#create-vm)
-* [Services on Proxmox](#services-on-proxmox)
-  * [NFS Container](#nfs-container)
+- [.. up dir](../README.md)
+- [Proxmox Overview](#proxmox-overview)
+  - [Features](#features)
+  - [Proxmox vs NAS](#proxmox-vs-nas)
+  - [Potential NAS Hardware](#potential-nas-hardware)
+  - [Install Proxmox](#install-proxmox)
+- [Proxmox Configuration](#proxmox-configuration)
+  - [First run configuration](#first-run-configuration)
+  - [Disable enterprise package repository](#disable-enterprise-package-repository)
+  - [Update Proxmox](#update-proxmox)
+  - [Change hostname](#change-hostname)
+- [Proxmox Storage](#proxmox-storage)
+  - [Passthrough storage](#passthrough-storage)
+  - [Add mount point](#add-mount-point)
+  - [Local drive storage](#local-drive-storage)
+- [Container Management](#container-management)
+  - [Download container template](#download-container-template)
+  - [Create container](#create-a-container)
+  - [Delete container manually](#delete-container-manually)
+- [Virtual Machine Management](#virtual-machine-management)
+  - [Create VM](#create-vm)
+- [Services on Proxmox](#services-on-proxmox)
+  - [NFS Container](#nfs-container)
 
 ## Proxmox Overview
 Virtual machine managers like Proxmox have spawned an alternate paradigm for homelab management. 

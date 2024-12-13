@@ -7,7 +7,13 @@ Docker Desktop sprang up in the development space and the likes of Proxmox, Incu
 Dockge, and others for other needs.
 
 ### Quick links
-* [../](../README.md)
+- [.. up dir](../README.md)
+- [Incus](incus/README.md)
+- [Kasm](kasm/README.md)
+- [Kubernetes](kubernetes/README.md)
+- [Orbstack](orbstack/README.md)
+- [Portainer](portainer/README.md)
+- [ProxMox](proxmox/README.md)
 
 ## Comparison
 Comparing orchestration tooling. I'm only looking at free options that are reasonably simple to 
@@ -19,10 +25,11 @@ longer care to expose myself to.
 
 | Tool        | VMs | Containers  | Deployment methods        |
 | ----------- | --- | ----------- | ------------------------- |
-| CasaOS      |     |             |                           |
+| CasaOS      |     |             | Bare metal                |
 | Dockge      |     |             | Compose                   |
 | DockSTARTer |     |             | apk, apt, pacman pkgs     |
 | Incus       | yes | app, system | Compose                   |
+| NixOS       | yes | all         | Bare metal                |
 | Portainer   |     |             | Docker, Swarm, K8s        |
 | Yacht       |     |             | Docker, Compose, Podman   |
 

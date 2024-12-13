@@ -108,7 +108,7 @@ There are many blocklists that are compatible with AdGuard Home
 2. Navigate to `Filters >DNS blocklists`
 3. Click `Add blocklist` then `Choose from the list`
   * General
-    * `AdAway Default Bloclist`
+    * `AdAway Default Blocklist`
     * `AdGuard DNS Popup Hosts filter`
     * `AWAvenue Ads Rule`
     * `Dan Pollock's List`

@@ -1,11 +1,19 @@
 # Virtual Machines <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
 
 ### Quick links
-* [Overview](#overview)
-  * [Virt Manager vs Libvirt vs QEMU vs KVM](#virt-manager-vs-libvirt-vs-qemu-vs-kvm)
-* [QEMU](qemu/README.md)
-* [Virtual Box](#virtual-box)
-  * [USB Access in VM](#usb-access-in-vm)
+- [.. up dir](../README.md)
+- [Overview](#overview)
+  - [Virt Manager vs Libvirt vs QEMU vs KVM](#virt-manager-vs-libvirt-vs-qemu-vs-kvm)
+- [Virtual Box](#virtual-box)
+  - [USB Access in VM](#usb-access-in-vm)
+
+### Linked pages
+- [libvirt](libvirt/README.md)
+- [QEMU](qemu/README.md)
+- [VirtManager](virt_manager/README.md)
+
+### Linked pages
+- [QEMU](qemu/README.md)
 
 ## Overview
 

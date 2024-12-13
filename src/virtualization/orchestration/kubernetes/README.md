@@ -1,4 +1,7 @@
-# Kubernetes
+# Kubernetes <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
+
+### Quick links
+* [.. up dir](../README.md)
 
 ## Local dev
 There are a few options for setting up a mini k8s environment for local development in VMs.
