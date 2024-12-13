@@ -1,6 +1,10 @@
-# OrbStack
+# Orbstack <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
+
 OrbStack claims to b ea fast, light and easy way to run Docker containers and Linux VMs on MacOS. Its 
 meant to be a Docker Desktop alternative.
+
+### Quick links
+- [.. up dir](../README.md)
 
 ## Orb cli
 OrbStack has a cli `orbctl` aliased as `orb` that can be use to control OrbStack programmatically.

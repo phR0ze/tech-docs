@@ -9,6 +9,7 @@ easy access to your virtualized systems remotely through the browser.
 * NixOS has a package available
 
 ### Quick links
+* [.. up dir](../README.md)
 * [Overview](#overview)
 
 ## Overview

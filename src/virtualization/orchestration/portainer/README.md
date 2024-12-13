@@ -5,8 +5,9 @@ make containerization management approachable to the lay person without requirin
 orchestration systems knowledge. It works with Kubernetes, Docker, Docker Swarm and Azure.
 
 ### Quick links
-* [Overview](#overview)
-  * [Install Portainer](#install-portainer)
+- [.. up dir](../README.md)
+- [Overview](#overview)
+  - [Install Portainer](#install-portainer)
 
 ## Overview
 
