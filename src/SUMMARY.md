@@ -174,6 +174,7 @@
     - [Home Manager](system/nixos/home_manager/README.md)
     - [Nix Language](system/nixos/nix_language/README.md)
     - [Nix Binary Cache](system/nixos/nix_binary_cache/README.md)
+    - [Secrets](system/nixos/secrets/README.md)
   - [OSX](system/osx/README.md)
     - [Autostart](system/osx/autostart/README.md)
     - [Console](system/osx/console/README.md)

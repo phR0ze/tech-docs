@@ -1,10 +1,13 @@
 # QEMU <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
-QEMU is awesome: CLI based, fast and reliable; but has a rather steep learning curve. 
+Quick EMUlator is a command line virtual machine system. It is fast, portable and has excellent guest 
+support. It is the swiss army knife of virtualization. QEMU supports everything and more than other 
+hypervisors. Its one downside is that its rather complicated.
 
 ### Quick links
 - [.. up dir](../README.md)
 - [Overview](#overview)
+  - [SPICE](#spice)
   - [Keyboard Shortcuts](#keyboard-shortcuts)
   - [Install QEMU](#install-qemu)
   - [QEMU Monitor](#qemu-monitor)
@@ -32,15 +35,34 @@ QEMU is awesome: CLI based, fast and reliable; but has a rather steep learning c
   - [NIX QEMU](nix_qemu/README.md)
 
 ## Overview
-Quick EMUlator is a command line virtual machine system. It is fast, portable and has excellent guest 
-support. It is the swiss army knife of virtualization. QEMU supports everything and more than other 
-hypervisors. Its one downside is that its rather complicated to figure out how to do what you want to 
-do and the available GUIs don't help much.
 
 **References**
 * [Archlinux QEMU](https://wiki.archlinux.org/title/QEMU)
 * [Gentoo linux docs](https://wiki.gentoo.org/wiki/QEMU/Options)
 * [QEMU Essential commands](https://blog.usro.net/2024/10/essential-qemu-commands-a-quick-guide-for-beginners-and-power-users/)
+
+### SPICE
+SPICE is a contender in the Virtual Desktop Infrastructure (VDI) space. The project aims to provide a 
+complete open source solution for remote access to virtual machines in a seamless way so you can play 
+videos, record audio, share usb devices and share folders without complications. SPICE is composed of 
+4 components: `Protocol`, `Client`, `Server`, and `Guest`.
+
+**References**
+- [SPICE](https://www.spice-space.org/index.html)
+- [SPICE and QEMU overview](https://linux-blog.anracom.com/2021/02/26/kvm-qemu-vms-with-multi-screen-spice-console-i-overview-over-local-and-remote-access-methods/)
+- [remote-viewer - redhat](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-graphic_user_interface_tools_for_guest_virtual_machine_management-remote_viewer)
+
+SPICE is a single seat solution, meaning that only a single user is able to view and work with the 
+virtual desktop at a time and if you were to login elsewhere you would take over the current session. 
+This is fantastic for managing a VM remotely and actually the behavior I prefer for this scenario.
+
+* The SPICE server library is fully integrated with QEMU
+* ***virt-viewer*** is the recommended client being fully integrated with `remote-viewer`
+  * `remote-viewer` is usually installed along with virt-viewer and can be used as standalone as well
+  * `remote-viewer spice://<host>:5900`
+* ***Xspice*** is a stadnalone server that is both an X server and a Spice server
+  * allows for running GUI applications in a container with Xspice
+* `5900` is the default port for SPICE and also for VNC
 
 ### Keyboard Shortcuts
 

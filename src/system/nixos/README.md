@@ -1,4 +1,5 @@
-# NixOS
+# NixOS <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
+
 `NixOS` is a Linux distribution built on top of the `Nix` package manager which leverages the 
 `Nix Expression Language` to make it `trivial to share development and build environments`. At the 
 system level this means being able to build new systems in a declarative way that are essentially 
@@ -22,6 +23,7 @@ is different. Although ***the benefits of Nix and NixOS outweigh these concerns*
 ecosystem more unapproachble than prior ecosystems like Arch Linux that I'm coming from.
 
 ### Quick links
+* [.. up dir](..)
 * [Overview](#overview)
   * [Flakes as entry point](#flakes-as-entry-point)
   * [System Versions](#system-versions)
@@ -37,6 +39,8 @@ ecosystem more unapproachble than prior ecosystems like Arch Linux that I'm comi
   * [Diff system versions](#diff-system-versions)
   * [List what changed](#list-what-changed)
   * [How to determine what is installed](#how-to-determine-what-is-installed)
+
+### Linked pages
 
 ## Overview
 

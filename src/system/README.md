@@ -1,6 +1,5 @@
-system
-====================================================================================================
-<img align="left" width="48" height="48" src="../../art/logo_256x256.png">
+# System <img style="margin: 6px 13px 0px 0px" align="left" src="../data/images/logo_36x36.png" />
+
 Documentation for various system technologies i.e operating system configuration and core systems 
 components. Development specific technologies are in the top level 
 [Developement](../development/README.md) section.
@@ -32,6 +31,8 @@ components. Development specific technologies are in the top level
 * [Thunar](#thunar)
   * [Thunar webp thumbnails](#thunar-webp-thumbnails)
 * [Wine](wine)
+
+### Linked pages
 
 ## Desktop components
 
