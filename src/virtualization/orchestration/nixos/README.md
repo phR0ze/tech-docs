@@ -12,6 +12,8 @@ language. Giving you the ability to quickly reproduce your deployments.
 ### Quick links
 * [.. up dir](../README.md)
 * [Containers](#containers)
+  * [nixos-container](#nixos-container)
+  * [Persisting state](#persisting-state)
 
 ## Containers
 One key benefit of using nix for building containers is that Nix makes your containers fully 
