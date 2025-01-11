@@ -12,9 +12,6 @@
 - [QEMU](qemu/README.md)
 - [VirtManager](virt_manager/README.md)
 
-### Linked pages
-- [QEMU](qemu/README.md)
-
 ## Overview
 
 ### Virt Manager vs libvirt vs QEMU vs KVM

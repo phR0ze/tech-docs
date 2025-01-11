@@ -212,6 +212,7 @@
     - [libvirt](virtualization/virtual_machines/libvirt/README.md)
     - [QEMU](virtualization/virtual_machines/qemu/README.md)
       - [NIX QEMU](virtualization/virtual_machines/qemu/nix_qemu/README.md)
+    - [Micro VMs](virtualization/virtual_machines/micro_vms/README.md)
     - [VirtManager](virtualization/virtual_machines/virt_manager/README.md)
 
 --------
