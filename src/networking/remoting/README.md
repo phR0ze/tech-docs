@@ -1,25 +1,77 @@
-# Remoting
+# Remoting <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
+
 Full remote desktop solutions in the Linux world have been rather poor in my opinion. Most early 
 solutions used `VNC`, `XRDP` or remote `X11`. None of these technologies though were very good. 
-Yes it was possible to carefully tune them to provide a decent solution; but out of the box usage for 
+Yes it is possible to carefully tune them to provide a decent solution; but out of the box usage for 
 non-experts was painful at best resulting in tearing, choppy, kludgy solutions that we're difficult 
 to setup and maintain. There were a few paid options (`Zoho Assist`, `Remote Access Plus`, and 
-others) that had better results but they are paid.
+others) that had better results. TeamViewer, despite its reputation, isn't that bad and I've used it 
+for years in personal solutions. That said it would frequently break depending on the kernel version 
+your on.
+
+**Requirements**
+- Free for personal use, preferably FOSS
+- Low latency andio and gpu accelerated video
+- Linux server metal and virtual machine support
 
 ### Quick links
 * [../](../README.md)
+* [Overview](#overview)
+  * [Server Comparison](#server-comparison)
+  * [Client Comparison](#client-comparison)
 * [Lightdm remote login](#lightdm-remote-login)
 * [Guacamole](#guacamole)
-* [RustDesk](#rustdesk)
 * [Teamviewer](#teamviewer)
+* [x11spice](#x11spice)
 * [Clients](#clients)
   * [Remmina](#remmina)
 * [Local Device Sharing](#local-device-sharing)
   * [Barrier](#barrier)
 
+### Linked pages
+- [Guacamole](guacamole/README.md)
+* [RustDesk](rustdesk/README.md)
+ 
 ## Overview
 **References**
 * [NixOS Remoting](https://nixos.wiki/wiki/Remote_Desktop)
+* [Comparison - Wikipedia](https://en.wikipedia.org/wiki/Comparison_of_remote_desktop_software)
+
+### Server Comparison
+
+| Name          |
+| ------------- | ----------------------------
+| NX/NoMachine  |  
+
+### Client Comparison
+
+| Name              | FOSS | UI      | Platform | Other 
+| ----------------- | ---- | ------- | -------- | --------------------
+| GNOME Connctions  | yes  | GTK     | Linux    | RDP, VNC
+| Remmina           | yes  | GTK     | Linux    | RDP, VNC, SPICE, X2Go, SSH, HTTP(S)
+| RustDesk          | yes  | Flutter | Cross    | P2P, end-to-end encryption
+| X2Go              | yes  | ?       | ?        | X2Go(NX3)
+| Cendio ThinLinc   |
+AnyDesk
+Ericom Connect
+NetSupport Manager
+NX
+RealVNC
+ConnectWise Control
+Teamviewer
+xpra
+x11vnc
+Citrix XenApp
+QVD
+Veyon
+XRDP
+TightVNC
+TigerVNC
+TurboVNC
+Sunshine
+Remotely
+
+Zoho Assist
 
 
 ## Lightdm remote login
@@ -60,76 +112,34 @@ x11vnc doesn't require any special configuration from lightdm
 ### TigerVNC x0vncserver
 * [TigerVNC x0vncserver docs](https://tigervnc.org/doc/x0vncserver.html)
 
-## x2go
-Modified NX 3 protocol
+## NX
+NX or NoMachine is proprietary but free-of-charge for non-commercial use. Created in 2003, NX 
+compresses the X display protocol to improve the preformance to be used over slow connections. It 
+also reduces round trips to improve the speed.
+
+**Spinoffs**
+* Freenx
+* Google's Neatx
+
+## X2Go
+X2Go is a Modified NX 3 protocol that provides all the classic remote features.
+
+### X2Go features
+* low bandwidth support
+* audio pass through with Puleaudio support
+* traffic is tunneled over SSH
+* file sharing from client to server
+* desktop sharing for remote support
+* separate sessions for remote access
+
+### Install X2Go on NixOS
+1. Install the server by simply including
+   ```nix
+   services.x2goserver.enable = true;
+   ```
 
 ## xdmcp
 Is similar to telnet, using unencrypted authentication.
-
-## Guacamole
-Guacamole doesn't require anything but a browser. No plugins, nada. Guacamole can be used to setup a 
-self-hosted access gateway. It is a clientless remote desktop gateway. It uses standard protocols 
-like RDP, VNC and SSH. Supports one-time-passwords and 2FA.
-
-### Install Guacamole
-1. 
-
-## RustDesk
-Open source project written in Rust providing both a client and server. The project is cross platform 
-and available in AUR. Its meant to be a TeamViewer alternative and allows for remote service help 
-like TeamViewer using an ID and RustDesk servers to connect in to assist your relatives or whatever. 
-However you can also host the server and keep everything tightly controlled for a local solution as 
-well.
-
-**Resources**
-* [rustdesk-server](https://github.com/rustdesk/rustdesk-server).
-
-**Features**
-* Cross-platform support, MacOS, Windows, Linux and Android
-* Linux is X11 support only
-
-#### Configure Local Relay Server
-You can host your own Relay Server so that you don't need to have the mothership involved. This 
-allows you to use direct connections and keep things local.
-
-**Configuration**
-* `-r <IP or DNS>:21117` for `hbbs` indicates the IP or DNS name for the `hbbr` service
-* `-k _` for `hbbs` and `hbbr` prohibits users connecting to your relay without your public key
-
-```
-$ mkdir ~/.config/rustdesk
-$ cd ~/.config/rustdesk
-$ docker run --rm --name hbbs --net=host -v "$PWD/data:/root" rustdesk/rustdesk-server:latest hbbs -r 192.168.1.2 -k _
-$ docker run --rm --name hbbr --net=host -v "$PWD/data:/root" rustdesk/rustdesk-server:latest hbbr -k _
-```
-
-Running either docker command above will generate the public/private key pair in `~/.config/rustdesk` with prefix `id_`
-Examples:
-```
--rw-r--r--  1 root   root     88 Apr 18 17:44 id_ed56518
--rw-r--r--  1 root   root     44 Apr 18 17:44 id_ed56518.pub
-```
-
-Use the value in the `id_*.pub` file as the `Key` value for the client below.
-
-#### Build the Client package
-1. Build and install the `python-pynput` package
-   ```
-   $ yay -Ga python-pynput; cd python-pynput; makepkg -s
-   $ sudo pacman -U python-pynput-1.7.6-2-any.pkg.tar.zst
-   ```
-2. Build and install the `rustdesk-bin` package
-   ```
-   $ yay -Ga rustdesk-bin; cd rustdesk-bin; makepkg -s
-   $ sudo pacman -U rustdesk-bin-1.1.9-3-x86_64.pkg.tar.zst
-   ```
-
-#### Configure Client ot use local Relay Server
-Client options allow for Relay Server configuration
-1. Click the three dots next to your `ID` and choose `ID/Relay Server`
-2. Punch in your server's IP or DNS name as `ID Server`
-3. Punch in the value from your `id_*.pub` server file as the `Key`
-4. Leave the rest of the values blank
 
 ## Teamviewer
 Teamviewer is a free for personal use remote desktop solution that in my opinion provided one of the 
@@ -163,6 +173,11 @@ SSH if I'm remote.
   l. Disable log files  
   m. Check ***Disable TeamViewer shutdown***  
   n. Click ***OK***  
+
+## x11spice
+`x11spice` is patterned after `x11vnc` and allows for connecting to a running X server via a Spice 
+server. Configured via `~/.config/x11spice/x11spice.conf` or `/etc/xdg/x11spice/x11spice.conf` with 
+`xdg/x11spice//x11spice.conf` being an example of all options.
 
 ## Clients
 

@@ -1,4 +1,4 @@
-# Cloud
+# Cloud <img style="margin: 6px 13px 0px 0px" align="left" src="../data/images/logo_36x36.png" />
 
 ## Hyperscaler
 Hyperscalers are large cloud service providers that can provide services such as computing and 

@@ -41,7 +41,7 @@ world though this already exists.
 
 2. Modify the ISO profile as desired
    ```bash
-   $ vim profiles/iso/default.nix
+   $ vim profiles/iso.nix
    ```
 
 3. Commit or at the least stage your changes so Nix will see them
@@ -299,12 +299,6 @@ system.
 $ sudo nix copy --all --no-check-sigs --offline --to local?root=/mnt
 ```
 
-
-
-
-
-
-
 ### Include system configuration for offline installs
 The flake registry seems to get downloaded and stored at `~/.cache/nix/flake-registry.json` which is 
 a link back to the `/nix/store/<hash>-flake-registry.json`
@@ -343,8 +337,6 @@ populate the target nix store then we will have the store path
 
 ***INCLUDE CLU ON ISO as PKG***
 
-
-
 ### Local binary cache
 * [Nix Local Binary Cache](https://nixos.org/manual/nix/stable/store/types/local-binary-cache-store)
 
@@ -371,60 +363,6 @@ populate the target nix store then we will have the store path
    $ sudo umount /mnt/cache
    ```
 
-### Other notes
-Exporting and importing closures allows for sharing read-to-use applications similar to how docker 
-images bundle applications for reuse.
-
-* Nix closures can be exported as Nix ARchive (NAR) from nix store e.g. app `chord`
-```
-nix-store --export $(nix-store --query --requisites ./result) > chord.nar
-```
-
-And re-imported
-```
-nix-store --import < chord.nar
-```
-
-```
-nix copy nixpkgs.ag --to file://ag.pkg 
-# We now have a local directory `ag.pkg` which we can tar-up and distribute
-# On the client machine, we run to install the package
-nix copy --from file://ag.pkg nixpkgs.ag
-```
-
-Examples
-```
-nix copy --to file:///home/admin/Downloads $(type -p firefox)
-nix copy --to file:///home/admin/Downloads .#deps
-scp -r /nix/store/* your_user@host_name:/path/to/store/copy
-```
-
-Add `file:///the/path` to the substituters then `nix copy --no-check-sigs --to local?root=/mnt /out`
-
-Specify an alternate store
-`--store /cachedir` is an option that all nix commands can take to use a specific cache
-
-* Don't use `NIX_STORE_DIR` as this breaks compatibility with the official binary cache and you have 
-to build everything
-* Flat file binary cache and copy to and from there
-
-
-```
-git clone -b master --depth 1 https://github.com/NixOS/nixpkgs
-nix copy --from https://cache.nixos.org/ --to file://$PWD/cache ./nixpkgs#hello
-nix copy --from https://cache.nixos.org/ --to file://$PWD/cache ./nixpkgs#hello --eval-store ""
-
-# Download into local store then copy to binary cache $PWD
-nix copy --to file://$PWD/cache nixpkgs#hello
-```
-
-
-### During install
-Add the `--substituters ""` option to remove all binary cache options
-```bash
-nixos-install --root $root --no-bootloader --no-root-passwd \
-  --system ${config.system.build.toplevel} --channel ${channel} --substituters ""
-```
 ### Including pre-populated nix store
 **On build machine**
 ```
@@ -435,72 +373,6 @@ $ nix copy your-config file:///path/to/usbstick/folder
 ```
 $ nix copy file:///path/to/usbstick/folder your-config 
 ```
-
-
-nixos-install will run `nix build --store /mnt` which won't be able to see what is in the installer 
-nix store so we need to copy everything to `/mnt` using `nix copy --no-check-sigs --to local?root=/mnt /out`
-* `nix copy --to /tmp/nix /run/current-system --no-check-sigs`
-
-## Build Live ISO
-Default live installer configurations are available inside `nixos/modules/installer/cd-dvd`
-
-**References**
-* [Nix generators github](https://github.com/nix-community/nixos-generators)
-* [Building an Image docs](https://nixos.org/manual/nixos/stable/#sec-building-image)
-
-You have two options:
-1. Use any of those default configurations as is
-2. Combine them with (any of) your host config(s) 
-
-System images, such as the live installer ones, know how to enforce configuration settings on which 
-they immediately depend in order to work correctly.
-
-However, if you are confident, you can opt to override those enforced values with `mkForce`. 
-
-### Build Unstable channel ISO
-```bash
-$ git clone https://github.com/NixOS/nixpkgs.git
-$ cd nixpkgs/nixos
-$ git switch nixos-unstable
-$ nix-build -A config.system.build.isoImage -I nixos-config=modules/installer/cd-dvd/installation-cd-minimal.nix default.nix
-```
-
-Check the content of the image with:
-```bash
-$ mount -o loop -t iso9660 ./result/iso/cd.iso /mnt/iso
-```
-
-### Additional drivers or firmware
-If you need additional (non-distributable) drivers or firmware in the installer, you might want to 
-extend these configurations.
-
-For example, to build the GNOME graphical installer ISO, but with support for certain WiFi adapters 
-present in some MacBooks, you can create the following file at 
-`modules/installer/cd-dvd/installation-cd-graphical-gnome-macbook.nix`:
-
-```
-{ config, ... }:
-
-{
-  imports = [ ./installation-cd-graphical-gnome.nix ];
-
-  boot.initrd.kernelModules = [ "wl" ];
-
-  boot.kernelModules = [ "kvm-intel" "wl" ];
-  boot.extraModulePackages = [ config.boot.kernelPackages.broadcom_sta ];
-}
-```
-
-Then build it like in the example above:
-
-```bash
-$ git clone https://github.com/NixOS/nixpkgs.git
-$ cd nixpkgs/nixos
-$ export NIXPKGS_ALLOW_UNFREE=1
-$ nix-build -A config.system.build.isoImage -I nixos-config=modules/installer/cd-dvd/installation-cd-graphical-gnome-macbook.nix default.nix
-```
-
-
 <!-- 
 vim: ts=2:sw=2:sts=2
 -->

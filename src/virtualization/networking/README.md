@@ -8,9 +8,12 @@ Virtualized networking is critical to understand for proper container and VM orc
 * [Prerequisites](#prerequisites)
   * [Enable forwarding of traffic to VMs](#enable-forwarding-of-traffic-to-vms)
   * [Disable netfiltering for bridges](#disable-netfiltering-for-bridges)
+
+### Linked pages
 * [Bridge](bridge/README.md)
 * [macvlan](macvlan/README.md)
-
+* [macvtap](macvtap/README.md)
+ 
 ## Networking Overview
 
 **References**

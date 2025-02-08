@@ -3,7 +3,7 @@
 A network bridge is a virtual network device that behaves like a switch allowing virtual devices to 
 be connected to your host and local network via virtual ethernet devices (VETH). `macvlan` provides 
 similar functionality with a slightly simpler approach by handling the creation of the virtual 
-devices for you.
+ethernet devices for you so you don't have to create the VETH devices.
 
 **References**
 * [Arch Linux Wiki](https://wiki.archlinux.org/title/Network_bridge)

@@ -36,11 +36,13 @@ ecosystem more unapproachble than prior ecosystems like Arch Linux that I'm comi
 * [Common operations](#common-operations)
   * [Temporarily run new software](#temporarily-run-new-software)
   * [Rollback system version](#rollback-system-version)
+  * [Override nix configuration](#override-nix-configuration)
   * [Diff system versions](#diff-system-versions)
   * [List what changed](#list-what-changed)
   * [How to determine what is installed](#how-to-determine-what-is-installed)
 
 ### Linked pages
+* [Build VM](build_vm/README.md)
 
 ## Overview
 
@@ -211,6 +213,13 @@ $ sudo /run/current-system/bin/switch-to-configuration switch
 ```bash
 $ sudo result/bin/switch-to-configuration switch
 ```
+
+### Override nix configuration
+My nix binary cache was down causing system updates to fail. Unfortunately because it failed during 
+the update process I was unable to change the configuration. The solution was to temporarily override 
+the nix binary cache substituters setting using and override file at `~/.config/nix/nix.conf`.
+
+Note you can see the current configuration with `nix config show`
 
 ### Diff system versions
 You can diff different system versions using the `nix store diff-closures` command.

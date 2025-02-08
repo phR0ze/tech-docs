@@ -7,15 +7,15 @@ hypervisors. Its one downside is that its rather complicated.
 ### Quick links
 - [.. up dir](../README.md)
 - [Overview](#overview)
-  - [SPICE](#spice)
   - [Keyboard Shortcuts](#keyboard-shortcuts)
   - [Install QEMU](#install-qemu)
   - [QEMU Monitor](#qemu-monitor)
   - [Quickemu](#quickemu)
+- [Video params](#video-params)
+  - [QXL VGA](#qxl-vga)
 - [Parameters](#parameters)
   - [General params](#general-params)
   - [CPU/Mem params](#cpu-mem-params)
-  - [Video params](#video-params)
   - [Networking params](#networking-params)
   - [Drive params](#drive-params)
   - [Window display params](#window-display-params)
@@ -32,7 +32,9 @@ hypervisors. Its one downside is that its rather complicated.
   - [Run in Immutable mode](#run-in-immutable-mode)
 
 ### Linked pages
+  - [Quickemu](quickemu/README.md)
   - [NIX QEMU](nix_qemu/README.md)
+  - [SPICE](spice/README.md)
 
 ## Overview
 
@@ -40,29 +42,6 @@ hypervisors. Its one downside is that its rather complicated.
 * [Archlinux QEMU](https://wiki.archlinux.org/title/QEMU)
 * [Gentoo linux docs](https://wiki.gentoo.org/wiki/QEMU/Options)
 * [QEMU Essential commands](https://blog.usro.net/2024/10/essential-qemu-commands-a-quick-guide-for-beginners-and-power-users/)
-
-### SPICE
-SPICE is a contender in the Virtual Desktop Infrastructure (VDI) space. The project aims to provide a 
-complete open source solution for remote access to virtual machines in a seamless way so you can play 
-videos, record audio, share usb devices and share folders without complications. SPICE is composed of 
-4 components: `Protocol`, `Client`, `Server`, and `Guest`.
-
-**References**
-- [SPICE](https://www.spice-space.org/index.html)
-- [SPICE and QEMU overview](https://linux-blog.anracom.com/2021/02/26/kvm-qemu-vms-with-multi-screen-spice-console-i-overview-over-local-and-remote-access-methods/)
-- [remote-viewer - redhat](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-graphic_user_interface_tools_for_guest_virtual_machine_management-remote_viewer)
-
-SPICE is a single seat solution, meaning that only a single user is able to view and work with the 
-virtual desktop at a time and if you were to login elsewhere you would take over the current session. 
-This is fantastic for managing a VM remotely and actually the behavior I prefer for this scenario.
-
-* The SPICE server library is fully integrated with QEMU
-* ***virt-viewer*** is the recommended client being fully integrated with `remote-viewer`
-  * `remote-viewer` is usually installed along with virt-viewer and can be used as standalone as well
-  * `remote-viewer spice://<host>:5900`
-* ***Xspice*** is a stadnalone server that is both an X server and a Spice server
-  * allows for running GUI applications in a container with Xspice
-* `5900` is the default port for SPICE and also for VNC
 
 ### Keyboard Shortcuts
 
@@ -102,6 +81,72 @@ creating virtual machines.
 Quickemu works off the assumption that there is a lot going on in QEMU and its hard to remember. 
 Quickemu will figure out a lot of it for you and store it in a config along side your `qcow2` image 
 so you can refer to that.
+
+## Video params
+There are a log of emulated display devices in QEMU. Typical recommendations are use:
+1. `virtio vga` or `virtio gpu` with guest drivers
+2. `qxl vga` with guest drivers
+
+First of all all display options have a short `-vga <NAME>` and a long `-device <NAME,vgamem_mb=32` 
+way of being specified for additional options.
+
+**References**
+* [Display devices in QEMU](https://www.kraxel.org/blog/2019/09/display-devices-in-qemu/)
+
+| Parameters              | VGA | BIOS | UEFI | Purpose
+| ----------------------- | --- | ---- | ---- | ---------------------------------------------------
+| `-vga vga`              | yes | yes  | yes  | Compability
+| `-vga virtio`           | yes | yes  | yes  | Modern and built for VMs
+| `-device virtio-gpu-pci`| no  | no   | yes  | Same as virtio but no VGA support saves 8mb memory
+| `-vga qxl`              | yes | yes  | yes  | Slighly dated
+
+### Standard VGA
+`-vga std` or `-device VGA,vgamem_mb=32` is the default display device on x86 hardware. It provides a 
+full VGA compatibility and support for simple linear framebuffer. It is the best choice for 
+compatibiltiy. Its default is `16mb` of video ram.
+
+The UEFI setup allows to choose the display resolution which OVMF will use to initialize the display 
+at boot. Press ESC at the tianocore splash screen to enter setup, then go to `Device Manager` > 
+`OVMG` > `Platform Configuration`
+
+### Virtio VGA
+`-vga virtio` or `-device virtio-vga,virgl=on,gl=on` is a modern virtio-based display device designed 
+for Virtual Machines. It comes with VGA compatibility mode. You need a guest OS driver to make full 
+use of the device. The device provides optional hardware-assisted opengl accelerations support using 
+the `virgl=on` option. This device has no dedicated video memory and doesn't support the option.
+
+There is a `virtio gpu` option which is the same thing without the VGA support and saves 8mb of 
+memory. Probably the better option if you have guest drivers that is. Additionally you can run either 
+one as a separate process with:
+```
+qemu \
+ -chardev socket,id=vgpu,path=vgpu.sock \
+ -device vhost-user-vga,chardev=vgpu \
+```
+
+```
+-vga none -device virtio-vga-gl -display gtk,gl=on,show-cursor=on  
+```
+
+### QXL VGA
+`-vga qxl` or `-device qxl-vga` is a slightly dated device desigend for virtual machines. You need a 
+guest driver to make full use of this device. This device has support for 2D acceleration. Modern 
+display devices though use 3D engines for everything and so this doesn't help. The same thing happens 
+on the software side where they all use 3D not 2D. Spice and qxl offload 2D acceleration to the spice 
+client, but this is complex and increasingly useless. `-device qxl` is the same but lacks vga support.
+
+Show options: `qemu-system-x86_64 -device qxl-vga,?`
+* `vgamem_mb` default is 16, change it to 32 for better performance
+```
+-vga none -device qxl-vga,id=video0,vgamem_mb=64,bus=pci.0,addr=0x2
+
+-vga qxl -global qxl-vga.vgamem_mb=32 
+
+-vga qxl -global qxl-vga.ram_size=134217728 -global qxl-vga.vram_size=134217728 -global qxl-vga.vgamem_mb=32 
+
+-vga qxl -global qxl-vga.vram_size=9437184 -device
+qxl,id=video1,vram_size=67108864,bus=pci.0,addr=0x8
+```
 
 ## Parameters
 
@@ -148,13 +193,6 @@ Run the following to see the list if support CPUs
 ```bash
 $ qemu-system-x86_64 -cpu ?
 ```
-
-### Video params
-
-| Parameters                                      | Description
-| ----------------------------------------------- | ---------------------------------------------------
-| `-vga virtio`                                   | Use improved graphics performance driver
-| `-device VGA,vgamem_mb=32`                      | Increase the default 16M of video memory
 
 ### Networking params
 
