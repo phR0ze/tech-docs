@@ -15,6 +15,7 @@ orchestration systems knowledge. It works with Kubernetes, Docker, Docker Swarm 
 
 **References**
 * [Install Docker and Portainer in LXC](https://www.cynicalsignals.com/installing-portainer-in-a-proxmox-lxc/)
+* [NixOS containerization](https://gitlab.com/cbleslie/portainer-on-nixos/-/blob/main/modules/portainer.nix?ref_type=heads)
 
 1. Create a new LXC container based on Ubuntu 22.04
 2. Install Docker

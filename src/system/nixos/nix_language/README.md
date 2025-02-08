@@ -38,9 +38,15 @@ toIP = x:
   in { address = builtins.elemAt ip 0; cidr = builtins.elemAt ip 1; }
 ```
 
-## environment.etc
-[environment.etc](https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/system/etc/etc.nix) is 
-declared as just another nix module although it has some rather complicated associated functionality.
+### Quit repl
+```
+nix-repl> :q
+```
+
+### Load package into editor
+```
+nix-repl> :e pkgs.prismlauncher
+```
 
 ### Filter options
 The first thing we get in the file is a lambda
@@ -50,7 +56,7 @@ invocation which applies the function `f` i.e. `(f: f.enable)` to every object i
 [attrValues](https://nixos.org/manual/nix/stable/language/builtins.html#builtins-attrValues)
 is another function that returns the values of the attributes in teh set `set`
 ```nix
-  etc' = filter (f: f.enable) (attrValues config.environment.etc);
+etc' = filter (f: f.enable) (attrValues config.environment.etc);
 ```
 
 ### runCommandLocal
@@ -164,23 +170,6 @@ in
         }));
 };
 ```
-
-
-
-### system.build.etc
-A tree of symlinks that form the static parts of `/etc`. The `environment.etc` module depends on perl 
-to run a custom perl script to activate `/etc`.
-
-
-
-
-
-
-
-
-
-
-
 
 ## Adding one off dotfiles
 Using the following syntax we can create a file in the `/nix/store/...` from a static file's contents 

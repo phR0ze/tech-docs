@@ -7,6 +7,8 @@ The Micro VM project provides a path for managing production NixOS virtual machi
 
 ### Quick links
 - [.. up dir](../README.md)
+- [Getting Started](#getting-started)
+  - [Launch your own vm](#launch-your-own-vm)
 
 ## Overview
 Virtual Machines can be a better fit for some use cases than containers. My primary use case is for a 
@@ -26,41 +28,41 @@ configurations. Astro's Micro VM project was built to solve this.
 `microvm.nix` creates virtual machine disk images and runner script packages for the entries of the 
 `nixosConfigurations` section of a `flake.nix` file.
 
-### Creation
-VMs are only created in `/var/lib/microvms` per directory if they don't already exist. Thus you'll 
-get a VM declaratively built the first time but after that you need to imperatively update them 
-directly.
+## Getting Started
 
-## Prepare for hosting MicroVMs
-In order to configure your system to host MicroVMs we need to make a few changes.
+### Launch your own vm
+1. Download the project template
+   ```bash
+   $ nix flake init -t github:astro/microvm.nix
+   ```
+2. Build and launch the vm
+   ```bash
+   $ nix run .#my-microvm
+   ```
+3. Login with `root` and no password
 
-### Add MicroVM host module
-1. Add the `microvm.nix` flake as an input
-2. Setup `microvm` to follow your nixpkgs
-3. Add the `microvm.nixosModules.host` to your system modules
-4. Optionally add autostart on the host for your guest MicroVMs
-
-**Example**
-```nix
-{
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-  inputs.microvm.url = "github:astro/microvm.nix";
-  inputs.microvm.inputs.nixpkgs.follows = "nixpkgs";
-
-  outputs = { self, nixpkgs, microvm }: {
-    nixosConfigurations.server1 = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      modules = [
-        microvm.nixosModules.host
-        {
-          # try to automatically start these MicroVMs on bootup
-          microvm.autostart = [ "my-microvm" ];
-        }
-      ];
-    };
-  };
-}
 ```
-
-### Configure networking
-
+-name my-microvm 
+-M microvm,accel=kvm:tcg,acpi=on,mem-merge=on,pcie=on,pic=off,pit=off,usb=off
+-m 512
+-smp 1
+-nodefaults -no-user-config -no-reboot
+-kernel /nix/store/jzl52vx9j42jgn92nynihpniamzwd31p-linux-6.6.64/bzImage
+-initrd /nix/store/mdw5d0j85h530c47hjxj2ims8pj9ir9j-initrd-linux-6.6.64/initrd
+-chardev stdio,id=stdio,signal=off
+-device virtio-rng-pci
+-serial chardev:stdio
+-enable-kvm
+-cpu host,+x2apic,-sgx 
+-device i8042
+-append earlyprintk=ttyS0 console=ttyS0 reboot=t panic=-1 root=fstab loglevel=4
+ init=/nix/store/blr4mm3bjv7anp9spfjfj05iqqhp513b-nixos-system-my-microvm-25.05.20241213.3566ab7/init
+ regInfo=/nix/store/sglj78lb7g516wxassar23v5srkkmm70-closure-info/registration -nographic -sandbox on 
+-qmp unix:control.socket,server,nowait
+-drive id=vda,format=raw,file=var.img,if=none,aio=io_uring,discard=unmap,cache=none,read-only=off
+-device virtio-blk-pci,drive=vda
+-object memory-backend-memfd,id=mem,size=512M,share=on
+-numa node,memdev=mem 
+-fsdev local,id=fs0,path=/nix/store,security_model=none
+-device virtio-9p-pci,fsdev=fs0,mount_tag=ro-store
+```

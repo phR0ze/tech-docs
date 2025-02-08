@@ -14,7 +14,6 @@ nix packages together with configuration changes to deploy your system.
   * [Build nixpkgs package locally](#build-nixpkgs-package-locally)
   * [Build nixpkgs package locally in phases](#build-nixpkgs-package-locally-in-phases)
 
-
   * [Override package unwrapped](#override-package-unwrapped)
 * [Package overrides](#package-overrides)
   * [override vs overrideAttrs](#override-vs-overrideattrs)
@@ -60,7 +59,6 @@ on evaluation.
    «lambda @ /nix/store/lwyjz70qh12nq6cb7fixl85vryzxqm3c-source/lib/fileset/default.nix:225:8»
    ```
 
-
 * Adding a new attribute to an attribute list then print it out
    ```
    nix-repl> foo = map (x: x // { foo = x.name; } ) [ { name = "foo"; value = 2; } ]
@@ -84,7 +82,6 @@ on evaluation.
 # Rename the set using the value.target field
 (attrsets.mapAttrs' (name: value: nameValuePair (value.target) value) config.files.root)
 ```
-
 
 ## Build packages
 Final built packages are located in `/nix/store`. The nix store is a globally readable directory of 
@@ -163,7 +160,6 @@ Using `Prism Launcher` for my example
 5. You will be left in the `build` directory
 
 
-
 Create a patch with git
 ```
 $ git diff -a > nixpkgs/pkgs/the/package/0001-changes.patch
@@ -174,7 +170,6 @@ Keep the temp build directory in case something fails during the build
 nix-build -K
 ```
 
-1. Review the target derivation
    1. Open the repl
       ```bash
       $ nix repl -f '<nixpkgs>'
