@@ -6,7 +6,12 @@ right thing*** when creating virtual machines. If that is true this project is a
 shrouded in outdated guides and broken projects too numerous to count.
 
 ### Quick links
-- [.. up dir](../README.md)
+* [.. up dir](../README.md)
+* [Overview](#overview)
+  * [Getting Started](#getting-started)
+  * [NixOS VM](#nixos-vm)
+* [Configuration](#configuration)
+  * [Example outputs](#example-outputs)
 
 ## Overview
 The project claims the ability to:
@@ -35,6 +40,17 @@ what you should run to start.
    $ quickemu --vm arcolinux-v24.12.02-plasma.conf
    ```
 
+### NixOS VM
+Quickemu can be used to quickly get a completely independenty VM setup.
+
+**References**
+* [NixOS Server test with Quickemu](https://guekka.github.io/nixos-server-1/)
+
+## Configuration
+Quickemu does one thing correct upfront and that is it stores configuration about your VM in a 
+configuration file to then be referenced or overriden.
+
+### Example outputs
 Gave a really nice dump of the VM confguration when running with `--display spice`
 ```
  - Host:     NixOS 25.05 (Warbler) running Linux 6.6.64 workstation
@@ -136,8 +152,4 @@ qemu-system-x86_64 -name ubuntu-24.10,process=ubuntu-24.10 \
   -device usb-ehci,id=input \
   -device usb-kbd,bus=input.0 -k en-us -device usb-tablet,bus=input.0 -audiodev pa,id=audio0 -device intel-hda -device hda-micro,audiodev=audio0 -device virtio-net,netdev=nic -netdev user,hostname=ubuntu-24.10,hostfwd=tcp::22220-:22,smb=/home/USER,id=nic -global driver=cfi.pflash01,property=secure,value=on -drive if=pflash,format=raw,unit=0,file=/nix/store/38hgw2w1sprb2vk81b22x0x0jx2cyf87-OVMF-202411-fd/FV/OVMF_CODE.fd,readonly=on -drive if=pflash,format=raw,unit=1,file=ubuntu-24.10/OVMF_VARS.fd -drive media=cdrom,index=0,file=ubuntu-24.10/ubuntu-24.10-desktop-amd64.iso -device virtio-blk-pci,drive=SystemDisk -drive id=SystemDisk,if=none,format=qcow2,file=ubuntu-24.10/disk.qcow2 -fsdev local,id=fsdev0,path=/home/USER,security_model=mapped-xattr -device virtio-9p-pci,fsdev=fsdev0,mount_tag=Public-USER -monitor unix:ubuntu-24.10/ubuntu-24.10-monitor.socket,server,nowait -serial unix:ubuntu-24.10/ubuntu-24.10-serial.socket,server,nowait
 ```
-
-## Configuration
-Quickemu does one thing correct upfront and that is it stores configuration about your VM in a 
-configuration file to then be referenced or overriden.
 
