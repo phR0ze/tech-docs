@@ -1,8 +1,6 @@
-Multimedia
-====================================================================================================
-<img align="left" width="48" height="48" src="../../art/logo_256x256.png">
+# Media <img style="margin: 6px 13px 0px 0px" align="left" src="../data/images/logo_36x36.png" />
+
 Documenting various multimedia technologies
-<br><br>
 
 ### Quick links
 * [.. up dir](../README.md)
@@ -28,6 +26,10 @@ Documenting various multimedia technologies
   * [Lossless Rotate](#lossless-rotate)
   * [Strip GPS Location](#strip-gps-location)
 
+### Linked pages
+- [Jellyfin](jellyfin/README.md)
+- [Kodi](kodi/README.md)
+ 
 # 3D Computer Graphics
 * Sweet Home 3d
 * FreeCAD

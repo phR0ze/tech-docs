@@ -32,6 +32,8 @@ namespaces without the need for a bridge when using the macvlan `bridge` mode.
 * In `private` mode it is not possible for the macvlan to communicate with the parent interface.
 * In `vepa` mode with a smart switch it is possible to communicate with the parent interface.
 * In `bridge` mode it can fully communicate with the parent interface. Usually what you want
+* In `passthru` mode a single VM can be connected directly to the physical interface
+* In `source` mode traffice can be filtered based on a list of allowed source MAC addresses
 
 **Prerequisites**
 * Most cloud providers block `macvlan` networking, making this only useful on homelabs
@@ -81,7 +83,8 @@ systemd.services."podman-network-${app.name}" = {
 ```
 
 ### Create via iproute2
-![macvlan](../../../data/images/macvlan1.png)
+If not using NixOS the modern way to manually create a bridge is with the `iproute2` utilities the 
+provide control and monitoring for various aspects of networking.
 
 1. Create the macvlan and add manual routes
    ```bash

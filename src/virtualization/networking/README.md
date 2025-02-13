@@ -4,7 +4,9 @@ Virtualized networking is critical to understand for proper container and VM orc
 
 ### Quick links
 * [.. up dir](../README.md)
-* [Networking Overview](#networking-overview)
+* [Virtualized Networking Overview](#virtualized-networking-overview)
+  * [Use cases](#use-cases)
+  * [Docker networking](#docker-networking)
 * [Prerequisites](#prerequisites)
   * [Enable forwarding of traffic to VMs](#enable-forwarding-of-traffic-to-vms)
   * [Disable netfiltering for bridges](#disable-netfiltering-for-bridges)
@@ -15,9 +17,29 @@ Virtualized networking is critical to understand for proper container and VM orc
 * [macvtap](macvtap/README.md)
  
 ## Networking Overview
+Linux has rich virtual networking capabilities used with virtual machines, containers and more 
+complicated configurations.
 
 **References**
 * [Arch Linux Wiki](https://wiki.archlinux.org/title/Network_bridge)
+
+### Use cases
+Of the collection of tools, I've found that the `Bridge`.
+
+* ***Bridge*** should be used when you want to establish communication channels between VMs, 
+  containers and other devices on your LAN.
+* ***Bonded interface*** should be used when you want to increase you links speed or do a failover on 
+  your server.
+* ***Team device*** should be used similar to bonded interface to group NICs when bonding doesn't 
+  provide the feature.
+* ***VLAN*** should be used to separate your networking into different spaces to control security.
+* ***VXLAN*** should be used to solve the problem of limited VLAN IDs
+* ***MACVLAN*** should be used to connect virtual devices to your LAN without the need for TAP/VETH 
+  and Bridge.
+* ***IPVLAN*** is similar to MACVLAN but the endpoints have the same MAC address.
+* ***MACVTAP/IPVTAP*** is a modern driver to be used to make both the guest and the host show up on 
+  the LAN in place of veth, tap and bridge.
+* ***VETH*** used to provide communication between the host and containers or VMs.
 
 ### Docker networking
 Docker is a great place to start as it is the most popular container technology in existance and has 
