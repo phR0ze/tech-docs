@@ -40,4 +40,7 @@ photos for the family.
    5. Check `Enable Subject Recogniction in Shared Space`
    6. Finally click `Save`
 
+## Enable video thumbnails
+Synology Video Station will generate video thumbnails
 
+1. 

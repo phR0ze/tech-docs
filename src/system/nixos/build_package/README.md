@@ -145,9 +145,9 @@ Using `Prism Launcher` for my example
    $ phases="${prePhases[*]:-} unpackPhase" genericBuild
    ```
 
-3. Patch the source with your patch file. Note this is from within the source directory.
+3. Patch the source with your patch file, or modify it directly. Note this is from within the source directory.
    ```bash
-   $ patch --no-backup-if-mismatch -p1 < /etc/nixos/patches/prismlauncher/offline.patch
+   $ patch --no-backup-if-mismatch -p1 < ~/Projects/nixos-configs/patches/prismlauncher/v9.1/offline.patch
    ```
    
 4. Next invoke the rest of the build process
@@ -192,12 +192,10 @@ nix-build -K
    $ nix-build -K -E 'with import <nixpkgs> {}; callPackage ./default.nix {}'
    ```
 
-
 2. Clone the source
    ```bash
    $ git clone --depth 1 https://github.com/PrismLauncher/PrismLauncher -b 8.0
    ```
-
 
 ### Build derivation for testing
 * [elatov's building a nix package](https://elatov.github.io/2022/01/building-a-nix-package)
@@ -359,19 +357,19 @@ Using `Prism Launcher` for my example
       ```
    2. Load the package in your editor
       ```
-      $ :e pkgs.prismlauncher
+      $ :e pkgs.prismlauncher-unwrapped
       ```
-   3. Note the src version e.g. `version = "8.0";` which is used in the `fetchFromGitHub` as the `rev`
+   3. Note the `version = "9.1";` in the `fetchFromGitHub` block
 
-2. Create the desired patch file using the `8.0` tag from above
+2. Create the desired patch file using the `9.1` tag from above
    ```bash
-   $ git clone --depth 1 https://github.com/PrismLauncher/PrismLauncher -b 8.0
+   $ git clone --depth 1 https://github.com/PrismLauncher/PrismLauncher -b 9.1
    $ cp -a PrismLauncher a
    $ cp -a PrismLauncher b
    $ cd b
    # make desired changes in 'b'
    $ cd ..
-   $ diff -ruN a b > /etc/nixos/patches/offline.patch
+   $ diff -ruN a b > ~/Projects/nixos-config/patches/prismlauncher/v9.1/offline.patch
    ```
 
 3. Override the systemPackages to use the modified target package. Originally as much as I tried and 

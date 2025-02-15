@@ -93,6 +93,7 @@
     - [IAP](cloud/google_cloud_platform/iap/README.md)
 
 - [Gaming](gaming/README.md)
+  - [Minecraft](gaming/minecraft/README.md)
   - [Warcraft2](gaming/warcraft2/README.md)
   - [Wine](gaming/wine/README.md)
   - [Wii Backup Manager](gaming/wii_backup_manager/README.md)
@@ -180,6 +181,7 @@
   - [Systemd](system/systemd/README.md)
   - [Synology](system/synology/README.md)
     - [NFS](system/synology/nfs/README.md)
+    - [SMB](system/synology/smb/README.md)
     - [Synology Drive](system/synology/drive/README.md)
     - [Synology Photos](system/synology/photos/README.md)
     - [Synology Snapshots](system/synology/snapshots/README.md)
