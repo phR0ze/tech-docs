@@ -5,13 +5,14 @@
 * [Getting started](#getting-started)
   * [Configure groups and users](#configure-groups-and-users)
   * [Enable user home service](#enable-user-home-service)
+* [Folder structure](#folder-structure)
   * [Create shared family folder](#create-shared-family-folder)
-  * [Enable SMB](#enable-smb)
 * [External Access](#external-access)
   * [QuickConnect](#quickconnect)
 
 ### Linked pages
 * [NFS](nfs/README.md)
+* [SMB](smb/README.md)
 * [Synology Drive](drive/README.md)
 * [Synology Photos](photos/README.md)
 * [Synology Snapshots](snapshots/README.md)
@@ -48,6 +49,9 @@ computers or anything else they need.
    4. Check `Hide sub-folders and files from users without permissions`
    5. Check `Enable Recycle Bin`
 
+## Folder structure
+Creating and sharing out a number of folders is the primary purpose of a NAS.
+
 ### Create shared family folder
 It's nice to have a shared folder where the family can share documents easily
 
@@ -58,12 +62,13 @@ It's nice to have a shared folder where the family can share documents easily
 5. Click through `Next` and check `Enable data checksum for advanced data integrity`
 6. Finally add the `family` group with `Read/Write` and finish
 
-### Enable SMB
-Enabling and configuring SMB is super simple
-
-1. Navigate to `Control Panel > File Services > SMB`
-2. Check `Enable SMB service`
-3. Set the `Workgroup` e.g. `skynet`
+### Create media folders
+1. Navigate to `Control Panel >Shared Folder`
+2. Click `Create >Create Shared Folder`
+3. Name it `Movies`
+4. Check `Enable Recycle Bin` and sub option `Restrict access to administrators only`
+5. Click through `Next` and check `Enable data checksum for advanced data integrity`
+6. Finally add the `family` group with `Read/Write` and finish
 
 ## External Access
 Is this secure?

@@ -10,11 +10,11 @@ Documenting how I like to configure Firefox
   * [View Markdown](#view-markdown)
   * [Recent tab switching](#recent-tab-switching)
 * [Extensions](#extensions)
-  * [ublock origin](#ublock-origin)
+  * [uBlock Origin](#ublock-origin)
 
-# Config
+## Config
 
-## View Markdown
+### View Markdown
 1. Browse to `about:config`
 2. Search for `helpers.private_mime_types_file` which show the mime path `~/.mime.types`
 3. Create the file `~/.mime.types`
@@ -23,17 +23,27 @@ Documenting how I like to configure Firefox
    ```
 4. Download and install [Markdown viewer](https://addons.mozilla.org/en-US/firefox/addon/markdown-viewer-chrome/)
 
-## Recent tab switching
+### Recent tab switching
 1. Navigate to `MENU >Settings`
 2. Check `General >Ctrl+Tab cycles through tabs in recently used order`
 
-# Extensions
+## Extensions
 
-## ublock origin
+### uBlock Origin
+Blocking ads and annoying popups has become more and more imperative to keep you browser running 
+smoothly, improve load times and safety online.
+
+**Install**
 1. Navigate to `MENU >Add-ons and themes`
 2. Punch into the search `ublock origin`
 3. Click through and then `Add to Firefox >Add`
 4. Select `Allow this extension to run in Private Windows` and click `Okay`
+
+**Configuration**
+1. Enable `Filter lists`
+   * `Annoyances >EasyList - Annoyances`
+   * `Annoyances >AdGuard - Annoyances`
+   * `Annoyances >uBlock filters - Annoyances`
 
 <!-- 
 vim: ts=2:sw=2:sts=2
