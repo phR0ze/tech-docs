@@ -18,7 +18,7 @@ established and has a paid option. That said Jellyfin is close to feature parity
 * [Media Management](#media-management)
 * [User Management](#user-management)
 * [Plugins](#plugins)
-* [Kodi Integration](#kodi-integration)
+* [General Configuration](#general-configuration)
 
 ## Overview
 Jellyfin is a Free Software Media System that puts you in control of managing and streaming your 
@@ -47,7 +47,7 @@ environment.systemPackages = [
 ```
 
 ### Init Configs
-I'll call out the best order to approach configuration to avoid redoing work.
+It works best approach configuration as follows to minimize effort:
 
 1. Open a browser to the sever e.g. `192.168.1.61:8096`
 2. Work through the wizard but skip the library setup section
@@ -287,4 +287,7 @@ There are two main sections:
 * `VGMdb` - video game music metadata
 * `Skin Manager`
 * `Simkl`
+
+
+## General configuration
 

@@ -25,3 +25,14 @@ $ sudo mount -t cifs //SERVER/SHARENAME /mnt/temp -o username=username,password=
 # Using a credentials file
 $ sudo mount -t cifs //SERVER/SHARENAME /mnt/temp -o credentials=/etc/smb/secrets/Backup,iocharset=utf8,uid=username,gid=group
 ```
+
+### Mounting user home directory
+In order to mount a user's home directory using their credentials you need to:
+
+1. Configure SMB access
+   1. Navigate to `User & Group >User` and click `Edit`
+   2. Switch to the `Applications` tab check `Allow` for `SMB`
+2. Finally you can mount it by simply referring to `//SERVER_IP/home`
+   ```bash
+   $ sudo mount -t cifs //SERVER/home /mnt/temp -o credentials=/etc/smb/secrets/home,iocharset=utf8,uid=username,gid=group
+   ```
