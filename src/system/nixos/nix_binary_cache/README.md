@@ -19,9 +19,9 @@ your configuration as a substituter which then ends up in `/etc/nix/nix.conf`.
 1. Generate a `Ed25519` keypair for `nix-serve` to sign packages.
    ```bash
    mkdir -p include/var/lib/cache
-   cd include/var/lib/cache
+   cd include/var/lib/nix-cache
    # Note `cache` can be any unique value and is recommended to be the hostname of your cache
-   nix-store --generate-binary-cache-key cache private.dec.pem public.pem
+   nix-store --generate-binary-cache-key nix-cache private.dec.pem public.pem
    sops encrypt --input-type binary --output private.enc.pem private.dec.pem
    sudo chown nix-serve private.dec.pem
    sudo chmod 600 private.dec.pem
