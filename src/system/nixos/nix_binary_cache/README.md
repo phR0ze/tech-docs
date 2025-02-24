@@ -7,6 +7,7 @@ matter the operating system Nix is running on.
 ### Quick links
 * [Configure binary cache server](#configure-binary-cache-server)
 * [Configure binary cache clients](#configure-binary-cache-clients)
+  * [Manual override binary cache](#manual-override-binary-cache)
 * [Test the binary cache](#test-the-binary-cache)
 
 ## Configure binary cache server
@@ -73,6 +74,19 @@ nix = {
   };
 };
 ```
+
+### Manual override binary cache
+You can override the `/etc/nix/nix.conf` behavior by creating a `~/.config/nix/nix.conf`
+
+1. Create the destination directory
+   ```bash
+   $ mkdir ~/.config/nix
+   ```
+2. Copy the contents of root to destination
+   ```bash
+   $ cp /etc/nix/nix.conf ~/.config/nix/nix.conf
+   ```
+3. Edit as desired
 
 ## Test the binary cache
 1. Check the cache is up and accessible

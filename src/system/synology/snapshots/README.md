@@ -40,3 +40,11 @@ more changes to files so just disable it.
       7. Leave `Numbers of latest snapshots to keep` at `5`
    5. Select the `Advanced` tab
       1. Check `Make snapshot visiable`
+
+## Manual Snapshot
+If you known you about to make a destructive change your worried about you can take a snapshot 
+manually in preparation.
+
+1. Launch `Snapshot Replication`
+2. Select the Shared Folder you want to snapshot e.g. `photo`
+3. Select `Snapshot >Take a Snapshot`
