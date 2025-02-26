@@ -7,19 +7,39 @@ orchestration systems knowledge. It works with Kubernetes, Docker, Docker Swarm 
 ### Quick links
 - [.. up dir](../README.md)
 - [Overview](#overview)
-  - [Install Portainer](#install-portainer)
+  - [Install on NixOS](#install-on-nixos)
+  - [First run](#first-run)
+  - [Templates](#templates)
 
 ## Overview
 
-### Install in Proxmox
-
 **References**
-* [Install Docker and Portainer in LXC](https://www.cynicalsignals.com/installing-portainer-in-a-proxmox-lxc/)
-* [NixOS containerization](https://gitlab.com/cbleslie/portainer-on-nixos/-/blob/main/modules/portainer.nix?ref_type=heads)
+* [selfhosted templates](https://github.com/SelfhostedPro/selfhosted_templates)
+* [500+ 1 click Portainer templates](https://github.com/Lissy93/portainer-templates)
+* [Go to for portainer templates](https://portainer-templates.netlify.app/)
+* [Qballjos templates](https://github.com/Qballjos/portainer_templates)
 
-1. Create a new LXC container based on Ubuntu 22.04
-2. Install Docker
-3. Install Portainer
+### Install on NixOS
+Why install on NixOS when NixOS has arguably a better solution. Yes NixOS's modular declarative 
+deployments gives you the ability to build a server and services in a repeatable way which solves 
+this better and yes NixOS has declarative container solutions that are better for production but what 
+Portainer brings is a avid community and widespread acceptance outside NixOS that makes pulling 
+solutions off the shelf super fast and simple. Really this means the best of both worlds. I use 
+Portainer to quickly test new software out in an isolated VM and then if I like it I can build out a 
+production version in NixOS directly without Portainer.
+
+[see portainer.nix](https://github.com/phR0ze/nixos-config/blob/main/options/services/cont/portainer.nix)
+
+### First run
+
+1. Navigate to `localhost:9000`
+2. Create a new admin account e.g. `admin/insecure`
+3. Add additional `App Templates`
+   1. Navigate to `Settings >General >Application Settings >App Templates`
+   2. Paste in your template `URL` e.g. `https://raw.githubusercontent.com/phR0ze/portainer-templates/main/templates_v3.json`
+   3. Click `Save application settings` and repeat as desired
+4. Navigate back to `Home` and select your `podman` local environment
+5. Under `Templates >Application` you should now see a wide variety of options to install 
 
 ### Templates
 Portainer provides what is calls `templates` which can be either a single Docker file a.k.a. `container` or a Docker 
@@ -50,3 +70,6 @@ solution space.***
    2. Navigate to `Settings >General`
    3. In the top section change the `URL` field to something else e.g. [mycroftwilde templates](https://raw.githubusercontent.com/mycroftwilde/portainer_templates/master/Template/template.json)
 
+Note: most template repos use V2 but when V3 came out they started to fail:
+* [Bug report on portainer](https://github.com/portainer/portainer/issues/12337)
+* [Fix for app templates](https://github.com/Lissy93/portainer-templates/pull/67)

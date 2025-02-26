@@ -17,6 +17,10 @@ to feature parity.
   * [Init Configs](#init-configs)
   * [Jellyfin Media Player](#jellyfin-media-player)
 * [Media Management](#media-management)
+  * [Organization](#origanization)
+  * [Add Movies Library](#add-movies-library)
+  * [Add Shows Library](#add-shows-library)
+  * [Manually edit database](#manually-edit-database)
 * [User Management](#user-management)
 * [Plugins](#plugins)
 * [General Configuration](#general-configuration)
@@ -170,9 +174,6 @@ reasons for this.
 * Allows for easily switching media management applications
 * No need to worry about metadata permissions for the application
 
-### Trailers channel
-Apparently a plugin?
-
 ### Organization
 Having a single top level media share from you NAS to your server is a simple way to get access and 
 since the server would be the only direct access machine setting up more granular shares isn't 
@@ -203,7 +204,7 @@ separate folders.
 * Holiday tags: `Christmas`, `Easter`, `Halloween`
 * Perhaps ratings: `adult-tag`
 
-### Add Media Library
+### Add Movies Library
 Note: authors of Jellyfin recommend not using the `Mixed Movies and Shows`
 
 Navigate to `Dashboard >Libraries >Libraries >Add Media Library`
@@ -240,6 +241,15 @@ Navigate to `Dashboard >Libraries >Libraries >Add Media Library`
 11. Check `Extract trickplay images during the library scan`
 12. Check `Save trickplay images next to media`
 13. Check `Enable chapter image extraction`
+
+### Manually edit database
+In some cases Jellyfin seems to get the identity of a Series incorrect. You can manually edit the 
+metadata for the series and individual episodes if needed.
+
+Note: I saw the metadata not get fully updated so ran a `Refresh metadata` to scan for new content 
+and that seem to align the manual updates with the series title.
+
+Note: the trailer still refers to the incorrect series though. I'm not sure how to fix that.
 
 ## User Management
 Each user has a user profile which can be configured by the administrator to control:

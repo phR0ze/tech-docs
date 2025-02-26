@@ -16,8 +16,6 @@ up, organizing and managing photos on your own server easy and private.
 * [Mobile App](#mobile-app)
 * [Backup](#backup)
 
-### Linked pages
-
 ## Overview
 
 **References**
@@ -25,27 +23,33 @@ up, organizing and managing photos on your own server easy and private.
 * [Immich on NixOS discussion](https://github.com/immich-app/immich/discussions/12920)
 
 ### Immich Review
-* Left wanting
-  *  Backup to external library location
-    * Synology allows for custom backup location, while Immich does not
-  *  Keep original naming in `upload`
-    * Synology keeps the original names, while Immich does not. The externa library option doesn't 
-    solve this issue.
-* Mobile App
-  * `` Very snappy, loads and scrolls quickly without lag
+
+**Notes**
+* Longevity
+  - fully open source
+  - working on a non-interferring paid model
+  - has modern flutter frontend but TypeScript backend, yikes
+* Community
+  - thriving community, largest i've seen
+* Deployability
+  - Portainer support out of box
+  - Fully integrated with NixOS out of box
+  - Documentation is fantastic
+* Web UI
+  - `` Drag and drop upload
+  - Facial Recognition
+    - `` Shows selected faces
+    - `` Allows for hiding/ignoring people
+    - `` Nice merging and updating features
+* Mobile
+  - Backup goes straight into the library without external option
+    - Synology allows for custom backup location, while Immich does not
+  - Very snappy, loads and scrolls quickly without lag
     *   Synology photos lags on initial load while the NAS comes out of sleep mode
     *   Synology has some lag when scrolling through viewing full sized images as well
   * `` Video thumbnails show
     *   Synology does not show thumbnails in mobile app for videos
   *   Backups are only allowed to `/var/lib/immich/upload`
-* Web App
-  * `` Drag and drop upload
-  * Facial Recognition
-    * `` Shows selected faces
-      * Synology does not provide this
-    * `` Allows for hiding/ignoring people
-    * `` Nice merging and updating features
-      * Synology allows for reassigning image but only useful for single person images
 * Server
   *   Original assets are uploaded to `/var/lib/immich/upload`
   *   Original assets are renamed to confusing machine only readable hashes
