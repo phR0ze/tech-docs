@@ -46,6 +46,7 @@ foss options listed in the [Foss photo library apps list](https://meichthys.gith
 | `Ente`        | 5  | 2 | 1 | 0 | 1 | ?  | 3  | ?  | ?  | ?  | 
 | `Immich`      | 5  | 5 | 5 | 3 | 2 | 5  | 5  | 3  | 4  | ?  |
 | `?`           | ?  | ? | ? | ? | ? | ?  | ?  | ?  | ?  | ?  |
+| `NextCloud`   | ?  | ? | ? | ? | ? | ?  | ?  | ?  | ?  | ?  |
 | `Photonix`    | 1  | 1 | ? | ? | ? | ?  | 1  | ?  | ?  | ?  |
 | `PhotoPrism`  | 3  | 4 | 5 | 3 | 0 | 3  | 2  | ?  | ?  | 5  |
 | `Piwigo`      | 1  | 2 | 2 | ? | ? | ?  | 1  | ?  | ?  | ?  |

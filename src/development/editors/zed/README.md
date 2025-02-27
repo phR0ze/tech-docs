@@ -1,8 +1,9 @@
-# Zed
-Built by the authors of Atom and Electron, Zed claims to be a next generation editor built in Rust 
-for performance and modern use cases. They aim to focus on speed, AI and collaboration.
+# Zed <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
-**WARNING** ***No debugger support yet***
+Built by the authors of Atom and Electron, Zed claims to be a next generation editor built in Rust 
+for performance and modern use cases. They aim to focus on speed, `AI` and collaboration.
+
+**WARNING** ***No Rust debugger support yet***
 
 ### Quick links
 * [Overview](#overview)
@@ -52,6 +53,7 @@ First run will splash up some simple configuration options
 
 1. Enable VIM mode
 2. Enable and login to Copilot
+   * Zed supports many 
 3. Keep default vscode keybindings
 
 ### Settings

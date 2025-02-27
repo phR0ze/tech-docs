@@ -6,3 +6,22 @@ documenting my research and choices here.
 
 ### Quick links
 * [.. up dir](../README.md)
+
+## Notes
+The [linuxserver.io](https://www.linuxserver.io/our-images) has a lot of really high quality image 
+builds of various dockerized services.
+
+### External Access
+* Twingate
+* Tailgate
+* Cloudflare DDNS
+
+### Music
+* Server
+  * Navidrome
+  * PlexAMP w/plex pass
+* Clients
+  * Strawberry (classic vibe)
+  * Tauon (modern)
+* Management
+  * Lidarr
