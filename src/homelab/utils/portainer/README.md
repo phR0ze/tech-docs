@@ -1,4 +1,4 @@
-# Portainer <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
+# Portainer <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
 ***Portainer.io*** is an opensource fast and easy container management GUI. They are attempting to 
 make containerization management approachable to the lay person without requiring advanced container 
@@ -33,7 +33,7 @@ production version in NixOS directly without Portainer.
 ### First run
 
 1. Navigate to `localhost:9000`
-2. Create a new admin account e.g. `admin/insecure`
+2. Create a new admin account e.g. `admin/superinsecure`
 3. Add additional `App Templates`
    1. Navigate to `Settings >General >Application Settings >App Templates`
    2. Paste in your template `URL` e.g. `https://raw.githubusercontent.com/phR0ze/portainer-templates/main/templates_v3.json`
