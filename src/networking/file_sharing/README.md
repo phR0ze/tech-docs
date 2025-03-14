@@ -1,4 +1,4 @@
-# File Sharing
+# File Sharing <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
 https://wiki.archlinux.org/index.php/NFS
 
 ### Quick links

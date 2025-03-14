@@ -9,8 +9,6 @@
 * [Cut Video w/out Re-encoding](#cut-video-without-re-encoding)
 * [Extracting specific chapters](#extracting-specific-chapters)
 * [Burning an DVD](#burning-an-dvd)
-* [Encode Blu-ray to x265](#encode-blu-ray-to-x265)
-* [Encode DVD to x265](#encode-dvd-to-x265)
 * [Lossless Rotate](#lossless-rotate)
 * [Strip GPS Location](#strip-gps-location)
 
@@ -136,50 +134,6 @@ Note often when doing a full dvd backup the first chapter will be the menu
    ```bash
    $ for i in {1..21}; do dvdbackup -i backup -t 1 -s $((i+1)) -e $((i+1)) -n "Chapter-0${i}"
    ```
-
-## Encode Blu-ray to x265
-1. Install: `sudo pacman -S handbrake`
-2. Launch: `ghb`
-3. Configure main page settings  
-   a. Click `Open Source`  
-   b. Navigate to the target `mkv` file and double click it  
-   c. Set `Preset` to `Official > General >Super HQ 1080p30 Surround`  
-   d. Change `Format` to `Matroska (avformat)`  
-   e. Change the `Save As` location to `~/Downloads`  
-4. Select the `Dimensions` tab  
-   a. Ensure that `Automatic` is selected  
-5. Select the `Video` tab  
-   a. Ensure that `Video Encoder` is set to `H.265 10-bit (x265)`  
-   b. Set `Framerate` to `Same as source` and enable `Variable Framerate`  
-   c. Set `Constant Quality` value to `RF: 20` and `Preset` to `slower`  
-   d. Set `Tune` to `animation` if applicable  
-6. Select the `Audio` tab  
-   a. Ensure the `Track List` includes your desired language  
-7. Select the `Subtitles` tab  
-   a. Ensure the `Track List` says `Foreign Audio Scan -> Burned into Video (Forced Subtitles Only)`  
-8. Name the output file  
-   a. e.g. `Title (Year) [1080p.x265.AC3.rf20].mkv`  
-
-## Encode DVD to x265
-1. Install: `sudo pacman -S handbrake`
-2. Launch: `ghb`
-3. Configure main page settings  
-   a. Click `Open Source`  
-   b. Navigate to the `VIDEO_TS` directory and click `Open`  
-   c. Set `Preset` to `Official >Matroska >H.265 MKV 480p30`  
-4. Select the `Dimensions` tab  
-   a. Ensure that `Auto Crop` is selected  
-5. Select the `Video` tab  
-   a. Ensure that `Video Encoder` is set to `H.265(x265)`  
-   b. Set `Framerate` to `Same as source` and enable `Variable Framerate`  
-   c. Set `Constant Quality` value to `RF: 18` and `Preset` to `slower`  
-   d. Set `Tune` to `animation` if applicable  
-6. Select the `Audio` tab  
-   a. Ensure the `Track List` includes your desired language  
-7. Select the `Subtitles` tab  
-   a. Ensure the `Track List` says `Foreign Audio Scan -> Burned into Video (Forced Subtitles Only)`  
-8. Name the output file  
-   a. e.g. `Title (Year) [480p.x265.AC3.rf19].mkv`  
 
 ## Lossless Rotate
 This just sets the metadata for the video. Its up to your player to play it with the correct rotation

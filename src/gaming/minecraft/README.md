@@ -2,10 +2,21 @@
 
 ### Quick links
 * [.. up dir](..)
+* [Server](#server)
+* [Clients](#clients)
+  * [Prism Launcher](#prism-launcher)
 
-## Prism Launcher config
+## Server
 
-### Initial configuration
+### Install on NixOS
+
+## Clients
+
+### Prism Launcher
+Prism launcher is by far the best client out there. Its open-source, it doesn't have advertisements 
+or spyware. It's just a nice client that does what its supposed to.
+
+**Initial configuration**
 1. Launch `PrismLauncher`
 2. Select Java version `21.x.x`
 3. Click next to accept that and the `512 MiB` min RAM and `4096 MiB` max RAM

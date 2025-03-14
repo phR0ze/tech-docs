@@ -8,13 +8,14 @@ as SSH. A VPN connection is made simply by exchanging very simple public keys ex
 SSH keys and all the rest is transparently handled by WireGuard.
 
 ### Quick links
-* [WireGuard](#wireguard)
+* [.. up dir](../README.md)
+* [Overview](#overview)
 * [WireGuard Client](#wireguard-client)
   * [Install WireGuard](#install-wireguard)
   * [Starting WireGuard](#starting-wireguard)
 * [WireGuard Server](#wireguard-server)
 
-## WireGuard Overview
+## Overview
 WireGuard uses modern ciphers like the `Noise protocol framework`, `Curve25519`, `ChaCha20`, 
 `Poly1305`, `BLAKE2`, `SipHash24`, `HKDF`. It works by adding a network interface like `eth0` or 
 `wlan0` called `wg0`. This network interface can then be configured normally using `ip` with routes 

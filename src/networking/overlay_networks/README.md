@@ -11,8 +11,11 @@ From a practical perspective it ends up being a similar outcome. Your able to se
 remote network and use the resources there regardless of how that network is composed.
 
 ### Quick links
+* [.. up dir](../README.md)
 * [Overview](#overview)
   * [Overlay networks](#overlay-networks)
+
+### Linked pages
 * [OpenConnect](#openconnect)
 * [OpenVPN](openvpn/README.md)
 * [WireGuard](wireguard/README.md)

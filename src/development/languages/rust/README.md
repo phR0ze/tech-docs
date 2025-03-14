@@ -1,4 +1,5 @@
-# Rust
+# Rust <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
+
 Rust is a systems programming language that aims to offer both performance and safety. It provides
 the low-level control of C, but also enforces memory and thread safety. Rust applications compile
 directly into machine code, allowing for highly optimized code and better performance. Rust is being
@@ -14,6 +15,7 @@ Resources:
 * https://benchmarksgame-team.pages.debian.net/benchmarksgame/fastest/rust-gpp.html
 
 ### Quick links
+- [.. up dir](../README.md)
 * [Getting Started](#getting-started)
   * [Install Rust](#install-rust)
   * [Configure VSCode](#configure-vscode)

@@ -20,7 +20,7 @@ to feature parity.
   * [Organization](#origanization)
   * [Add Movies Library](#add-movies-library)
   * [Add Shows Library](#add-shows-library)
-  * [Manually edit database](#manually-edit-database)
+  * [Manually update](#manually-update)
 * [User Management](#user-management)
 * [Plugins](#plugins)
 * [General Configuration](#general-configuration)
@@ -233,23 +233,42 @@ Navigate to `Dashboard >Libraries >Libraries >Add Media Library`
 3. Set `Preferred download language` and `Country/Region`
 4. Keep `Allow all` for `Disable different types of embedded subtitles`
 5. Keep `Enable real time monitoring`
-6. Leave `Metadata downloaders (Movies)` as is
+6. Change `Metadata downloaders (TV Shows)` order to
+   - `TheTVDB`
+   - `The Open Movie Database`
+   - `TheMovieDb`
+   - `AniDB`
+   - `Missing Episode Fetcher`
 7. Leave `Automatically refresh metadata from the internet` at `Never`
-8. Check `Metadata savers` as `nfo`
-9. Don't check `Save artwork into media folders`
-10. Check `Enable trickplay image extraction`
-11. Check `Extract trickplay images during the library scan`
-12. Check `Save trickplay images next to media`
-13. Check `Enable chapter image extraction`
+8. Change `Metadata downloaders (Episodes)` order to
+   - `TheTVDB`
+   - `The Open Movie Database`
+   - `TheMovieDb`
+   - `AniDB`
+9. Check `Metadata savers` as `nfo`
+10. Change `Image fetchers (Episodes)` order to
+   - `TheTVDB`
+   - `The Open Movie Database`
+   - `Embedded Image Extractor`
+   - `Screen Grabber`
+11. Don't check `Save artwork into media folders`
+12. Check `Enable trickplay image extraction`
+13. Check `Extract trickplay images during the library scan`
+14. Check `Save trickplay images next to media`
+14. Check `Enable chapter image extraction`
 
-### Manually edit database
+### Manually update
 In some cases Jellyfin seems to get the identity of a Series incorrect. You can manually edit the 
 metadata for the series and individual episodes if needed.
 
-Note: I saw the metadata not get fully updated so ran a `Refresh metadata` to scan for new content 
-and that seem to align the manual updates with the series title.
+Note: I had to add the `yellyfin` user to the `users` group then remount my media share with the 
+`users` group having write access before jellyfin could save the nfo and images by the media.
 
-Note: the trailer still refers to the incorrect series though. I'm not sure how to fix that.
+1. Ensure the correct scraper is being used. I've found `TVDB` is usually the best then `The Open 
+   Moview Database` even for shows.
+2. Trigger the `Refresh metadata` and overwrite. This will update images on disk and mess up some.
+3. Manually `Edit images` to the correct ones
+4. Hold down shift and hit refresh of the browser window to see the results
 
 ## User Management
 Each user has a user profile which can be configured by the administrator to control:
