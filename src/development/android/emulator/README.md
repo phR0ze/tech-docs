@@ -1,6 +1,8 @@
-# Emulator
+# Emulator <img align="left" width="48" height="48" src="../../../data/images/logo_256x256.png">
+
 The Android Emulator is actually a downstream project from QEMU and adds the ability to boot Android 
-devices.
+devices. This means we can run it directly without the need for Android Studio which is slow and 
+clunky.
 
 **Resources**
 * [Android Emulator](https://android.googlesource.com/platform/external/qemu/+/2db80f7c1921a6f5d48b998378e3792e16c968a4/README.md)
@@ -8,6 +10,7 @@ devices.
 * [Android Emulator without Android Studio](https://medium.com/@yohan.ardiansyah90/how-to-run-android-emulator-for-development-without-android-studio-f0e73682af3a)
 
 ### Quick links
+- [.. up dir](../README.md)
 * [Install Emulator](#install-emulator)
   * [Install Android 7 API 24](#install-android-7-api-24)
   * [Install Android 11 API 30](#install-android-11-api-30)
