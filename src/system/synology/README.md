@@ -11,6 +11,7 @@
   * [QuickConnect](#quickconnect)
 
 ### Linked pages
+* [Backup](backup/README.md)
 * [NFS](nfs/README.md)
 * [SMB](smb/README.md)
 * [Synology Drive](drive/README.md)

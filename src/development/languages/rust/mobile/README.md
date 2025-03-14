@@ -1,8 +1,11 @@
-# Mobile
+# Mobile <img style="margin: 6px 13px 0px 0px" align="left" src="../../../../data/images/logo_36x36.png" />
+
 Rust in the mobile space means writing an application once and deploy it on iOS, Android and the Web. 
 At least that is the dream.
 
 ### Quick links
+- [.. up dir](../README.md)
+* [Overview](#overview)
 
 ## Overview
 Typically the industry has used Rust for lower level libraries that are not platform dependent. They 
