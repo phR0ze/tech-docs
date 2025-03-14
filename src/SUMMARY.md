@@ -13,7 +13,10 @@
 
 - [Development](development/README.md)
   - [Android](development/android/README.md)
+    - [Android Studio](development/android/android_studio/README.md)
     - [Emulator](development/android/emulator/README.md)
+    - [Images](development/android/images/README.md)
+    - [Kotlin](development/android/kotlin/README.md)
     - [Permissions](development/android/permissions/README.md)
   - [CI/CD](development/cicd/README.md)
     - [Cloud Build](development/cicd/cloud_build/README.md)
