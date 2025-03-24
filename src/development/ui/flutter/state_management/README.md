@@ -11,6 +11,36 @@ Some of the most common are:
 * MobX
 * Riverpod
 
+## Overview
+Flutter uses `StatefulWidgets` to generate `State` objects, which are then used to hold state. 
+Widgets and State objects have different life cycles. Widgets are used for presentation and are 
+frequently destroyed and recreated with changes while State is persisted between calls to the 
+`build()` method.
+
+**References**
+* [State Management - Flutter docs](https://docs.flutter.dev/data-and-backend/state-mgmt/intro)
+* [Provider vs BLoC](https://www.miquido.com/blog/flutter-architecture-provider-vs-bloc/)
+* [Provider vs BLoC - Medium](https://medium.com/@dihsar/bloc-vs-provider-in-flutter-a-comprehensive-comparison-fbd0f6c41e50)
+
+* ***ChangeNotifier*** creates state and dependencies can watch for notifications and rebuild
+
+**Provider vs BLoC**  
+Both are popular state management libraries. ***Provider*** provides the current data model to the 
+place where we currently need it, it contains some data and notifies observers when a change occurs. 
+In the Flutter SDK, this type is called a ***ChangeNotifier***. For this notifier to work we need the 
+***ChangeNotifierProvider*** which provides observed objects for all its descendants. ***BLoC*** 
+a.k.a. Business Logic Components is a Flutter architecture similar which tries more closely to mimic 
+the common Android paradigm of MVP or MVVM. It provides separation of the presentation layer from the 
+business logic rules.
+
+Provider's pattern is to create a new class extending the ChangeNotifier and capture your data as 
+class fields and allows for class methods to interact with the data in a custom way. BLoC's pattern 
+is based on events. You define the events that your screens will produce then you define the BLoC 
+objects that take the events. Because of BLoC's granular nature you can more granularly control the 
+updates to your app wiget tree thus speeding up your whole app. BLoC offers more control but is more 
+complex to use. Industry concensus is to use Provider unless you need more complexity and performance 
+and then use BLoC which is more verbose and requires more boiler plate code.
+
 ## Package Comparison
 I'm going to implement a simple todo in both to sort out my take on the subject.
 
