@@ -81,6 +81,7 @@
       - [File Management](development/ui/flutter/file_management/README.md)
       - [Fluent UI](development/ui/flutter/fluent_ui/README.md)
       - [Gestures](development/ui/flutter/gestures/README.md)
+      - [Images](development/ui/flutter/images/README.md)
       - [Package & Plugins](development/ui/flutter/package_and_plugins/README.md)
       - [macOS UI](development/ui/flutter/macos_ui/README.md)
       - [Rendering](development/ui/flutter/rendering/README.md)

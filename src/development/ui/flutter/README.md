@@ -4,7 +4,7 @@ Flutter is Google’s free, open-source software development kit (SDK) for cross
 Using a single platform-agnostic codebase, Flutter supports high-performance, scalable applications 
 with attractive and functional user interfaces for Desktop, Web, Android or IOS. Flutter relies on a 
 library of pre-made widgets that are rendered by the Skia engine which is also cross-platform thus 
-giving it and edge over other frameworks like React Native or Xamarin. Flutter uses a modern 
+giving it an edge over other frameworks like React Native or Xamarin. Flutter uses a modern 
 declarative UI design.
 
 Created by Google in 2015 and officially launched in 2018, Flutter has quickly become the number one 
@@ -53,15 +53,14 @@ are written primarily in C/C++ giving it performance.
 * Uses Dart which is slow and single threaded
 
 ### Quick links
-- [.. up dir](../README.md)
+* [.. up dir](../README.md)
 * [Getting Started](#getting-started)
-  * [Setup Flutter on Arch Linux](#setup-flutter-on-arch-linux)
+  * [Setup Android SDK on NixOS](#setup-android-sdk-on-nixos)
+  * [Setup Flutter on NixOS](#setup-flutter-on-nixos)
   * [Create a new Flutter project](#create-a-new-flutter-project)
   * [Run on Android Emulator](#run-on-android-emulator)
 * [Publish app](#publish-app)
   * [Build release](#build-release)
-* [Images](#images)
-  * [Display an Image](#display-an-image)
 * [Packages](#packages)
 * [Flutter app examples](#flutter-app-examples)
   * [AuthPass](#auth-pass)
@@ -84,7 +83,6 @@ are written primarily in C/C++ giving it performance.
   * [MediaQuery](#mediaquery)
   * [Navigation](#navigation)
   * [Persist configuration](#persist-configuration)
-  * [State](#state)
   * [Slivers](#slivers)
   * [Themes](#themes)
   * [Window decorations](#window-decorations)
@@ -103,11 +101,11 @@ are written primarily in C/C++ giving it performance.
 
 ## Getting Started
 In my opinion the best approach to Flutter application development uses the flutter cli for creating 
-and interacting with your project and a desktop environment to run and test your application and 
-finally the Android emulator as a standalone component to run and test your Android version of the 
-application.
+and interacting with your project and a desktop environment with vscode to run and test your 
+application and finally the Android emulator as a standalone component to run and test your Android 
+version of the application.
 
-Note: the Android Studio path is slow, clunky and overly complicated IMO.
+Note: I found Android Studio to be slow, clunky and overly complicated.
 
 **References**
 * [Flutter - NixOS Wiki](https://nixos.wiki/wiki/Flutter)
@@ -115,63 +113,32 @@ Note: the Android Studio path is slow, clunky and overly complicated IMO.
 * [Android Env - NixOS Manual](https://nixos.org/manual/nixpkgs/unstable/#android)
 
 ### Setup Android SDK on NixOS
-1. 
+- [see my nixos-config](https://github.com/phR0ze/nixos-config/blob/main/options/development/android.nix)
 
 ### Setup Flutter on NixOS
-
-1. Install [android tooling](../../../android/emulator)
-
-2. Install [android studio](../../../android/index.html#android-studio)
-   1. Install the `Flutter` plugin from the `File >Settings... > Plugins` menu
-   2. Install the `Dart` plugin from the `File >Settings... > Plugins` menu
-
-3. Install pre-requisites
+1. [see my nixos-config](https://github.com/phR0ze/nixos-config/blob/main/options/development/flutter.nix)
+2. Disable flutter analytics:
    ```bash
-   $ sudo pacman -S dart clang cmake ninja base-devel
+   $ flutter --disable-analytics
    ```
-
-4. Install Flutter latest
+3. Accept all flutter licenses:
    ```bash
-   $ yay -GA flutter
-   $ cd flutter
-   $ makepkgs -s
-   $ sudo pacman -U flutter-3.16.0-1-x86_64.pkg.tar.zst
-   ```
-
-5. Run flutter doctor after setting exceptions
-   ```bash
-   $ git config --global --add safe.directory /opt/flutter
-   $ flutter config --android-sdk $ANDROID_HOME
    $ flutter doctor --android-licenses
    ```
-
-### Setup Flutter on Arch Linux
-Reference: [getting started with Flutter on Arch Linux](https://dev.to/nabbisen/flutter-3-on-arch-linux-getting-started-fc0)
-
-1. Install [android tooling](../../../android/emulator)
-
-2. Install [android studio](../../../android/index.html#android-studio)
-   1. Install the `Flutter` plugin from the `File >Settings... > Plugins` menu
-   2. Install the `Dart` plugin from the `File >Settings... > Plugins` menu
-
-3. Install pre-requisites
+4. Run flutter doctor to validate env
    ```bash
-   $ sudo pacman -S dart clang cmake ninja base-devel
+   $ flutter doctor
    ```
 
-4. Install Flutter latest
+### Create a new Flutter project
+1. Create your project using the Flutter CLI
    ```bash
-   $ yay -GA flutter
-   $ cd flutter
-   $ makepkgs -s
-   $ sudo pacman -U flutter-3.16.0-1-x86_64.pkg.tar.zst
+   $ flutter create --platforms=linux,android,web my-project
    ```
-
-5. Run flutter doctor after setting exceptions
+2. Build and run your new project
    ```bash
-   $ git config --global --add safe.directory /opt/flutter
-   $ flutter config --android-sdk $ANDROID_HOME
-   $ flutter doctor --android-licenses
+   $ cd my-project
+   $ flutter run
    ```
 
 ## Create a new Flutter project
@@ -179,7 +146,7 @@ Reference: [getting started with Flutter on Arch Linux](https://dev.to/nabbisen/
 
 2. Create your project using the Flutter CLI
    ```bash
-   $ flutter create --platforms=linux,android <project-name>
+   $ flutter create --platforms=linux,android,web <project-name>
    ```
 
 3. Load the project in VSCode then
@@ -258,89 +225,6 @@ Build a release apk for testing with:
 $ flutter build apk --release
 ```
 
-# Images
-
-## Animated Images
-By default Flutter supports `Animated GIF` and  `Animated WebP`
-
-## Disk Cache
-
-* [`flutter_cache_manager`](https://pub.dev/packages/flutter_cache_manager)
-  * [Medium article](https://nureddineraslan.medium.com/caching-in-flutter-an-effective-approach-to-speed-up-your-app-77e688d3fbe5)
-* [`get_storage`](https://pub.dev/packages/get_storage)
-
-## Global imageCache
-Flutter implements a least-recently-used global singleton image cache of up to 1000 images, and up 
-to 100 MB. It is used internally by ImageProvider. The image cache is created during startup by the 
-PaintingBinding.createImageCache method and is managed by the system. The cache holds a list of 
-`live` references. An image is considered live if its listener count never drops to zero. The 
-`putIfAbsent` method is the main entry-point to the cache API. It returns the previously cached image 
-for the given key, if available; if not, it calls the given callback to obtain it first. In either 
-case, the key is moved to the most recently used position.
-
-* [ImageCache class docs](https://api.flutter.dev/flutter/painting/ImageCache-class.html)
-
-Flutter's global image cache is not persisted on disk however. Thus we get packages like the 
-`flutter_cache_manager` package that do this for you.
-
-## Image vs ImageProvider
-The `ImageProvider` is what provides the actual image to the `Image` widget. It is an abstract class 
-that represents a way to obtain an image. If you need a custom image provider then you'll want to use 
-the `Image` base constructor directly. Otherwies you can simply allow the Image widget to use the 
-default image provider using one of the factory constructors. The Image widget is responsible for 
-displaying the image on the screen.
-
-**Getting an Image:**
-* `Image.asset()`
-* `Image.network()`
-* `Image.file()`
-* `Image.memory()`
-
-**Getting an ImageProvider:**
-* `AssetImage()`
-* `NetworkImage()`
-* `FileImage()`
-* `MemoryImage()`
-
-**Convert an ImageProvider to and Image**
-```dart
-Image(image: myImageProvider)
-```
-
-**Convert an Image to and ImageProvider**
-```dart
-myImageProvider.image
-```
-
-## Caching thumbnails
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Display an Image
-The ***Image*** class renders an image to the screen. Flutter supports: `JPEG`, `PNG`, `Animated 
-GIF`, `Animated WebP`, `BMP`, and `WBMP`. In order to render the images to the screen Flutter needs 
-to cache them as raw images so a lot of memory may be required. You can work around this by setting 
-the custom decode size to limit how much memory is consumed by the cache.
-
-* `Image.asset()`
-* `Image.network()`
-* `Image.file()`
-* `Image.memory()`
-
 # Packages
 
 ## Used and found useful
@@ -393,7 +277,6 @@ A list of packages I've found to be helpful and have used in applications I've w
     * pull down to refresh
     * multiple images to scroll through
     * clickable images that can be: zoomed, dismissed, saved and pulled up for details
-
 
 * [`photo_view`](https://pub.dev/packages/photo_view)
   * License: MIT
@@ -763,36 +646,6 @@ Persisting data can be done in a variety of ways in Flutter. I'm looking for:
   * Interesting idea, stores simple key values in file `shared_preferences.json` in app support path
   * not sure what that resoves to on linux but doesn't fit conventions as is for sure
   * Could be modified to fit linux conventions though without much effort, although I'd use yaml
-
-## State
-Flutter uses `StatefulWidgets` to generate `State` objects, which are then used to hold state. 
-Widgets and State objects have different life cycles. Widgets are used for presentation and are 
-frequently destroyed and recreated with changes while State is persisted between calls to the 
-`build()` method.
-
-**References**
-* [State Management - Flutter docs](https://docs.flutter.dev/data-and-backend/state-mgmt/intro)
-* [Provider vs BLoC](https://www.miquido.com/blog/flutter-architecture-provider-vs-bloc/)
-* [Provider vs BLoC - Medium](https://medium.com/@dihsar/bloc-vs-provider-in-flutter-a-comprehensive-comparison-fbd0f6c41e50)
-
-* ***ChangeNotifier*** creates state and dependencies can watch for notifications and rebuild
-
-**Provider vs BLoC**  
-Both are populare state management libraries. ***Provider*** provides the current data model to the 
-place where we currently need it, it contains some data and notifies observers when a change occurs. 
-In the Flutter SDK, this type is called a ***ChangeNotifier***. For this notifier to work we need the 
-***ChangeNotifierProvider*** which provides observed objects for all its descendants. ***BLoC*** 
-a.k.a. Business Logic Components is a Flutter architecture similar which tries more closely to mimic 
-the common Android paradigm of MVP or MVVM. It provides separation of the presentation layer from the 
-business logic rules.
-
-Provider's pattern is to create a new class extending the ChangeNotifier and capture your data as 
-class fields and allows for class methods to interact with the data in a custom way. BLoC's pattern 
-is based on events. You define the events that your screens will produce then you define the BLoC 
-objects that take the events. Because of BLoC's granular nature you can more granularly control the 
-updates to your app wiget tree thus speeding up your whole app. BLoC offers more control and is more 
-complex to use. Idustry concensus is to use Provider unless you need more complexity and performance 
-and then use BLoC which is more verbose requiring more boiler plate code.
 
 ## Slivers
 A sliver is a portion of a scrollable area inside a CustomScrollView that can be configured 
