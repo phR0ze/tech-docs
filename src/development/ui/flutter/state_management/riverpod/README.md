@@ -253,7 +253,7 @@ class Consumer extends ConsumerWidget {
 
 ### Combining providers
 By using a `ref.watch` inside our provider's `build` method we can cause it to be invalidated and 
-rebuilt in the next frame or read. `ref.watch` is the preferred way to do this. When doing so you'll 
+rebuild in the next frame or read. `ref.watch` is the preferred way to do this. When doing so you'll 
 want to await the actual future of the provider rather than deal with the AsyncValue.
 
 When the listened provider changes and our request recomputes, the previous state is kept until the 
@@ -437,8 +437,8 @@ return Consumer(
 Frequently applications need external resources on local devices or over the network. To interact 
 with these external resources your application needs to leverage the external resource's API. 
 Whether a client library is provided or your have to write your own there is a layer of code 
-dedicated to task. This layer of code from the client to the external resource is referred to as the 
-`Repository layer`. Typically the repository delegates the management of these expensive async IO 
+dedicated to the task. This layer of code from the client to the external resource is referred to as 
+the `Repository layer`. Typically the repository delegates the management of these expensive async IO 
 calls to the application. Riverpod provides solutions to the additional responsibilities allowing you 
 to skip re-implementing common functionality around handling these external resources.
 

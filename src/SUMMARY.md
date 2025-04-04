@@ -59,6 +59,8 @@
         - [Actix](development/languages/rust/web/actix/README.md)
         - [Yew](development/languages/rust/web/yew/README.md)
   - [Monitoring](development/monitoring/README.md)
+    - [New Relic](development/monitoring/new_relic/README.md)
+    - [Sentry](development/monitoring/sentry/README.md)
   - [Version Control](development/version_control/README.md)
     - [Git](development/version_control/git/README.md)
     - [Bitbucket](development/version_control/bitbucket/README.md)
@@ -174,6 +176,8 @@
   - [Workspace](productivity/workspace/README.md)
 
 - [Security](security/README.md)
+  - [IdP](security/idp/README.md)
+  - [JWT](security/jwt/README.md)
   - [MFA](security/mfa/README.md)
   - [Password Managers](security/password_managers/README.md)
 

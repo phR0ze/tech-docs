@@ -58,6 +58,8 @@ are written primarily in C/C++ giving it performance.
   * [Setup Android SDK on NixOS](#setup-android-sdk-on-nixos)
   * [Setup Flutter on NixOS](#setup-flutter-on-nixos)
   * [Create a new Flutter project](#create-a-new-flutter-project)
+  * [Setup vscode for Flutter](#setup-vscode-for-flutter)
+  * [Add standard packages to project](#add-standard-packages-to-project)
   * [Run on Android Emulator](#run-on-android-emulator)
 * [Publish app](#publish-app)
   * [Build release](#build-release)
@@ -129,6 +131,21 @@ Note: I found Android Studio to be slow, clunky and overly complicated.
    ```bash
    $ flutter doctor
    ```
+5. Configure JAVA
+   ```
+   The configured version of Java detected may conflict with the Gradle version in your new Flutter app.
+
+   [RECOMMENDED] If so, to keep the default Gradle version 8.3, make
+   sure to download a compatible Java version
+   (Java 17 <= compatible Java version < Java 21).
+   You may configure this compatible Java version by running:
+   `flutter config --jdk-dir=<JDK_DIRECTORY>`
+   Note that this is a global configuration for Flutter.
+   
+   Alternatively, to continue using your configured Java version, update the Gradle
+   version specified in the following file to a compatible Gradle version (compatible Gradle version range: 8.4 - 8.7):
+   ~/Projects/oneup/android/gradle/wrapper/gradle-wrapper.properties
+   ```
 
 ### Create a new Flutter project
 1. Create your project using the Flutter CLI
@@ -141,24 +158,19 @@ Note: I found Android Studio to be slow, clunky and overly complicated.
    $ flutter run
    ```
 
-## Create a new Flutter project
-1. [Install and configure VS Code](../../../editors/vscode)
+### Setup vscode for Flutter
+Install the Flutter extensions
 
-2. Create your project using the Flutter CLI
-   ```bash
-   $ flutter create --platforms=linux,android,web <project-name>
-   ```
+| Name                     | Identifier                            |
+| ------------------------ | ------------------------------------- |
+| Remove Comments          | `rioj7.vscode-remove-comments`        |
+| Dart                     | `dart-code.dart-code`                 |
+| Flutter                  | `dart-code.flutter`                   |
+| Flutter riverpod Helpers | `evils.vscode-flutter-riverpod-helper`|
+| The Riverpod Extension   | `houssembousmaha.ri`                  |
 
-3. Load the project in VSCode then
-
-4. Install the Flutter extensions:
-   | Name                     | Identifier                            |
-   | ------------------------ | ------------------------------------- |
-   | Remove Comments          | `rioj7.vscode-remove-comments`        |
-   | Dart                     | `dart-code.dart-code`                 |
-   | Flutter                  | `dart-code.flutter`                   |
-   | Flutter riverpod Helpers | `evils.vscode-flutter-riverpod-helper`|
-   | The Riverpod Extension   | `houssembousmaha.ri`                  |
+### Add standard packages to project
+1. Load the project in VSCode then
 
 5. Add the riverpod packages using the Flutter CLI
    ```bash
