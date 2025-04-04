@@ -5,7 +5,7 @@ Caching that async data locally to avoid re-executing the call again and handlin
 around this such as infinite lists, i.e. fetching while scrolling, debouncing async requests, offline 
 mode, pull to refresh, search as we type etc... is what state management systems were created to solve.
 
-Some of the most common are:
+Some of the most common in Flutter are:
 * BLoC
 * GetIt
 * MobX

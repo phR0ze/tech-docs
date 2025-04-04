@@ -1,7 +1,9 @@
-# MFA
+# MFA <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
+
 Multi-factor authentication
 
 ### Quick links
+* [.. up dir](..)
 * [Authenticator Apps](#authenticator-apps)
   * [Authenticator](#authenticator)
   * [Authme](#authme)
@@ -9,6 +11,8 @@ Multi-factor authentication
   * [Keysmith](#keysmith)
   * [Maurborgne](#maurborgne)
   * [OTPClient](#otpclient)
+
+### Linked pages
 
 # Authenticator Apps
 Authenticator apps are used to generate random codes used for two-factor authentication (2FA). To use 
