@@ -89,6 +89,21 @@ solves the shortcoming of the 1.0 project providing the follwing aggregate set o
    }
    ```
 
+5. Convert your top level `StatelessWidget` into a `ConsumerWidget`
+   ```dart
+   class MyApp extends ConsumerWidget {
+     const MyApp({super.key});
+
+     @override
+     Widget build(BuildContext context, WidgetRef ref) {
+       return MaterialApp(
+         title: Const.appName,
+         home: Layout(),
+       );
+     }
+   }
+   ```
+
 ## Use Cases
 I've found Riverpod's documentation to be confusing due to the multiple different versions and styles 
 of the code and spotty documentation for each. The author's original versions had users writing and 
