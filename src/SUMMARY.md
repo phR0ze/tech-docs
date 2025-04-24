@@ -45,6 +45,8 @@
       - [CLI](development/languages/rust/cli/README.md)
       - [Concurrancy](development/languages/rust/concurrancy/README.md)
       - [Databases](development/languages/rust/databases/README.md)
+        - [SeaORM](development/languages/rust/databases/sea_orm/README.md)
+        - [SQLx](development/languages/rust/databases/sqlx/README.md)
       - [Errors](development/languages/rust/errors/README.md)
       - [Gaming](development/languages/rust/gaming/README.md)
         - [Macroquad](development/languages/rust/gaming/macroquad/README.md)
@@ -57,6 +59,7 @@
         - [Shuttle](development/languages/rust/platforms/shuttle/README.md)
       - [Web](development/languages/rust/web/README.md)
         - [Actix](development/languages/rust/web/actix/README.md)
+        - [Axum](development/languages/rust/web/axum/README.md)
         - [Yew](development/languages/rust/web/yew/README.md)
   - [Monitoring](development/monitoring/README.md)
     - [New Relic](development/monitoring/new_relic/README.md)
@@ -176,9 +179,10 @@
   - [Workspace](productivity/workspace/README.md)
 
 - [Security](security/README.md)
-  - [IdP](security/idp/README.md)
+  - [IAM](security/iam/README.md)
   - [JWT](security/jwt/README.md)
   - [MFA](security/mfa/README.md)
+  - [OAuth](security/oauth/README.md)
   - [Password Managers](security/password_managers/README.md)
 
 - [System](system/README.md)

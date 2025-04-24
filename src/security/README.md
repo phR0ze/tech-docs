@@ -4,7 +4,7 @@
 * [.. up dir](..)
 
 ### Linked pages
-* [IdP](idp/README.md)
+* [IAM](iam/README.md)
 * [MFA](mfa/README.md)
 * [JWT](jwt/README.md)
 

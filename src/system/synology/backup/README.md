@@ -19,25 +19,26 @@ Backups can be done per folder with their own scheduling.
 2. Choose `Folders and Packages`
 3. Choose `Local Shared Folder or USB`
 4. Choose `Multiple versions` this provides deduplication
-5. Configure the Backup Destination Settings
-   1. Choose the `Shared Folder` e.g.`Backup`
-   2. Name the destination folder e.g. `Data`
+5. Backup Destination Settings page
+   1. Choose the `Shared Folder` destination e.g.`Backup`
+   2. Name the destination `Directory` e.g. `Data`
    3. Click `Next`
-6. Configure Data Backup
-   1. Choose the `Volume 1 >Data` folder
-   2. Choose the `Volume 1 >homes` folder
+6. Data Backup page
+   1. Choose target data to backup e.g.`Volume 1 >Data`
+   2. Choose target data to backup e.g.`Volume 1 >photo`
    3. Click `Next`
-7. Configure Appliation Backup
+7. Appliation Backup page
+   * Note: application backups duplicate a lot of other data, might be best to skip them
    1. Choose `File Station`
    2. Choose `Hyper Backup`
    3. Click `Next`
-8. Configure Backup Settings
+8. Backup Settings page
    1. Name it `Data Backup`
    2. Check the `Enable file change detail log` or you won't have much visibility into the backup
    3. Leave the default compression and integrity check on
    4. Leave `Run at` set to `Daily 3am`
    5. Click `Next`
-9. Configure Rotation Settings
+9. Rotation Settings page
    1. Set `Max number of kept versions` to something like `60`
    2. Click `Next`
 10. Finally you get the option to backup now
