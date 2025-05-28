@@ -18,6 +18,7 @@ the Tower middleware ecosystem and focuses on performance and simplicity. Axum b
 * [High performance REST APIs](https://www.twilio.com/en-us/blog/build-high-performance-rest-apis-rust-axum)
 * [Axum Examples](https://github.com/tokio-rs/axum/tree/main/examples)
 * [Service static files with Axum](https://benw.is/posts/serving-static-files-with-axum)
+* [Axum Rust API](https://rust-api.dev/docs/part-1/tokio-hyper-axum/)
 
 ### Getting started
 

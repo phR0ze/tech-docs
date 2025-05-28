@@ -3,7 +3,6 @@
 Documentation for various system technologies i.e operating system configuration and core systems 
 components. Development specific technologies are in the top level 
 [Developement](../development/README.md) section.
-<br><br>
 
 ### Quick links
 * [.. up dir](..)

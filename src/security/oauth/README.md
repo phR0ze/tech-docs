@@ -1,7 +1,8 @@
 # OAuth <img style="margin: 6px 13px 0px 0px" align="left" src="../data/images/logo_36x36.png" />
 
-Fundamentally OAuth is an authorization framework for a user to delagate access to one system over to 
-another system. You are authorizing one system to act on behalf of you on that other system.
+Fundamentally OAuth is a technique that allows applications to communicate with one another without 
+the need for sharing the user's credentials. Users can delagate access to one system over to another 
+system. Thus you are authorizing one system to act on behalf of you on that other system.
 
 ### Quick links
 * [.. up dir](..)
@@ -15,6 +16,7 @@ This is where extensions come in.
 * [OAuth and OIDC examples](https://github.com/caseysoftware/oauth-and-openid-connect)
 * [Okta API Access Manager](https://developer.okta.com)
 * [OAuth Playground](https://developers.google.com/oauthplayground)
+* [OAuth and Ruby](https://medium.com/@hashimmazhar15/oauth-implementing-oauth-in-ruby-on-rails-using-doorkeeper-and-oauth2-gems-2490162b9cac)
 
 ### Terms
 * Resource owner - that's you

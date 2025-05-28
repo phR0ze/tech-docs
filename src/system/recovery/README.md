@@ -1,8 +1,36 @@
-# Recovery
+# Recovery <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
 
 ### Quick links
+* [.. up dir](..)
+* [Disable drive](#disable-drive)
+* [Disable display manager](#disable-display-manager)
 * [chroot into target disk](#chroot-into-target-disk)
 * [Troubleshooting Upgrades](#troubleshooting-upgrades)
+
+### Linked pages
+
+## Disble drive
+A failed drive can be disabled during the boot process by:
+
+1. Waiting until the system boots to recovery mode
+2. Entering the root user's password to login
+3. Disable the systemctl unit for the drive at runtime
+   ```bash
+   $ systemctl mask --runtime mnt-storage1.mount
+   ```
+4. Boot into the full system command line
+   ```bash
+   $ systemctl isolate multi-user.target
+   ```
+5. Login then remove the drive disabling
+   ```bash
+   $ systemctl unmask --runtime mnt-storage1.mount
+   ```
+6. Make your NixOS changes as your fully online at this point
+7. Reboot the system
+   ```bash
+   $ reboot
+   ```
 
 ## Disble display manager
 Often it is X11 that gets messed up on an upgrade and you can get more information by disabling the 
