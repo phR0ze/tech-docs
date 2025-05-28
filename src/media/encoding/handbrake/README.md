@@ -32,10 +32,14 @@ compression was just the out of the box hardware accelerated AV1 with a couple c
    1. Click `Open Source`
    2. Navigate to the target video file and double click it
    3. Set `Preset` to `Official > Hardware >AV1 QSV 2160p60 4K`
-   4. Constant Quality RF to `30`
-   5. AV1 Preset to `8`
-   6. Change the `Save As` location to `~/Videos`
-3. Everything else seems fine as is
+3. Navigate to `Dimensions` tab
+   1. Set `Resolution Limit` to `1080p Full HD` or `720p HD`
+4. Navigate to `Video` tab
+   1. Ensure `Framerate` is set to `Same as source`
+   2. Constant Quality RF to `30`
+   3. AV1 Preset to `8`
+   4. Change the `Save As` location to `~/Videos`
+5. Everything else seems fine as is
 
 ## Encode Blu-ray to x265
 1. Launch: `ghb`

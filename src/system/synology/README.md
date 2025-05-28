@@ -50,6 +50,42 @@ computers or anything else they need.
    4. Check `Hide sub-folders and files from users without permissions`
    5. Check `Enable Recycle Bin`
 
+## Configure Volumes
+The first thing you'll want to do is determine your volume storage layout. I have the `DS1522+` which 
+is a 5 bay model. I've loaded (4) 14TB drives into bays 1,2,3 and 5. Bay 4 I'm leaving open for 
+future expansion.
+
+### Create Volumes
+1. Launch `Storage Manager`
+2. Build a `raid5` storage volume with `btrfs`
+3. Build a `basic` backup volume with `ext4`
+
+### Change RAID type
+Synology NAS has a nice feature where you can start with a `Basic (Without data protection)` RAID 
+type and later convert it into a different RAID type without data loss.
+
+1. Backup anything critical, which is always a good practice
+2. Ensure your Storage Pool Status is healthy and insert your new drives into the NAS
+3. Launch `Storage Manager` and select your storage pool e.g. `Storage Pool 1`
+4. Click the drop down `...` options button on your pool and select `Change RAID Type`
+5. Select the new target type `RAID 5`, note the requirements and click `Next`
+6. Select the additional drives needed e.g. `Drive 2` and `Drive 3` and click `Next`
+7. Continue and check the `Expand` box then click `Next` and finally `Apply` and `OK`
+
+Note: that your storage pool will transition through RAID 1 to get to RAID 5
+
+### Expand RAID Storage
+SHR, RAID 1, 5, 6, 10 and F1 can all be expanded.
+
+**References**
+* [Storage Pool Expansion](https://kb.synology.com/en-us/DSM/help/DSM/StorageManager/storage_pool_expand_replace_disk?version=6)
+
+1. Backup anything critical. Always a good practice
+2. Ensure your Storage Pool Status is healthy
+3. Insert the new drives into your Synology NAS
+4. Launch `Storage Manager`
+5. Navigate to the target storage pool e.g. `Storage Pool 1` on the left
+
 ## Folder structure
 Creating and sharing out a number of folders is the primary purpose of a NAS.
 

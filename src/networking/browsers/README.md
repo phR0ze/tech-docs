@@ -3,6 +3,9 @@
 ### Quick links
 * [.. up dir](../README.md)
 
+### Linked pages
+- [Firefox](firefox/README.md)
+
 ## Zen
 Built on Firefox but with a more modern look and feel and some additional niceties
 * Modern look and feel

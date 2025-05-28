@@ -18,6 +18,8 @@
     - [Images](development/android/images/README.md)
     - [Kotlin](development/android/kotlin/README.md)
     - [Permissions](development/android/permissions/README.md)
+  - [API](development/api/README.md)
+    - [OpenAPI](development/api/openapi/README.md)
   - [CI/CD](development/cicd/README.md)
     - [Cloud Build](development/cicd/cloud_build/README.md)
     - [Github Actions](development/cicd/github_actions/README.md)
@@ -57,6 +59,8 @@
       - [Parsing](development/languages/rust/parsing/README.md)
       - [Platforms](development/languages/rust/platforms/README.md)
         - [Shuttle](development/languages/rust/platforms/shuttle/README.md)
+      - [Observability](development/languages/rust/observablity/README.md)
+        - [Tracing](development/languages/rust/observability/tracing/README.md)
       - [Web](development/languages/rust/web/README.md)
         - [Actix](development/languages/rust/web/actix/README.md)
         - [Axum](development/languages/rust/web/axum/README.md)
@@ -109,6 +113,8 @@
 
 - [Hardware](hardware/README.md)
   - [Accelerated Graphics](hardware/accelerated_graphics/README.md)
+  - [Disk Drives](hardware/disk_drives/README.md)
+    - [Rescue](hardware/disk_drives/rescue/README.md)
   - [Storage](hardware/storage/README.md)
     - [TrueNAS](hardware/storage/truenas/README.md)
 
