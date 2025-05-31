@@ -1,11 +1,13 @@
-<img align="left" width="40" height="40" src="../images/logo_256x256.png">Office
-====================================================================================================
-Documenting my experience with Office applications in the Arch Linux world
-<br><br>
+# Office <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
+
+Documenting my experience with Office applications in the Linux world
 
 ### Quick links
-* [.. up dir](..)
+- [.. up dir](..)
 * [mdbook](#mdbook)
+
+### Linked pages
+- [PDFs](pdfs/README.md)
 
 # mdbook
 [mdbook](https://github.com/rust-lang/mdBook) is a Rust utility to create modern online books from 

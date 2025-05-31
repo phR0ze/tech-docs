@@ -1,6 +1,7 @@
-# Storage
+# Storage <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
 
 ### Quick links
+- [.. up dir](../README.md)
 * [Drives](#drives)
   * [Add Drive](#add-drive)
   * [Automount drive](#automount-drive)
@@ -12,6 +13,10 @@
 * [RAID Drives](#raid-drives)
   * [Destroy RAID info](#destroy-raid-info)
   * [Software RAID](#software-raid)
+
+### Linked pages
+- [Rescue](rescue/README.md)
+- [Truenas](truenas/README.md)
 
 ## Drives
 
