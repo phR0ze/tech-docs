@@ -3,7 +3,7 @@
 Documenting various virtualization technologies
 
 ### Quick links
-- [.. up dir](../README.md)
+- [.. up dir](..)
 - [Overview](#overview)
 
 ### Linked pages

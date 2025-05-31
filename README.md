@@ -95,11 +95,6 @@ How to grep: `grep -riI --exclude-dir="book" "internet archive"`
     * [Repeatable Config](#repeatable-config)
   * [OCR](#ocr)
     * [Tesseract](#tesseract)
-  * [PDFs](#pdfs)
-    * [PDF Manipulation](#pdf-manipulation)
-    * [Combine PDFs](#combine-pdfs)
-    * [Rotate PDFs](#rotate-pdfs)
-    * [Convert Images to PDF](#convert-images-to-pdf)
 * [pacman packages](#pacman-packages)
   * [Init Database](#init-database)
   * [Update Mirrorlist](#update-mirrorlist)
@@ -1348,47 +1343,6 @@ git to detect the diffs between the defaults and any changes you make.
 ### Tesseract
 ```bash
 $ tesseract input.png out
-```
-
-## PDFs
-
-### PDF Manipulation
-For general PDF manipulation `pdfmod` works well
-
-```bash
-$ sudo pacman -S pdfmod
-```
-
-### Combine PDFs
-```bash
-# Install pdfjoin
-$ sudo pacman -S pdfjoin
-
-# Join pdfs
-$ pdfjoin 1.pdf 2.pdf -o combined.pdf
-```
-
-### Rotate PDFs
-```bash
-# Install texlive-core
-$ sudo pacman -S texlive-core
-
-# Rotate pdf
-$ pdfjam --landscape --angle 90 input.pdf
-```
-
-### Convert Images to PDF
-```bash
-# Install imagemagick
-$ sudo pacman -S imagemagick
-
-# Comment out the stupid security policy default in Arch Linux
-$ sudo vim /etc/ImageMagick-7/policy.xml
-# <policy domain="coder" rights="none" pattern="{PS,PS2,PS3,EPS,PDF,XPS}" />
-
-# Convert images to pdf
-# -quality is the jpeg compression to use for images
-$ convert -resize 50% -quality 98 -units pixelsperinch -density 150 image1.jpg image2.jpg output.pdf
 ```
 
 # pacman packages

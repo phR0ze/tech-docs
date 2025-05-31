@@ -113,9 +113,8 @@
 
 - [Hardware](hardware/README.md)
   - [Accelerated Graphics](hardware/accelerated_graphics/README.md)
-  - [Disk Drives](hardware/disk_drives/README.md)
-    - [Rescue](hardware/disk_drives/rescue/README.md)
   - [Storage](hardware/storage/README.md)
+    - [Rescue](hardware/storage/rescue/README.md)
     - [TrueNAS](hardware/storage/truenas/README.md)
 
 - [Homelab](homelab/README.md)
@@ -182,6 +181,7 @@
 
 - [Productivity](productivity/README.md)
   - [Office](productivity/office/README.md)
+    - [PDFs](productivity/office/pdfs/README.md)
   - [Workspace](productivity/workspace/README.md)
 
 - [Security](security/README.md)
