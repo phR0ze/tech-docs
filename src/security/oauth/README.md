@@ -6,6 +6,14 @@ system. Thus you are authorizing one system to act on behalf of you on that othe
 
 ### Quick links
 * [.. up dir](..)
+* [Overview](#overview)
+  * [Terms](#terms)
+  * [JSON Web Token](#json-web-token)
+  * [RFC 7662 Token Introspecdtion](#rfc-7662-token-introspection)
+  * [RFC 7009 Token Revocation](#rfc-7009-token-revocation)
+  * [RFC 8693 Token Exchange](#rfc-8693-token-exchange)
+  * [RFC 8414 Authorization Server Metadata](#rfc-8414-authorization-server-metadata)
+* [OAuth Core](#oauth-core)
 
 ## Overview
 OAuth is a loose operating agreement, not a contract. It leaves a lot of things undefined on purpose. 
@@ -99,21 +107,23 @@ There are a number of grant types that solve different use cases:
 * Device Code - dumb devices like terminals
 * Authorization Code with PKCE
 
-Ask yourself 3 questions:
-* Are you authorizing on behalf of a user?
-  * No - use Client Credential which is designed for backend systems
-* Does the system in question have a web browser available?
-  * No - Device grant type which is designed for devices that can only generate a URL i.e. terminal
-* Is your app entirely server side?
-  * No - Implicit Grant a.k.a Authorization Code with PKCE
-  * Yes - Athorization Code flow
+**Grant type to use**
+* ***Human*** => ***Authorization Code w/PKCE***
+* ***No human*** => ***Client Credentials***
 
 ### OAuth Scopes
 As simple or complex as you want.  Better to stay simple and increase it later. There is no unified 
-approach and teh scope strings are free form and can be any format. Best to unify your own.
+approach and the scope strings are free form and can be any format. Best to unify your own.
 
 * github example: `repo`, `public_repo`, `repo:invite`, `write:repo_hook`
 * google example: `Analytics API: https://www.googleapois.com/auth/analytics`
 * okta example: `okta.apps.manage`, `okta.apps.read`
 * Example: create, read, update, delete
+
+## OAuth with client
+Many apps today are actually just a front-end for a series of API calls. Weather its a Web app, 
+desktop client or mobile client they are simply calling the backend API directly to store and 
+interact with their data. The most common modern solution for security in this case is OAuth2.
+
+Typicall the ***Authorization Code w/PKCE*** grant is used.
 
