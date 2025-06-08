@@ -59,6 +59,7 @@ them clean. You no longer have to install and update modpacks manually.
 1. Create a new modable instance
    1. Select your desired version e.g. `1.21.1` in the top split
    2. Select the latest `Fabric` mod loader in the bottom split
+   3. Click `OK` to create the new instance
 2. Add mods to instance
    1. Right click new instance and select `Edit...`
    2. Select `Mods` on left

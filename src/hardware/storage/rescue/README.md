@@ -10,6 +10,7 @@
 - [DDRescue](#ddrescue)
   - [Command line flags](#command-line-flags)
   - [Copy drive to image](#copy-drive-to-image)
+  - [Mount raw image](#mount-raw-image)
 
 ## Overview
 

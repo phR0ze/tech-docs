@@ -11,11 +11,12 @@ comes with a Web interface as well as a mobile app.
   * [Install Synology Photos](#install-synology-photos)
   * [Enable Shared Space](#enable-shared-space)
   * [Grant family group access](#grant-family-group-access)
-  * [Complete Shared Space configuration](#complete-shared-space-configuration)
   * [Enable video thumbnails](#enable-video-thumbnails)
 * [Mobile Configuration](#mobile-configuration)
   * [Mobile Backup](#mobile-backup)
 * [Photo curation](#photo-curation)
+  * [Questions and Answers](#questions-and-answers)
+  * [Curation process](#curation-process)
 
 ## Overview
 Installing Synology Photos creates two folders:
@@ -70,17 +71,27 @@ photos for the family.
 4. Click `Enable Shared Space` then `Save`
 
 ### Grant family group access
-Grant `family` group access to new `photo` folder via `Synology Photos`
+Grant `family` group access to new `photo` folder via `Synology Photos`.
 
+**WARNING** `file level permissions` for mounted shares over the network and `Photos app permissions` 
+are two separate permissioning systems. You need to configure both to make sure `Read Only` access is 
+configured in both cases if that is your desire.
+
+**NOTE** by removing the `Manager` and `Uploader` permissions below you also remove the ability to 
+use the timeline view for the shared space :( which is super lame.
+
+**File level permissions and app access**
 1. Navigate to `Control Panel >User & Group >Group`
 2. Select `family` then click `Edit`
 3. Select the `Applications` tab
 4. Scroll down to `Synology Photos` and check `Allow`
 
-### Complete Shared Space configuration
+**Photos App permissions**
 1. Launch `Synology Photos` then navigate to `Settings` via your icon in the top right
-2. Click `Set Access Permissions` 
-3. Select `family` from drop down and `Full Access` then click the plus icon then `Save`
+2. Click the `Shared Space` tab then click `Set Access Permissions` in the middle
+3. Select `family` from drop down and `Custom`
+   1. Uncheck `Manager` and `Uploader` options
+   2. Click `Done`
 4. Check `Enable Facial Recogniction in Shared Space`
 5. Check `Enable Subject Recogniction in Shared Space`
 6. Finally click `Save`
@@ -126,15 +137,15 @@ the original photo naming un-touched such that I can simply access them via file
 
 By backing up to the personal space for each user you can then manually curate them and migrate them 
 to the shared space if so desired. This allows for a family collection without duplicating photos in 
-both the personal and shared space while still allowing personal photos to remain.
+both the personal and shared space while still allowing personal photos to remain personal as 
+desired.
 
-### Migrating from personal to shared space
-For a family its often desirable to migrate most photos from the Personal space to the Shared space. 
+### Question and Answers
+For a family its often desirable to move most photos from the Personal space to the Shared space. 
 This allows for easy management and sharing in a central space while not duplicating photos in 
 multiple locations.
 
-**Question and Answers**
-* Operations performed by file manager on mounted share of Shared space:
+* ***Operations performed by file manager*** on mounted share of Shared space:
   * What happens when they are deleted?
     * They are simply trimmed out of the Synology time line, no fuss
   * What happens when you copy photos to the share?
@@ -144,10 +155,12 @@ multiple locations.
     * It is removed from the mobile app view
     * It is not removed from mobile device
     * It is marked in the mobile app as being out of sync with an option to delete to sync with NAS
-* Operations performed via mobile app:
+
+* ***Operations performed via mobile app***:
   * What happens when a photo is deleted from the Personal space?
     * Depending on app settings, it is deleted from device and from the Personal space on NAS
-* Operations performed via the web app:
+
+* ***Operations performed via the web app***:
   * What happens when a photo is deleted from the Personal space?
     * It is removed from the Personal space web view
     * The shared space copy is not affected
@@ -155,7 +168,7 @@ multiple locations.
       then gives an option to delete it locally as well.
     * It is not removed from mobile device
 
-**Curation process**
+### Curation process
 1. Allow mobile backup to run as per usual which will dump it into the Personal user space on the NAS
 
 2. Using a file manager to browse the mounted share locally:

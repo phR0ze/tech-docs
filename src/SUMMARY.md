@@ -7,6 +7,7 @@
   - [Duet](ai/duet/README.md)
 
 - [Databases](databases/README.md)
+  - [EER Model](databases/eer_model/README.md)
   - [MySQL](databases/mysql/README.md)
     - [mycli](databases/mysql/mycli/README.md)
     - [DBeaver](databases/mysql/dbeaver/README.md)

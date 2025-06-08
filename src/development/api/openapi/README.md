@@ -1,13 +1,14 @@
 # OpenAPI <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
-The OpenAPI specification (OAS), formerly Swagger spec is the de facto standard for defining RESTful 
+The OpenAPI specification (OAS), formerly Swagger spec, is the de facto standard for defining RESTful 
 APIs. Having a OAS allows for loading your contract into powerful tooling to analyze, test and 
 interact with it. It allows both humans and machines the ability to discover and understand the 
-capabilities of the service without the source code.
+capabilities of the service without the source code or reading documentation.
 
 ### Quick links
 * [.. up dir](..)
 * [Overview](#overview)
+  * [Benefits of OAS](#benefits-of-oas)
   * [OAS Example](#oas-example)
 * [OAS for Rust APIs](#oas-for-rust-apis)
 
@@ -18,6 +19,7 @@ how to consume an API. Concise and clear docs allows your API consumers to adopt
 application quickly and is expected for any modern api.
 
 **References**
+* [Learn OpenAPI Specification](https://learn.openapis.org/)
 * [Working with OpenAPI using Rust](https://www.shuttle.dev/blog/2024/04/04/using-openapi-rust)
 * [Open API 3.0 Overview](https://swagger.io/docs/specification/v3_0/about/)
 * [Documenting APIs with Swagger](https://swagger.io/resources/articles/documenting-apis-with-swagger/)
@@ -34,8 +36,18 @@ Swagger is a set of open-source tools built around the OpenAPI Specification
 * `Swagger Parse` - standalone library for parsing OAS
 * `Swagger APIDom` - single unifiying structure for describing APIs across languages
 
+### Benefits of OAS
+* You can improve cross-team collaboration by allowing teammates to quickly experiment with endpoints 
+  by providing a frontend
+
+* You can quickly get an understanding of endpoints that your teammates have made
+
+* It’s widely used, so you can get an understanding of official APIs that utilise it much faster
+
+* We can generate code from it as it’s machine parseable!
+
 ### OAS Example
-```json
+```yaml
 swagger: "3.0"
 info:
   version: "1.0"
@@ -64,6 +76,13 @@ paths:
 ### Utoipa
 Utoipa is a Rust crate that can be used to decorate and then generate an OpenAPI Spec from your Axum 
 based API implementation.
+
+* OpenAPI 3.1 support
+* Pluggable, easy setup and integration with Axum
+* No bloat, enable what you need
+* Support for generic types
+* Automatic schema collection
+* Various OpenAPI visualization tools
 
 ```rust
 use std::net::SocketAddr;

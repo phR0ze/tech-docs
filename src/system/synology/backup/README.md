@@ -10,6 +10,8 @@ Standard best practice is the 3-2-1 method:
 * [Hyper Backup](#hyper-backup)
   * [Backup folder](#backup-folder)
   * [External Backup Drive](#external-backup-drive)
+* [Restoring](#restoring)
+  * [Restoring a file](#restoring-a-file)
 
 ## Hyper Backup
 Synology offers their `Hyper Backup` application from the Package Center. Hyper Backup provides 
@@ -54,3 +56,10 @@ Synology NAS supports external devices formatted with `Btrfs`, `FAT32` and `ext4
 3. A folder will be created automatically named `usbshare[number]` for USB drives
 4. The new folder will show up in the `File Station` app
 5. Right clicking on the `usbshare1` folder will allow you to `Eject` it safely
+
+## Restoring
+
+### Restoring a file
+1. Launch Hyper Backup
+2. Find your file
+3. Right click on it and select Restore
