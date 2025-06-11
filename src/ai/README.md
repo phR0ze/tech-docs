@@ -1,14 +1,23 @@
-# AI
-<img align="left" width="48" height="48" src="../data/images/logo_256x256.png">
+# AI <img style="margin: 6px 13px 0px 0px" align="left" src="../data/images/logo_36x36.png" />
+
 Documenting various AI technologies
 
-### Quick Links
+### Quick links
+- [.. up dir](..)
 * [Overview](#overview)
-  * [LLMs](#llms)
-  * [Gen AI](#gen-ai)
+  * [Protocols](#protocols)
+  * [Benefits](#benefits)
+  * [Platform](#platform)
+  * [Halucinations](#halucinations)
+* [Popular AI Tools](#popular-ai-tools)
+* [Prompt Engineering](#prompt-engineering)
 
-# Overview
-AI is predicted to be a golden age of innovation rivaling Cloud, Mobile possibly Internet:
+### Linked pages
+- [Copilot](copilot/README.md)
+- [Duet](duet/README.md)
+ 
+## Overview
+AI is predicted to be a golden age of innovation rivaling Cloud, Mobile and possibly Internet:
 * AI will touch every business in every sector
 * AI is being democritized, meaning that it is available beyond just specialized situations and trained personel
 * Google is investing BIG across everything with its new [Vertex AI platform](https://cloud.google.com/vertex-ai)
@@ -17,43 +26,71 @@ AI is predicted to be a golden age of innovation rivaling Cloud, Mobile possibly
                           ..../                         \....
                       Vertex AI                           Duet AI
 
-## Dev Productivity
+### Protocols
+* ***A2A (Agent2Agent)***
+  * Google introduced A2A
+  * Built to provide agents the ability to discover each other and negotiate tasks, exchange message 
+    and collaborate across systems.
+  * A2A allows agents to be part of a networked agentic team
+
+* ***MCP (Model Context Protocol)***
+  * Anthropic introduced MCP
+  * Equips agents to be able to interact with external tools
+
+* ***ADK (Agent Development Kit)***
+  * Google introduced ADK
+  * Purpose is to help developers build agents that can participate in A2A flows
+  * ADK provides prebuilt components to help devs build agents faster
+
+### Benefits
 AI can reduce toil and improve efficiency
-* Enhance unit test coverage
-* Enhance documentation, summarize documents
-* Create content using GenAI (Email)
-* Automating business processes
-* Referenceability is key to building confidence with GenAI
+* Development
+  * Enhance unit test coverage
+  * Enhance documentation, summarize documents
+  * Create content using GenAI (Email)
+  * Automating business processes
+  * Referenceability is key to building confidence with GenAI
 
-## Hardware
-AI work loads are pushing hyperscalers to develop specialized hardware and chips to handle the 
-demanding AI workloads.
-
-### TPUs
-`TPUs` are specialized processors for machine learning calculations and require more traffice to learn 
-at first but later are more impactful with less power consumption.
-
-TPUs are 15-30 times faster than current GPUs for AI workloads
-
-## LLMs
-Large language models can be summed up as:
+### Platform
+Foundationally AI is built on top of ***Large language models*** which are:
   * ML algorithms that can recognize, predict, and generate human languages
   * Pre-trained on petabyte scale datasets of text, images, video, chat, audio etc...
   * Domain specific models
     * Sec-PaLM - cybersecurity
     * Med-PaLM - life science and healthcare
 
-## GenAI
-GenAI is geared towards generating content. 
+AI work loads are pushing hyperscalers to develop specialized hardware and chips to handle the 
+demanding AI workloads. `TPUs` are specialized processors for machine learning calculations and 
+require more traffice to learn at first but later are more impactful with less power consumption.
 
-## AI Halucinations
+TPUs are 15-30 times faster than current GPUs for AI workloads
+
+### Halucinations
 AI has been plagued with what they call AI halucinations, in that you haven't been able to trust the 
 answers you get back from AI from an accuracy or safety perspective. Often generative AI will just 
-make up answers.
+make up answers. So everything is disclaimed with caveats to check AIs work.
 
-Google is looking to change this with large currated specialized datasets.
+This will get better over time but will likely always be a thing.
+
+## Popular AI Tools
+
+| AI Tool         | Category
+| --------------- | ---------------
+| Github Copilot  | Coding
+| Canva           | Image
+| ChatGPT         | Conversational
+| Fathom          | Meeting
+| Gemini          | Multimodal
+| Grammerly       | Writing
+| Murf.ai         | Voice
+| Notion          | Productivity
+| Synthesia       | Video
+| Zapier          | Automation
 
 ## Prompt Engineering
+In order to get the most out of AI you need to be good and coaxing AI to respond the way you want it 
+to. This is the art of prompt engineering.
+
 * We are ***WE ARE***
 * You are a ***CHARACTER*** called ***NAME***
 * As a chat bot, your mission is ***MISSION***

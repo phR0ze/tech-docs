@@ -60,3 +60,5 @@ Add the dependency to your project
 [dependencies]
 tower-http = { version = "0.4.0", features = ["fs", "trace"] }
 ```
+
+## Authn and Authz

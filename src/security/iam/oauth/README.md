@@ -14,6 +14,7 @@ system. Thus you are authorizing one system to act on behalf of you on that othe
   * [RFC 8693 Token Exchange](#rfc-8693-token-exchange)
   * [RFC 8414 Authorization Server Metadata](#rfc-8414-authorization-server-metadata)
 * [OAuth Core](#oauth-core)
+* [OAuth with client](#oauth-with-client)
 
 ## Overview
 OAuth is a loose operating agreement, not a contract. It leaves a lot of things undefined on purpose. 
@@ -121,9 +122,9 @@ approach and the scope strings are free form and can be any format. Best to unif
 * Example: create, read, update, delete
 
 ## OAuth with client
-Many apps today are actually just a front-end for a series of API calls. Weather its a Web app, 
+Many apps today are actually just a front-end for a series of API calls. Whether its a Web app, 
 desktop client or mobile client they are simply calling the backend API directly to store and 
 interact with their data. The most common modern solution for security in this case is OAuth2.
 
-Typicall the ***Authorization Code w/PKCE*** grant is used.
+Typically the ***Authorization Code w/PKCE*** grant is used.
 

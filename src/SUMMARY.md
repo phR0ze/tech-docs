@@ -187,9 +187,9 @@
 
 - [Security](security/README.md)
   - [IAM](security/iam/README.md)
-  - [JWT](security/jwt/README.md)
-  - [MFA](security/mfa/README.md)
-  - [OAuth](security/oauth/README.md)
+    - [JWT](security/iam/jwt/README.md)
+    - [MFA](security/iam/mfa/README.md)
+    - [OAuth](security/iam/oauth/README.md)
   - [Password Managers](security/password_managers/README.md)
 
 - [System](system/README.md)
