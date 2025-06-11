@@ -1,11 +1,12 @@
 # IAM <img style="margin: 6px 13px 0px 0px" align="left" src="../data/images/logo_36x36.png" />
 
-Identity and Access Management (IAM)
+An Identity and Access Management (IAM) provider is a system that ensures secure, controlled, easy 
+access to resources.
 
 ### Quick links
 * [.. up dir](..)
 * [Overview](#overview)
-  * [Terms](#terms)
+  * [Auth0 case study](#auth0-case-study)
 * [Self-hosted options](#self-hosted-options)
   * [Golang library support](#golang-library-support)
     * [Casdoor](#casdoor)
@@ -15,18 +16,29 @@ Identity and Access Management (IAM)
   * [Script](#script)
     * [logto](#logto)
   * [Java](#java)
-* [Paid service options](#paid-service-options)
-  * [Ping Identity](#ping-identity)
+
+### Linked pages
+* [JWT](jwt/README.md)
+* [MFA](mfa/README.md)
+* [OAuth](oauth/README.md)
 
 ## Overview
-An Identity and Access Management (IAM) provider is a system that ensures secure, controlled, easy 
-access to resources.
 
 **References**
 * [IAM - medium](https://logto.medium.com/top-5-open-source-identity-and-access-management-iam-providers-2025-ef2428c01c6e)
 * [Awesome IAM Knowledge docs](https://github.com/kdeldycke/awesome-iam)
 
 IAM is composed of the following segments:
+* `Governance`
+  * `User Management`
+    - provisioning
+    - roles
+    - audits
+    - measuring the time and resources users use
+  * `Organizational Management`
+    - structuring teams
+    - multitenancy
+
 * `Authentication (Authn)`
   - establish who you are
   - Logins, passwords, biometrics, social login
@@ -37,25 +49,30 @@ IAM is composed of the following segments:
   - Roles
   - permissions for resources
 
-* `User Management`
-  - provisioning
-  - roles
-  - audits
-  - measuring the time and resources users use
+* `Audit`
+  - Audit trails of user activity
 
-* `Organizational Management`
-  - structuring teams
-  - multitenancy
+### Auth0 case study
+***Auth0***, founded in 2013, is the defacto standard for modern B2B2C SaaS IAM solutions that every 
+startup is comparing themselves to. It is by far the most well known option in teh modern IAM space. 
+So much so that Auth0 was acquired by Okta in 2022 and has since been subsumed into Okta's processes 
+and lost its original developer focused flare.
 
-### Terms
-* Components
-  * ***User*** - user account
-  * ***Agent*** - entity operating on your behalf
-  * ***Group*** - more than one user, agent, device or account with same rights
-  * ***Roles*** - set of permissions that can be applied to a user or group
-  * ***Policy*** - policy based permissions
-  * ***Device*** - device
-  * ***Account*** - automated internal operation
+Other notable paid clones include:
+* ***Frontegg***, ***FusionAuth***, ***Descope***, ***WorkOS***, ***Stytch***, and ***SSOJet***
+
+All the paid clones and many open source projects have tried to clone or are heavily inspired by 
+Auth0, which makes it an interesting case study. What is it that Auth0 did that was so successful? 
+Auth0 provided a B2B2C SaaS model that fits well with modern application design.
+
+They built an intuitive API and Web portal to manage the IAM
+
+### Interface design
+
+You have a similar management interface with control options on the left 
+such as `Applications`, `Authentication`, `Organizations`, `User Management`, `Branding`, `Security`, 
+`Actions`, `Auth Pipeline`, `Monitoring`, `Marketplace`, `Extensions` and `Settings`
+
   * ***Access Control***
     - MAC (Mandatory Access Control)
     - DAC (Discretionary Access Control)
@@ -66,7 +83,6 @@ IAM is composed of the following segments:
   * ***Provisioning*** - is the act of creating, updating, and deleting information for user
   * ***Conditional Access*** - provided when needed
   * ***Just-in-Time Access*** - provide access for a window of time
-
 * Identity Provider
 Identity providers execute authentication. IdP can create store and management identities. A user 
 will send credentials to the IdP and the IdP will send back a token.
@@ -86,19 +102,26 @@ A process for manageing access to resources via a centralized solution. The Iden
 Process confirms authentication process has taken place by checking the user's token that was 
 provided by the IdP.
 
-* Single Sign-On SSO
+## Workfoce IdPs
+
+### Single Sing-On SSO
 The ability to sign on a single time for multiple services.
 
-* Protocols
 Federated Identity Management (FIM) is accomplished through 3 primary protocols:
+
+**Protocols**
+
 * ***SAML*** - Security Assertion Markup Language
-  * XML based, old
+  * Verable, widely used, xml based and old
+
 * ***OAuth2.0*** - requests authentication without sharing passwords
   * JSON based token sharing, modern
   * Shares just the token
+
 * ***OIDC*** - OpenID Connect
   * Protocol that extends OAuth2.0 with additional functions
   * Adds the ability to share account data like user profile
+
 * ***SCIM*** - 
 
 ### Key considerations
@@ -390,34 +413,3 @@ of attention.
   * User management
   * User permissions
 
-## Paid service options
-
-| Service | 
-* Perimeter81
-* Okta
-* OneLogin
-* Ping Identity
-* SailPoint
-* ForgeRock
-* IBM Security Identity Manager
-
-### Auth0
-First thing you notice is how similar Auth0 is to to Logto because Logto is meant to be an open 
-source version of Auth0. You have a similar management interface with control options on the left 
-such as `Applications`, `Authentication`, `Organizations`, `User Management`, `Branding`, `Security`, 
-`Actions`, `Auth Pipeline`, `Monitoring`, `Marketplace`, `Extensions` and `Settings`
-
-**References**
-* [Auth0 in Next.js - Youtube](https://youtu.be/yufqeJLP1rI?si=N3QzKsNKNuaTU-_b)
-
-### AWS Cognito
-
-### Ping Identity
-* Enterprise level company focus
-* Custom UI options
-
-### InfraSOS
-
-### SailPoint Identity IQ
-
-### Cisco Duo Security

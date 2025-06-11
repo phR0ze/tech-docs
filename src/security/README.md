@@ -5,8 +5,7 @@
 
 ### Linked pages
 * [IAM](iam/README.md)
-* [MFA](mfa/README.md)
-* [JWT](jwt/README.md)
+* [Password Managers](password_managers/README.md)
 
 <!-- 
 vim: ts=2:sw=2:sts=2

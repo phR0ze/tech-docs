@@ -1,21 +1,46 @@
-# Copilot
+# Copilot <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
 
+GitHub Copilot is a generative AI tool that functions as a coding assistant to help you write code.
+
+### Quick links
+- [.. up dir](..)
+- [Overview](#overview)
+  - [Subscription](#subscription)
+- [Copilog in VSCode](#copilot-in-vscode)
+  - [Install the extensions](#install-the-extensions)
+
+### Linked pages
+ 
 ## Overview
-* Use comments to interact
-* Code completion for things you are typing
-* Works well with `Python`, `JavaScript`, `TypeScript`, `Ruby`, `Go`, `C#` and `C++`
+Copilot draws context from your coding environment, open tabs, and GitHub projects (including pull 
+your pull requests, issues, discussions, and codebase).
 
-## Get started
 References:
+* [GitHub Copilot for Free](https://github.blog/ai-and-ml/github-copilot/what-can-github-copilot-do-examples/)
 * [Github Copilot for vscode](https://docs.github.com/en/copilot/getting-started-with-github-copilot?tool=vscode)
 
-GitHub Copilot subscription is required
- * [Pricing](https://docs.github.com/en/billing/managing-billing-for-github-copilot/about-billing-for-github-copilot)
- * $100/year or $10/month
+**Potential use cases**
+* You can ask Copilot to provide a summary of code
+* Explain how pieces of code in your app work
+* Document, debug and refactor code
 
-## Configure Copilot for VSCode
+### Subscription
+Github Copilot is free for anyone with a Github account to but in a limited way. You'll want a 
+subscription to do anything meaningful with it.
 
-### Copilot VSCode Extension
+* [Plans](https://github.com/features/copilot/plans?cft=copilot_li.features_copilot?utm_source=whatcancopilotdo&utm_medium=blog&utm_campaign=copilot_free_jan_&utm_content=bottom)
+* Free is limited to:
+  * 50 chat requests per month
+  * 2,000 auto completions per month
+* Paid provides
+  * Unlimited requests
+  * Unlimited auto completions
+  * Code review
+  * $100/year or $10/month
+
+## Copilot for VSCode
+
+### Install the extensions
  1. Open vscode and navigate to extensions
  2. Download `GitHub Copilot` from `GitHub` for autocompletion or comment interaction
  3. Click the bell in the bottom right of vscode to `Sign in to GitHub`
@@ -23,9 +48,7 @@ GitHub Copilot subscription is required
  5. Click `Authorize Visual-Studio-Code`
  6. The Copilot robot should show up in the bottom right left of all other icons
 
-### Copilot Chat VSCode Extension
-Copilot chat is a much easier way to interacting with the AI providing the ability to select code 
-blocks for context and ask the AI questions about it in an interactive chat window.
+### 
 
 <!-- 
 vim: ts=2:sw=2:sts=2
