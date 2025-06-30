@@ -5,8 +5,16 @@ streaming.
 
 ### Quick links
 * [.. up dir](../README.md)
+* [Getting started](#getting-started)
+  * [Install OBS Studio](#install-obs-studio)
+* [Sources](#sources)
+  * [SRT source](#srt-source)
+  * [NDI source](#ndi-source)
+* [Virtual Camera](#virtual-camera)
 
-## Configure NDI source
+## Getting started
+
+### Install OBS Studio
 
 1. Install OBS Studio with the NDI plugin
    ```nix
@@ -31,3 +39,18 @@ streaming.
    2. Navigate to `Tools >NDI Output settings`
    3. Check the `Main Output` box and click `OK`
 
+## Sources
+
+
+### SRT source
+1. In the `Sources` section at the botton near the left
+2. Click the `+` button and choose `Media Source`
+3. Give it a name e.g. `Mevo SRT` then click `OK`
+4. Uncheck `Local File`
+5. Set `Input` to your camera's srt address e.g. `srt://192.168.1.112:4201`
+6. Set `Input Format` to `mpegts`
+7. Check `Use hardware decoding when available`
+8. Click `OK` and you should see in a couple seconds the video show up
+
+### NDI source
+TBD

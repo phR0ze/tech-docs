@@ -14,6 +14,7 @@ Documenting various AI technologies
 
 ### Linked pages
 - [Copilot](copilot/README.md)
+- [Cursor](cursor/README.md)
 - [Duet](duet/README.md)
  
 ## Overview

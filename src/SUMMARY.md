@@ -4,6 +4,7 @@
 
 - [AI](ai/README.md)
   - [Copilot](ai/copilot/README.md)
+  - [Cursor](ai/cursor/README.md)
   - [Duet](ai/duet/README.md)
 
 - [Databases](databases/README.md)
@@ -38,6 +39,7 @@
     - [Zed](development/editors/zed/README.md)
   - [Languages](development/languages/README.md)
     - [Golang](development/languages/golang/README.md)
+      - [Web](development/languages/golang/web/README.md)
     - [Markdown](development/languages/markdown/README.md)
       - [Mermaid](development/languages/markdown/mermaid/README.md)
     - [Ruby](development/languages/ruby/README.md)
@@ -164,6 +166,7 @@
     - [Cloudflare Tunnel](networking/overlay_networks/cloudflare_tunnel/README.md)
     - [Istio](networking/overlay_networks/istio/README.md)
     - [Netbird](networking/overlay_networks/netbird/README.md)
+    - [Ngrok](networking/overlay_networks/ngrok/README.md)
     - [OpenVPN](networking/overlay_networks/openvpn/README.md)
     - [VLANs](networking/overlay_networks/vlans/README.md)
     - [Vopono](networking/overlay_networks/vopono/README.md)

@@ -7,6 +7,7 @@ and serverless applications.
 ### Quick links
 - [.. up dir](../README.md)
 * [Overview](#overview)
+* [Tracing](#tracing)
 * [Fasttrace](#fastrace)
   * [Add fastrace dependencies](#add-fastrace-dependencies)
   * [Initialize fastrace with Axum](#initialize-fastrace-with-axum)
@@ -34,12 +35,63 @@ span contains a name, time-related data, structued log messages and other metada
 * `tracing-subscriber` - Utilities for implementing and composing `tracing` subscribers
 
 ## Tracing
-Tracing is the defacto standard for logging and distributed traces in the Rust ecosystem.
+Tracing is the defacto standard for logging and distributed traces in the Rust ecosystem. The Tokio 
+ecosystem is setup to use ***Axum***, ***tower-http***, ***tracing*** and ***log***.
 
 **References**
 * [Asynchronous Rust: Tracing and Metrics](https://www.youtube.com/watch?v=YHo_ab5S1bo)
 
+### Tracing crates
+Configure your `Cargo.toml`
+
+```toml
+[dependencies]
+log = "0.4.24"
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features=["env-filter"] }
+```
+
+* ***log*** provides the standard facade for logging that all libraries use
+* ***tracing*** provides the Tokio tracing foundational components
+* ***tracing-subscriber*** provides subscriber configuration to send the events to stdout or elsewhere
+
+### Configure tracing and logging
+```rust
+use tracing_subscriber::{
+  filter::EnvFilter, layer::SubscriberExt, util::SubscriberInitExt
+};
+use crate::model::Config;
+
+/// Set up a tracing subscriber with a formatter and filtering
+pub(crate) fn init(service_name: &str, config: &Config)
+{
+    // Set up the environment filter for log levels and modules
+    let mut filter_str = format!("{}", config.rust_log);
+    filter_str.push_str(&format!(",{}={}", service_name, config.rust_log));
+    filter_str.push_str(",sqlx=info");
+    filter_str.push_str(",tower_http=debug");
+    filter_str.push_str(",axum::rejection=trace");
+
+    // Initialize the tracing subscriber with the custom formatter and filter
+    tracing_subscriber::registry()
+        .with(EnvFilter::new(filter_str.clone()))
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+
+    // Log the initialization details
+    log::set_max_level(config.rust_log.clone());
+    log::info!("Starting {}...", service_name);
+    log::info!("Tracing initialized...");
+    log::debug!(" - Base filter: {}", filter_str);
+    log::debug!(" - Log level: {}", config.rust_log);
+    log::info!("Configuration loaded...");
+    log::debug!("{:?}", config);
+}
+```
+
 ## Fasttrace
+***Note: I wasn't able to get it to work with Axum***
+
 Fastrace provides a production-ready solution with seamless ecosystem integration, out-of-box 
 OpenTelemetry support, and a more straightforward API that works naturally with the existing logging 
 infrastructure.
