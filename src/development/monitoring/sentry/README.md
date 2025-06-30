@@ -16,6 +16,7 @@ Sentry is an enterprise grade monitoring tool for:
   - [Integrate with Rust](#integrate-with-rust)
   - [Integrate with Tokio](#integrate-with-tokio)
   - [Sentry Options](#sentry-options)
+- [Notes](#notes)
 
 ## Overview
 Sentry's primary competition is the venerable Bugsnag, which given modern standards, is getting a 
@@ -141,3 +142,8 @@ The following options can be passed in at init time
 * ***release*** - free form string indicating the project name, falls back on ***SENTRY_RELEASE***
 * ***environment*** - free form string for development hierarchy, falls back on ***SENTRY_ENVIRONMENT***
 * ***max_breadcrumbs*** - default 100
+
+## Notes
+Goal is to find and detect issues on your platform
+
+* 
