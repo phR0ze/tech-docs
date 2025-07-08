@@ -136,6 +136,7 @@
     - [Twingate](homelab/utils/twingate/README.md)
 
 - [Media](media/README.md)
+  - [Audio](media/audio/README.md)
   - [CAD](media/cad/README.md)
     - [FreeCAD](media/cad/freecad/README.md)
   - [Desktop](media/desktop/README.md)
@@ -147,6 +148,7 @@
     - [Audacity](media/editing/audacity/README.md)
     - [Kdenlive](media/editing/kdenlive/README.md)
     - [OBS](media/editing/obs/README.md)
+  - [Image](media/image/README.md)
 
 - [Networking](networking/README.md)
   - [DNS](networking/dns/README.md)
