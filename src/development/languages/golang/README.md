@@ -1,7 +1,7 @@
-# Golang
-<img align="left" width="48" height="48" src="../../../data/images/logo_256x256.png">
+# Golang <img align="left" width="48" height="48" src="../../../data/images/logo_256x256.png">
 
 ### Quick links
+- [.. up dir](../README.md)
 * [Package Management](#package-management)
   * [Updating dependencies](#updating-dependencies)
 * [Configuration](#Configuration)
@@ -14,6 +14,9 @@
     * [Consuming connections](#consuming-connections)
     * [Transactions](#transactions)
     * [Deadlock with Transactions](#deadlock-with-transactions)
+
+### Linked pages
+* [Web](web/README.md)
 
 # Build
 
