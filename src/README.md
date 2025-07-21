@@ -1,4 +1,4 @@
-# tech-docs
+# tech-docs <img style="margin: 6px 13px 0px 0px" align="left" src="data/images/logo_36x36.png" />
 This is reference material/research I've done for various projects and will be most likely highly 
 opionated and/or simply a collection of notes and links to things I want to remember.
 

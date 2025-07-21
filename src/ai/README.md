@@ -2,7 +2,7 @@
 
 Documenting various AI technologies
 
-### Quick links
+### Quick Links
 - [.. up dir](..)
 * [Overview](#overview)
   * [Protocols](#protocols)
@@ -18,7 +18,8 @@ Documenting various AI technologies
 - [Duet](duet/README.md)
  
 ## Overview
-AI is predicted to be a golden age of innovation rivaling Cloud, Mobile and possibly Internet:
+AI is predicted to be a golden age of innovation rivaling Cloud, Mobile possibly Internet:
+
 * AI will touch every business in every sector
 * AI is being democritized, meaning that it is available beyond just specialized situations and trained personel
 * Google is investing BIG across everything with its new [Vertex AI platform](https://cloud.google.com/vertex-ai)
