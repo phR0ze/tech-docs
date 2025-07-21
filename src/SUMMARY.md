@@ -156,6 +156,7 @@
     - [Firefox](networking/browsers/firefox/README.md)
   - [Bluetooth](networking/bluetooth/README.md)
     - [Blueman](networking/bluetooth/blueman/README.md)
+  - [Captive Portal](networking/captive_portal/README.md)
   - [File Sharing](networking/file_sharing/README.md)
     - [qBittorrent](networking/file_sharing/qbittorrent/README.md)
   - [Firewall](networking/firewall/README.md)
