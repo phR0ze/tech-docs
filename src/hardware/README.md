@@ -6,5 +6,6 @@
 ### Linked pages
 - [Accelerated Graphics](accelerated_graphics/README.md)
 - [Disk Drives](disk_drives/README.md)
+- [Printers](printers/README.md)
 - [Storage](storage/README.md)
  
