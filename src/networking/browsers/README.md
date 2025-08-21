@@ -4,6 +4,7 @@
 * [.. up dir](../README.md)
 
 ### Linked pages
+- [Chromium](chromium/README.md)
 - [Firefox](firefox/README.md)
 
 ## Zen

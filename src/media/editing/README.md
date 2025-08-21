@@ -6,7 +6,10 @@
 * [Backup a Blu-ray](#backup-a-bluray)
 * [Backup a DVD](#backup-a-dvd)
 * [Burning a DVD](#burning-a-dvd)
-* [Cut Video w/out Re-encoding](#cut-video-without-re-encoding)
+* [Video operations without re-encoding](#video-operations-without-re-encoding)
+  * [Drop tracks](#drop-tracks)
+  * [Cut video](#cut-video)
+  * [losslesscut](#losslesscut)
 * [Extracting specific chapters](#extracting-specific-chapters)
 * [Burning an DVD](#burning-an-dvd)
 * [Lossless Rotate](#lossless-rotate)
@@ -26,7 +29,6 @@ Adding and removing audio from a MOV file can be done with OpenShot
 6. Click the Add button to add your new audio
 7. Drag your new audio down into the editing section below
 8. Offset the new audio as desired
-9. 
 
 ## Backup a Blu-ray
 Instructions for backing up your legally purchased personal collection.
@@ -85,17 +87,56 @@ Instructions for backing up your legally purchased personal collection.
    $ growisofs -dvd-compat -Z /dev/sr0=image.iso
    ```
 
-## Cut Video w/out Re-encoding
+## Video operations without re-encoding
+
+### Drop tracks
+Using `mkvtoolnix-gui` we can drop un-needed tracks without re-encoding the original video. This 
+allows for a storage savings and is lightning fast.
+
+1. Launch `mkvtoolnix-gui`
+2. Add your file
+   1. Right click in the `Source files` pane and select `Add source files`
+   2. Select your target MKV file
+3. Remove tracks as desired
+   1. Remove foreign audio
+   2. Remove foreign subs
+   3. Mark English tracks as defaults as desired
+5. Click `Start multiplexing`
+
+### Cut video
+
+***First find out the exact time where you want to cut the video***
+1. This can be done with `smplayer` by enabling OSD settings
+   1. Navigate to `View >OSD`
+   2. Choose the `Volume + Seek + Timer + Total time`
+   3. Repeat and choose at the bottom `Show times with miliseconds`
+2. Alternatively you can load it into `losslesscut`
+
+***Cut the video with mkvmerge***
+I noticed some glitches when I used losslesscut the last time so switched to mkvmerge which processed 
+it way faster and was perfect quality.
+
+```bash
+$ mkvmerge -o output.mkv --split parts:00:00:27.945-01:43:21.696 input.mkv
+```
+
+***Cut the video with losslesscut***
+**WARNING:** I had some weird file size bloat i.e. doubled the size with lossless
+
 1. Install: `sudo pacman -S losslesscut-bin`
 2. Launch: `losslesscut`
 3. Drag and drop your `mkv` file from [Encode DVD to x265](#encode-dvd-to-x265) into the main window
 4. Accept the prompt to `Import chapters`
-5. Right click on the first chapter and select `Jump to cut start`
-6. Now remove chapters to include in the segment you want up until the last one you want
-7. Now use the `Set cut start to current position` button to expand the last piece up to the start
-8. Right click on this new expanded chapter and choose `Include ONLY this segment in export`
-9. Click `Export` button validate settins and click `Export` again
-
+5. Enable the advanced options of the app in the bottom left
+6. Select the location in the video where you would like to start
+   1. Mark the start by using the `Start current segement at current time` button
+7. Select the location in the video where you would like to stop
+   1. Mark the end by using the `End current segement at current time` button
+8. Click `Export+merge`
+   1. Choose `Merge cuts`
+   2. Choose the Output container format e.g. `mp4`
+   3. Select the appropriate audio and subs tracks to keep
+   4. Finally click the `Export+merge` button again
 
 ## Extracting specific chapters
 Note often when doing a full dvd backup the first chapter will be the menu

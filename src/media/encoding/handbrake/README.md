@@ -2,6 +2,8 @@
 
 ### Quick links
 * [.. up dir](../README.md)
+* [Overview](#overview)
+  * [Constant Quality](#constant-quality)
 * [Encode to AV1](#encode-to-av1)
   * [Animated shows](#animated-shows)
 * [Encode Blu-ray to x265](#encode-blu-ray-to-x265)
@@ -9,8 +11,28 @@
 * [Codecs](#codecs)
   * [AV1](#av1)
 
-## Encode to AV1
+## Overview
 
+### Video Constant Quality
+The `Constant Quality` RF value is a setting used to control the balance between video quality and file 
+size. It is generally considered a better and higher quality option than bitrate. Bitrate is better 
+when you have streaming bitrate limits or hardware limits.
+
+* `0` is the best quality and highest file size
+* `18-20` is the recommended values for HD content
+* `21-23` is a good balance between quality and size
+* `24-28` trading off quality for size savings
+* `51` is the worst quality and smallest file size
+
+### Video Preset
+The `Preset` value doesn't change quality directly but does change how efficiently compression done.
+* `13` - fastest (worst file size)
+* `8` - medium fast (reasonable speed and file size)
+* `4` - balanced (goog quality vs time)
+* `0` - slow (smaller files, same quality)
+* `-1` - very slow (best compression)
+
+## Encode to AV1
 **References**
 * [Handbrake presets](https://handbrake.fr/docs/en/latest/technical/official-presets.html)
 
@@ -22,6 +44,15 @@ Handbrake's `Hardware >AV1 QSV 2160p60 4K` preset seems to be a great option:
 * My only changes were to bump:
   * Constant Quality RF to `30`
   * the AV1 Preset to `8`
+
+### Constant Quality and Preset
+SVT-AV1 recommendations are
+
+| Use case        | RF    | Preset
+| --------------- | ----- | ------
+| `Archival`      | 16-20 | 4 or lower
+| `Streaming`     | 22-28 | 6-8
+| `Quick Encode`  | 20-24 | 10-13
 
 ### Re-encode Animated show
 I tried a few different presets and video tweaks. The simplest that was still fast with decent 

@@ -10,9 +10,13 @@ up, organizing and managing photos on your own server easy and private.
 * [Setup Immich](#setup-immich)
   * [Install Immich on NixOS](#install-immich-on-nixos)
   * [First run experience](#first-run-experience)
+  * [Configure Immich](#configure-immich)
+  * [Wipe Immich](#wipe-immich)
 * [Features](#features)
   * [External Libraries](#external-libraries)
   * [Folder View](#folder-view)
+* [Correct Meta Data](#correct-meta-data)
+  * [Missing Exif Date](#missing-exif-date)
 * [Mobile App](#mobile-app)
 * [Backup](#backup)
 
@@ -87,7 +91,65 @@ users.users.immich.extraGroups = [ "video" "render" ];
 2. Setup you new account
 3. Login with the new account
 4. Walk through the setup wizard
-   * Note: the `Storage Template` can be used to auto-organizing files based on filename patterns
+   * Note: the `Storage Template` can be used to auto-organizing files based on filename patterns but 
+   will make changes to your files for you
+
+### Configure Immich
+Immich can consume a ton of space with its default settings approximately 12.5% extra for thumbnails 
+and encoded video.
+
+Launch the `Administration` options
+1. Navigate to `Settings >Image Settings`
+   1. Change `Thumbnail Settings >Resolution` to `200p`
+   2. Change `Preview Settings >Format` to `WebP`
+   3. Change `Preview Settings >Resolution` to `720p`
+2. Navigate to `Settings >Job Settings`
+   1. Change `Generate Thumbnails concurrancy` to `20`
+3. Navigate to `Settings >Video Transcoding Settings`
+   1. Change `Video Codec` to `av1`
+   2. Change `Audio Codec` to `mp3`
+   3. Change `Accepted video codecs` to check all
+   4. Change `Transcode policy` to `Don't transcode any videos, may break playback on some clients`
+   5. Change `Hardware Acceleration >Acceleration API` to `Quick Sync`
+   6. Change `Hardware Acceleration >Hardware decoding` to `on`
+
+### Wipe Immich
+Follow the steps below to wipe immich
+
+1. Stop the services
+   ```bash
+   $ sudo systemctl stop immich-server
+   $ sudo systemctl stop immich-machine-learning
+   ```
+
+2. Drop the PostgreSQL database
+   ```bash
+   $ sudo -u postgres psql
+   $ DROP DATABASE immich;
+   $ \q
+   $ CREATE DATABASE immich OWNER immich;
+   $ \q
+   $ sudo systemctl stop postgresql
+   ```
+
+3. Clear the Redis cache
+   ```bash
+   $ redis-cli -s /var/run/redis-immich/redis.sock FLUSHALL
+   $ sudo systemctl stop redis-immich
+   ```
+
+4. Remove all uploaded media
+   ```bash
+   $ sudo rm -rf /var/lib/immich/*
+   ```
+
+5. Start the services
+   ```bash
+   $ sudo systemctl start postgresql
+   $ sudo systemctl start redis-immich
+   $ sudo systemctl start immich-server
+   $ sudo systemctl start immich-machine-learning
+   ```
 
 ## Features
 
@@ -98,25 +160,30 @@ assets will then be shown in the main timeline, and they will look and behave li
 including viewing on the map, adding to albums, etc... Later if a file is modified outside of Immich, 
 you need to scan the library for the changes to show up. If an external asset is deleted from disk, 
 Immich will move it to the trash on rescan. To restore the asset, you need to restore the original 
-file. After 30 days the file will be removed from the trash and any metadat within Immich willb be 
+file. After 30 days the file will be removed from the trash and any metadata within Immich willb be 
 lost.
 
+**References**
+* [Immich docs - external library](https://immich.app/docs/guides/external-library/)
+
 Note: any changes to metadata for external libraries will only be available in Immich and will not be 
-persisted in teh asset file. If you move the asset to another location all custom metadata will be 
+persisted in the asset file. If you move the asset to another location all custom metadata will be 
 lost during the rescan and you will need to re-add it.
 
 * By default all files in the import path will be added to the library.
 * Exclusion glob patterns can be used to skip some files
 
 **Configure new External Library**
-1. Navigate to `Administration >External Libraries`
-2. Click `Create Library`
-3. Select the library owner user
-3. Set import paths
+1. First mount your photos as a read only share
+2. Navigate to `Administration >External Libraries`
+3. Click `Create Library`
+4. Select the library owner user
+5. Set import paths
    1. Select from the library menu `Edit Import Paths`
-   2. Enter the path e.g. `/mnt/photos`
-3. Set a library name
+   2. Enter the path e.g. `/mnt/Pictures`
+6. Set a library name
    1. Select from the library menu `Rename`
+7. Click `Scan All Libraries`
 
 ### Folder View
 An optional folder view can be enabled to add folder browing as a top level view. This is useful for 
@@ -146,6 +213,20 @@ well as the storage label for a user. When using a storage template all assets w
 
 ### Configure Storage Template
 During the setup process or later in settings you can enable the `Storage Template` feature
+
+
+## Correct Meta Data
+
+### Missing Exif Date
+I find it easier to find and correct missing Exit dates using
+
+1. Find missing Exif creation date with `exiftool`
+   ```
+   $ exiftool -r -if 'not $DateTimeOriginal' -filename /path/to/your/folder
+   ```
+2. Correct missing Exif creation date with `xnviewmp`
+   1. Select the photos you want to change
+   2. Right click and select `Metadata >Change timestamp...`
 
 ## Mobile App
 The mobile app can be configured to sync 

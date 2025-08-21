@@ -116,6 +116,7 @@
 
 - [Hardware](hardware/README.md)
   - [Accelerated Graphics](hardware/accelerated_graphics/README.md)
+  - [Printers](hardware/printers/README.md)
   - [Storage](hardware/storage/README.md)
     - [Rescue](hardware/storage/rescue/README.md)
     - [TrueNAS](hardware/storage/truenas/README.md)
@@ -153,6 +154,7 @@
 - [Networking](networking/README.md)
   - [DNS](networking/dns/README.md)
   - [Browsers](networking/browsers/README.md)
+    - [Chromium](networking/browsers/chromium/README.md)
     - [Firefox](networking/browsers/firefox/README.md)
   - [Bluetooth](networking/bluetooth/README.md)
     - [Blueman](networking/bluetooth/blueman/README.md)
@@ -160,6 +162,7 @@
   - [File Sharing](networking/file_sharing/README.md)
     - [qBittorrent](networking/file_sharing/qbittorrent/README.md)
   - [Firewall](networking/firewall/README.md)
+  - [Google Family link](networking/google_family_link/README.md)
   - [Meeting](networking/meeting/README.md)
   - [Network managers](networking/network_managers/README.md)
     - [netplan](networking/network_managers/netplan/README.md)

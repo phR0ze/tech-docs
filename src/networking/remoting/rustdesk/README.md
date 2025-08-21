@@ -6,6 +6,15 @@ like TeamViewer using an ID and RustDesk servers to connect in to assist your re
 However you can also host the server and keep everything tightly controlled for a local solution as 
 well.
 
+### Quick links
+* [../](../README.md)
+* [Overview](#overview)
+* [NixOS Configuration](#nixos-configuration)
+  * [NixOS Client](#nixos-client)
+  * [NixOS Server](#nixos-server)
+* [TCP Tunnel](#tcp-tunnel)
+
+## Overview
 **Features**
 * Cross-platform support, MacOS, Windows, Linux and Android
 * Linux is X11 support only for now
@@ -22,16 +31,6 @@ well.
   * Installing as a service is apparently possible but I was unable to get it to work
     * Without this you have to have your system automatically login then lock for it to work
   * Server component is not needed and useless for local LAN connectivity
-
-### Quick links
-* [../](../README.md)
-* [Overview](#overview)
-* [NixOS Configuration](#nixos-configuration)
-  * [NixOS Client](#nixos-client)
-  * [NixOS Server](#nixos-server)
-* [Arch Linux Configuration](#arch-linux-configuration)
-
-## Overview
 
 **References**
 * [RustDesk](https://rustdesk.com/)
@@ -80,41 +79,9 @@ Ports:
 * UDP: 21116
 
 
-## Arch Linux Configuration
+## TCP Tunnel
+RustDesk has the ability to link a local TCP port to a remote port acting like a proxy for NAT'd 
+devices. This unlocks the use of other applications over the connection.
 
-### Arch Linux Local Relay Server
-You can host your own Relay Server so that you don't need to have the mothership involved. This 
-allows you to use direct connections and keep things local.
-
-**Configuration**
-* `-r <IP or DNS>:21117` for `hbbs` indicates the IP or DNS name for the `hbbr` service
-* `-k _` for `hbbs` and `hbbr` prohibits users connecting to your relay without your public key
-
-```
-$ mkdir ~/.config/rustdesk
-$ cd ~/.config/rustdesk
-$ docker run --rm --name hbbs --net=host -v "$PWD/data:/root" rustdesk/rustdesk-server:latest hbbs -r 192.168.1.2 -k _
-$ docker run --rm --name hbbr --net=host -v "$PWD/data:/root" rustdesk/rustdesk-server:latest hbbr -k _
-```
-
-Running either docker command above will generate the public/private key pair in `~/.config/rustdesk` with prefix `id_`
-Examples:
-```
--rw-r--r--  1 root   root     88 Apr 18 17:44 id_ed56518
--rw-r--r--  1 root   root     44 Apr 18 17:44 id_ed56518.pub
-```
-
-Use the value in the `id_*.pub` file as the `Key` value for the client below.
-
-### Arch Linux Build the Client package
-1. Build and install the `python-pynput` package
-   ```
-   $ yay -Ga python-pynput; cd python-pynput; makepkg -s
-   $ sudo pacman -U python-pynput-1.7.6-2-any.pkg.tar.zst
-   ```
-2. Build and install the `rustdesk-bin` package
-   ```
-   $ yay -Ga rustdesk-bin; cd rustdesk-bin; makepkg -s
-   $ sudo pacman -U rustdesk-bin-1.1.9-3-x86_64.pkg.tar.zst
-   ```
-
+**References**
+* [How to setup rustdesk tcp tunneling](https://www.youtube.com/watch?v=VgotqBMLd74&t=6s)
