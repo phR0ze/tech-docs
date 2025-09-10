@@ -7,7 +7,13 @@ manage containers and integrate smoothly with `sytemctl` such that machines coul
 in a similar fashion as other services.
 
 ***NixOS*** has built on top of `systemd-nspawn` to provide a production ready containerization 
-system that is fully declarative. This is freakin awesome!!
+system that is fully declarative.
+
+***WARNING*** this method can be problematic as it is tied to the host's NixOS's version lifecycle. 
+This means if you run unstable versions of NixOS your services will also inherit these package 
+versions. Additionally you can't run the upstream docker containers directly with this method which 
+although intriguing lead me to believe that running the raw docker containers a better option for 
+most scenarios.
 
 ### Quick links
 * [.. up dir](../README.md)

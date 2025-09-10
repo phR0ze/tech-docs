@@ -60,7 +60,7 @@ systemd.services."podman-network-${app.name}" = {
 ```
 
 ### Create via bash
-Note if order to get access from the host to the guests directly you need to additionally add a 
+Note in order to get access from the host to the guests directly you need to additionally add a 
 macvlan interface for the host to then see the macvtap interfaces. This is only necessary for the 
 host and guest to communicate. The guest and the rest of the LAN can already communicate.
 

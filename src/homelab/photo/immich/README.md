@@ -19,6 +19,7 @@ up, organizing and managing photos on your own server easy and private.
   * [Missing Exif Date](#missing-exif-date)
 * [Mobile App](#mobile-app)
 * [Backup](#backup)
+* [Upgrade](#upgrade)
 
 ## Overview
 
@@ -106,9 +107,9 @@ Launch the `Administration` options
 2. Navigate to `Settings >Job Settings`
    1. Change `Generate Thumbnails concurrancy` to `20`
 3. Navigate to `Settings >Video Transcoding Settings`
-   1. Change `Video Codec` to `av1`
-   2. Change `Audio Codec` to `mp3`
-   3. Change `Accepted video codecs` to check all
+   1. Change `Accepted video codecs` to check all
+   2. Change `Encoding Options >Video Codec` to `av1`
+   3. Change `Encoding Options >Audio Codec` to `mp3`
    4. Change `Transcode policy` to `Don't transcode any videos, may break playback on some clients`
    5. Change `Hardware Acceleration >Acceleration API` to `Quick Sync`
    6. Change `Hardware Acceleration >Hardware decoding` to `on`
@@ -134,7 +135,7 @@ Follow the steps below to wipe immich
 
 3. Clear the Redis cache
    ```bash
-   $ redis-cli -s /var/run/redis-immich/redis.sock FLUSHALL
+   $ sudo redis-cli -s /var/run/redis-immich/redis.sock FLUSHALL
    $ sudo systemctl stop redis-immich
    ```
 
@@ -218,9 +219,9 @@ During the setup process or later in settings you can enable the `Storage Templa
 ## Correct Meta Data
 
 ### Missing Exif Date
-I find it easier to find and correct missing Exit dates using
+Correcting missing Exif dates can be done with:
 
-1. Find missing Exif creation date with `exiftool`
+1. Using `exiftool` to find missing creation dates
    ```
    $ exiftool -r -if 'not $DateTimeOriginal' -filename /path/to/your/folder
    ```
@@ -266,3 +267,7 @@ database backups to save space as they won't be needed.
 1. Navigate to `Administration >Settings >Backup Settings`
 2. Toggle the `Enable database backups`
 3. Click `Save`
+
+## Upgrade
+
+[Immich postgresql upgrade](https://wiki.nixos.org/wiki/Immich#Upgrading_pgvecto.rs)

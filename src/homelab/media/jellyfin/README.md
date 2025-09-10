@@ -24,6 +24,7 @@ to feature parity.
 * [User Management](#user-management)
 * [Plugins](#plugins)
 * [General Configuration](#general-configuration)
+* [Upgrade](#upgrade)
 
 ## Overview
 Jellyfin is a Free Software Media System that puts you in control of managing and streaming your 
@@ -321,3 +322,21 @@ There are two main sections:
 
 ## General configuration
 
+## Upgrade
+I'm upgrading from `10.10.3` to `10.10.7`
+
+**References**
+* [Taking a Backup - Jellyfin docs](https://jellyfin.org/docs/general/administration/backup-and-restore#taking-a-backup)
+
+### Make a backup
+1. Stop the Jellyfin server
+   1. Navigate to the `Dashboard`
+   2. Click the `Shutdown` button on the right
+   3. Additionally run the following to be sure
+   ```bash
+   $ sudo systemctl stop jellyfin
+   ```
+2. Copy the server data to a backup location
+   ```bash
+   $ cp -a /var/lib/jellyfin/* /mnt/Backup/Apps/Jellyfin/2025.08.21_10.10.3
+   ```

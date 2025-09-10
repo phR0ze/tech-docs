@@ -1,7 +1,13 @@
-# Editors
+# Editors <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
 
 ### Quick links
-* [neovim](newvim/README.md)
+- [.. up dir](../README.md)
+* [Overview](#overview)
+  * [Rust comparison](#rust-comparison)
+
+### Linked pages
+* [Neovim](newvim/README.md)
+* [Zed](zed/README.md)
 
 ## Overview
 Rust editors are popping up left and right to challenge the venerable Vim and NeoVim
@@ -10,7 +16,6 @@ Rust editors are popping up left and right to challenge the venerable Vim and Ne
 Features to compare over:
 * Vim syntax (Vi)
 * Copilot support (Co)
-
 
 | App         | Stars | V | C | Notes             | Project link                   |
 | ----------- | ----- | - | - | ----------------- | ------------------------------ |

@@ -5,6 +5,7 @@
 
 ### Linked pages
 * [Monitoring](monitoring/README.md)
+* [Version Control](version_control/README.md)
 
 ## Efficiency
 Boost software delivery times and reliability while reducing developer burnout.
