@@ -4,9 +4,12 @@
 * [.. up dir](..)
 * [Overview](#overview)
   * [Multiplayer](#multiplayer)
+* [Server](#server)
+  * [Install server](#install-server)
+  * [Backup server](#backup-server)
 * [Prism Launcher](#prism-launcher)
   * [Initial configuration](#initial-configuration)
-  * [Mod Support](#mod-support)
+  * [Install Essential Mod](#install-essential-mod)
 * [Mods](#mods)
 
 ## Overview
@@ -18,6 +21,44 @@ Minecraft is better when you play with your friends. You have a few options:
 2. Pay a monthly subscription fee to have your own limited Realm
 3. Pay for a minecraft server from a 3rd party minecraft hosting company
 4. Use the `Essential Mod` to allow players to host a single player world and invite your friends
+
+## Server
+
+**References**
+* [Minecraft Server - NixOS docs](https://wiki.nixos.org/wiki/Minecraft_Server)
+
+### Install server
+```nix
+services.minecraft-server = {
+  enable = true;
+  eula = true;
+  openFirewall = true; # Opens the port the server is running on (by default 25565 but in this case 43000)
+  declarative = true;
+  whitelist = {
+    # This is a mapping from Minecraft usernames to UUIDs. You can use https://mcuuid.net/ to get a Minecraft UUID for a username
+    username1 = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
+    username2 = "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy";
+  };
+  serverProperties = {
+    server-port = 43000;
+    difficulty = 3;
+    gamemode = 1;
+    max-players = 5;
+    motd = "NixOS Minecraft server!";
+    white-list = true;
+    allow-cheats = true;
+  };
+  jvmOpts = "-Xms2048M -Xmx4096M";
+};
+```
+
+### Backup server
+By default the Minecraft server gets installed to `/var/lib/minecraft`
+
+Create a tarball of that directory with:
+```bash
+$ sudo tar -czvf ~/Downloads/"$(date +%Y.%m.%d)-minecraft-1.19.4.tar.gz" /var/lib/minecraft
+```
 
 ## Prism Launcher
 The minecraft client is usually what most gamers will need. Only those hosting their own servers will 

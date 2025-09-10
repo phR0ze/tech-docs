@@ -1,13 +1,15 @@
-# NeoVim
+# NeoVim <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 NeoVim is a fork of Vim aiming to improve user experience and plugin implementation.
 
 ### Quick links
+- [.. up dir](../README.md)
 * [Getting started](#getting-started)
   * [Install NeoVim](#install-neovim)
   * [Migrating to NeoVim](#migrating-to-neovim)
 * [Config Locations](#config-locations)
-* [vim-plug](#vim-plug)
-  * [Install vim-plug](#install-vim-plug)
+* [Plugin Managers](#plugin-managers)
+  * [Lazy.nvim](#lazy-nvim)
+* [Plugins](#plugins)
   * [Install plugins](#install-plugins)
   * [Plugins](#plugins)
 * [Ctrl+tab](#ctrl+tab)
@@ -16,17 +18,7 @@ NeoVim is a fork of Vim aiming to improve user experience and plugin implementat
 ## Getting started
 
 ### Install NeoVim
-Unfortunately NeoVim's QT UI is far inferior to GVim, but its not that big a loss. I typically use 
-the shell version of neovim or Visual Studio Code with the Vim plugin when in a UI anyway. As also 
-fall back in lite configurations `geany` seems like a decent alternative for quick stuff.
 
-#### Arch Linux
-```bash
-$ sudo pacman -S neovim
-```
-
-#### NixOS
-NixOS offers some basic neovim configuration
 ```nix
 programs.neovim = {
   enable = true;
@@ -45,15 +37,6 @@ programs.neovim = {
 };
 ```
 
-[Home Manager](https://mipmip.github.io/home-manager-option-search/?query=neovim) extends the neovim 
-options to include plugins.
-
-```nix
-programs.neovim.plugins = with pkgs.vimPlugins; [
-  nvim-highlight-colors
-];
-```
-
 ### Migrating to NeoVim
 Simply copy your `~/.vimrc` to `~/.config/nvim/init.vim` as a starting point
 
@@ -63,17 +46,28 @@ Simply copy your `~/.vimrc` to `~/.config/nvim/init.vim` as a starting point
 * ***Global default config file location:*** `/usr/share/nvim/sysinit.vim`
 * ***Data directory for swap files:*** `~/.local/share/nvim`
 
-## vim-plug
+## Plugin Managers
+Every month or so a new plugin manager is created for the Vim world. Some of the top mangers right 
+now are:
+* `lazy.nvim` - most popular right now
+* `vim-plug`
+* `mini.deps` - 
+* `packer` - no longer maintained
+
+### Lazy.nvim
+***Lazy.nvim*** is the mo
+
+### vim-plug
 [vim-plug](https://github.com/junegunn/vim-plug) is a minimalist vim plugin manager with super fast
 parallel installation/update. It is the most popular one right now as well.
 
-### Install vim-plug
+**Install**
 ```bash
 $ curl -fLo ~/.config/nvim/autoload/plug.vim --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 ```
 
-### Install plugins
+**Install plugins**
 ```
 $ nvim ~/.config/nvim/init.vim
 :PlugInstall
@@ -82,6 +76,7 @@ $ nvim ~/.config/nvim/init.vim
 ```
 
 ## Plugins
+
 Vim plugins in the `vim-plug` world are just github repositories
 
 ### Utilities

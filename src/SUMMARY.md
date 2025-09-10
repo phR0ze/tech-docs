@@ -110,6 +110,7 @@
 
 - [Gaming](gaming/README.md)
   - [Minecraft](gaming/minecraft/README.md)
+  - [Roblox](gaming/roblox/README.md)
   - [Warcraft2](gaming/warcraft2/README.md)
   - [Wine](gaming/wine/README.md)
   - [Wii Backup Manager](gaming/wii_backup_manager/README.md)

@@ -1,9 +1,13 @@
-# Github
+# Github <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
 ### Quick links
+- [.. up dir](../README.md)
 * [API](#api)
 * [CLI](#cli)
 * [Container Registry](#container-registry)
+  * [GHCR Free Limitations](#ghcr-free-limitations)
+  * [Create PAT for GHCR](#create-pat-for-ghcr)
+  * [Log into the GHCR]((#log-into-the-ghcr)
 * [Github Pages](#github-pages)
 * [Github Large File Storage](#github-large-file-storage)
 * [Security](#security)
@@ -34,13 +38,53 @@ The [Github CLI](https://cli.github.com/) project brings Github to your terminal
 source project using terminology consistent with github. The [Github CLI is also written in GO](https://github.com/cli/cli)
 
 ## Container Registry
-Github container registry uses a new domain `ghcr.io/OWNER/IMAGE_NAME` e.g.
-`ghcr.io/phR0ze/alpine-net`.
+Github's Container Registry (GHCR) service uses a new domain `ghcr.io/OWNER/IMAGE_NAME` e.g.
+`ghcr.io/phR0ze/alpine-net`. Although intriguing given the popularity of Github and the closeness to 
+most user's code the limitations on their free option makes is virtually unusable.
 
 **References**:
 * [Container Registry About](https://docs.github.com/en/packages/guides/about-github-container-registry)
+* [Working with the GHCR](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
 
-ITS A JOKE - DATA TRANSFER LIMITS ARE RIDICULOUS
+### GHCR Free Limitations
+The free tier of GHCR is virtually useless
+
+* Storage limit: `500 MB per package`
+* Data Transfer limit: `1 GB per month`
+
+### Create PAT for GHCR
+You'll need to create a Personal Access Token (PAT) in Github to publish to the GHCR as [GitHub 
+Packages only supports authenication using a personal access token (classic)](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry)
+
+1. Navigate to `USER >Settings >Developer settings >Personal access tokens >Tokens (classic)`
+2. Click on `Generate new token`
+3. Select `Generate new token (classic)`
+4. Name the token e.g. `Packaging`
+5. Set an expiration for your token
+6. Select the `write:packages` scope
+7. Click `Generate token` at the bottom of the page
+
+### Log into the GHCR
+1. [Create PAT for GHCR](#create-pat-for-ghcr)
+
+2. Login to the GHCR
+   ```bash
+   $ echo "<YOUR_PAT>" | podman login ghcr.io -u your-username --password-stdin
+   ```
+
+### Make packages public
+When you first publish a package, the default visibility is private. To change the visibility or set 
+access permissions additional changes are needed.
+
+**References**
+* [Configuring a package's visibility](https://docs.github.com/en/packages/learn-github-packages/configuring-a-packages-access-control-and-visibility#configuring-visibility-of-packages-for-your-personal-account)
+
+1. On the right hand side of the project's default page click the `Packages` link
+2. Click the package you want to change visibility on e.g. `oneup`
+3. On the right at the bottom click `Package settings`
+4. Scroll to the bottom `Danger Zone` section
+5. Click `Change visibility`
+6. Switch to `Public` and enter the project name and hit the bit confirm button
 
 ## Github Pages
 Github pages are pretty slick as they provide a simple way to create a static website for your 

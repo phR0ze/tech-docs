@@ -6,8 +6,19 @@ solution called ***AdGuard Home*** that competes with other open source options 
 
 ### Quick links
 * [Overview](#overview)
-* [Install on Proxmox](#install-on-proxmox)
+* [Install Adguard Home](#install-adguard-home)
+  * [Install on NixOS](#install-on-nixos)
+  * [Install on Proxmox](#install-on-proxmox)
 * [Configure Adguard Home](#configure-adguard-home)
+  * [Basic settings](#basic-settings)
+  * [DNS blocklists](#dns-blocklists)
+  * [Local DNS entries](#local-dns-entries)
+  * [Blocked services](#blocked-services)
+  * [Custom filtering rules](#custom-filtering-rules)
+  * [Manually block from query log](#manually-block-from-query-log)
+  * [Setup device profiles](#seteup-device-proviles)
+* [Configure Router](#configure-router)
+  * [Configure LAN DNS](#configure-lan-dns)
 * [Configure Clients](#configure-clients)
   * [NixOS Client](#nixos-client)
 
@@ -35,7 +46,49 @@ blocked components may leave noticible gaps or layout issues.
 * Access settings
 * Running without root
 
-## Install on Proxmox
+## Install Adguard Home
+
+### Install on NixOS
+
+**References**
+* [Adguard Home - NixOS docs](https://wiki.nixos.org/wiki/Adguard_Home)
+* [Adguard Home options](https://search.nixos.org/options?query=services.adguardhome)
+
+```nix
+services.adguardhome = {
+  enable = true;
+  settings = {
+    http = {
+      # You can select any ip and port, just make sure to open firewalls where needed
+      address = "192.168.1.53:3003";
+    };
+    dns = {
+      upstream_dns = [
+        # Example config with quad9
+        "9.9.9.9#dns.quad9.net"
+        "149.112.112.112#dns.quad9.net"
+      ];
+    };
+    filtering = {
+      protection_enabled = true;
+      filtering_enabled = true;
+      parental_enabled = false;  # Parental control-based DNS requests filtering.
+      safe_search = {
+        enabled = false;  # Enforcing "Safe search" option for search engines, when possible.
+      };
+    };
+    # The following notation uses map
+    # to not have to manually create {enabled = true; url = "";} for every filter
+    # This is, however, fully optional
+    filters = map(url: { enabled = true; url = url; }) [
+      "https://adguardteam.github.io/HostlistsRegistry/assets/filter_9.txt"  # The Big List of Hacked Malware Web Sites
+      "https://adguardteam.github.io/HostlistsRegistry/assets/filter_11.txt"  # malicious url blocklist
+    ];
+  };
+};
+```
+
+### Install on Proxmox
 Using the proxmox helper scripts we can easily install an AdGuard Home linux container
 
 1. Copy the Proxmox helper script
@@ -65,35 +118,33 @@ Using the proxmox helper scripts we can easily install an AdGuard Home linux con
 
 ## Configure Adguard Home
 
-### Basic configuration
+### Basic settings
 1. Configure first run wizard
    1. Open a browser up to e.g. `http://192.168.1.53:3000` this will change to just port `80` after 
       the first run configuration is done
    2. Switch to dark mode but clicking the button at the bottom
    3. Advance through the setup leaving the defaults
    4. Create an administrator account
-2. Configure upstream DNS server
-   1. Navigate to `Settings >DNS settings`
-   2. Replace the default `https://dns10.quad9.net/dns-query` with cloudflare's 
+   5. Finally click `Open Dashboard`
+2. Navigate to `Settings >General settings`
+   1. Enable `Block domains using filters and hosts files`
+   2. Enable `Use AdGuard browsing security web service`
+   3. Enable `Use AdGuard parental control web service`
+   4. Enable `Use Safe Search`
+   5. Set `Logs configuration >Query logs rotation` to `90 days`
+   6. Click `Save`
+   7. Set `Statistics configuration >Statistics retension` to `90 days`
+   8. Click `Save`
+3. Navigate to `Settings >DNS settings`
+   1. Replace the default `https://dns10.quad9.net/dns-query` with cloudflare's 
       `https://dns.cloudflare.com/dns-query`
-   3. Scroll down and set the fallback to google's `https://dns.google/dns-query`
-   4. Click the `Test upstreams`
-3. Configure General settings
-   1. Navigate to `Settings >General settings`
-   2. Enable `Block domains using filters and hosts files`
-   3. Enable `Use AdGuard browsing security web service`
-   4. Enable `Use AdGuard parental control web service`
-   5. Enable `Use Safe Search`
-   6. Set `Logs configuration >Query logs rotation` to `90 days`
-   6. Set `Statistics configuration >Statistics retension` to `90 days`
+   2. Scroll down and set the fallback to `https://dns10.quad9.net/dns-query`
+   3. Click the `Test upstreams`
+   4. Click the `Apply`
+   5. Change `DNS server configuration >Rate limit` to `0`
+   6. Click `Save`
 
-### Setup device profiles
-AdGuard Home has the capability to setup profiles for particular devices. You can identify devices by 
-their static ip addresses or MAC addresses.
-
-* Scheduled blocking of services
-
-### Configure DNS blocklists
+### DNS blocklists
 There are many blocklists that are compatible with AdGuard Home
 
 **References**
@@ -121,7 +172,6 @@ There are many blocklists that are compatible with AdGuard Home
     * `Dandelion Sprout's Game Console Adblock List`
     * `HaGeZi's Allowlist Referral`
     * `Perflyst and Dandelion Sprout's Smart-TV Blocklist`
-    * `WindowsSpyBlocker - Hosts spy rules`
   * Security
     * `Phishing URL Blocklist (PhishTank and OpenPhish)`
     * `Dandelion Sprout's Anti-Malware List`
@@ -141,7 +191,7 @@ There are many blocklists that are compatible with AdGuard Home
     * [EasyPrivacy](https://v.firebog.net/hosts/Easyprivacy.txt)
     * [Blocklist adult content](https://blocklistproject.github.io/Lists/adguard/porn-ags.txt)
 
-### Configure Local DNS entries
+### Local DNS entries
 You can use AdGuard Home to setup DNS names for your local systems so you can stop using their IP 
 addresses on your home lan without having to maintain a hosts list on every system in your home 
 network.
@@ -152,14 +202,14 @@ network.
 4. Entry the DNS name you'd like e.g. `adguard.local`
 5. Set the IP address to the system e.g. `192.168.1.53`
 
-### Configure Blocked services
+### Blocked services
 AdGuard supports a large list of well known sites that can be disabled with the flip of a switch. 
 This is just an easy way to add specific sites to an internal block list. 
 
 Personally it seems like simply adding them directly to the `Custom filtering rules` would make more 
 sense as then you'd have a complete list that could be saved for the future.
 
-### Configure Custom filtering rules
+### Custom filtering rules
 AdGuard Home supports custom one off rules to block or allow sites
 
 1. Login to AdGuard Home
@@ -192,16 +242,36 @@ You can browse the Query log in AdGuard Home and select and block entries direct
 4. Click the option menu on the right then `Block`
    * This will which will add a rule to the `Filters >Custom filtering rules` section.
 
+### Setup device profiles
+AdGuard Home has the capability to setup profiles for particular devices. You can identify devices by 
+their static ip addresses or MAC addresses.
+
+Note: this is really good way to understand the device traffice if your using static IPs or pinned 
+IPs for your devices.
+
+1. Navigate to the `Query Log`
+2. Click the drop down options elipse for an entry and choose `Add as a persistent client`
+3. For well known IOT devices you might want to also simply ignore them in the logs
+
+
+## Configure Router
+
+### Configure LAN DNS
+For your LAN you'll want to configure your DHCP server on your router to use your local DNS service 
+as the default DNS service that will be passed to clients receiving networking settings via DHCP.
+
+* Specify `DNS Server` and the value e.g. `192.168.1.53`
+
 ## Configure Clients
 
 ### NixOS Client
 Set the nix configuration for your system using 
 
 Ensure you don't have either of these settings set as we want to use your home router as the default 
-DNS provider which will in turn be using your adbuard home instance's as the DNS provider.
+DNS provider which will in turn be using your adguard home instance's as the DNS provider.
 
-Remove settings for both the nameservers and their fallbacks
+Specify any static DNS server settings with:
 ```nix
-networking.nameservers = [ "1.1.1.1" "1.0.0.1"];
-services.resolved.fallbackDns = [ "8.8.8.8" "8.8.4.4" ];
+networking.nameservers = [ "192.168.1.53" ];
+services.resolved.fallbackDns = [ "192.168.1.53" ];
 ```
