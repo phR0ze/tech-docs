@@ -16,12 +16,50 @@ being made.
   * handles SSL encryption for the server
 
 ### Quick links
+* [.. up dir](../README.md)
+* [Overview](#overview)
+  * [Traefik vs Nginx Proxy Manager vs Caddy](#traefik-vs-nginx-proxy-manager-vs-caddy)
+
+### Linked pages
+* [Caddy](caddy/README.md)
 * [Traefik](traefik/README.md)
 * [Proxy Manager](proxy_manager/README.md)
 
-### Traefik vs Proxy Manager
-Proxy Manager is a simple reverse proxy manaber using Nginx with a simple and intuitive web 
+## Overview
+
+### Traefik vs Nginx Proxy Manager vs Caddy
+Proxy Manager is a simple reverse proxy manager using Nginx with a simple and intuitive web 
 interface. However it has some issues with automatic certificate renewal. With less features and some 
 known issues in Proxy Manager the community is switching to Traefik. Traefik is more capable and 
 featureful and being used in enterprises as well. It is super flexible.
 
+* Caddy
+  * pros
+    * Written in Golang
+    * Simpler to configure than others
+    * Let's Encrypt automation for automatic cert renewal
+  * cons
+    * No visualization UI
+* Traefik
+  * pros
+    * Has a web UI for showing how routes are handled
+    * More modern than others
+    * Let's Encrypt automation for automatic cert renewal
+    * Cloud native enterprise grade solution
+      * Intgrates with Prometheus, Grafana, and logs, etc...
+    * Dyamic service discovery
+    * Better support for protocols beyond just HTTP and HTTPS
+    * Can centrally manage multiple environments
+  * cons
+    * Overly complicated to configure
+    * Based on docker labels which is fragile
+    * Community support is poor
+    * Documentation is fragmented
+* Nginx Proxy Manager
+  * pros
+    * Extremly powerful
+    * Let's Encrypt automation
+  * cons
+    * Difficult to setup
+    * Can't handle more complex enviroments
+    * Not able to handle dynamic container env well

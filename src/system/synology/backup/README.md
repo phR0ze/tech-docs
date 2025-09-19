@@ -7,13 +7,61 @@ Standard best practice is the 3-2-1 method:
 
 ### Quick links
 * [.. up dir](..)
+* [Synology Drive Client](#synology-drive-client)
+  * [Create Backup Folder](#create-backup-target)
+  * [Backup target files](#backup-target-files)
 * [Hyper Backup](#hyper-backup)
   * [Backup folder](#backup-folder)
   * [External Backup Drive](#external-backup-drive)
 * [Restoring](#restoring)
   * [Restoring a file](#restoring-a-file)
 
+## Synology Drive Client
+The Synology Drive Client can be used to create scheduled backup tasks to backup files on your 
+computer to the Synology Drive server, as well as create versions of these files that can be restored 
+or downloaded when needed.
+
+### Create Backup Folder
+In order to setup backups you'll first have to create a Shared folder on your main storage and then 
+add it for management for Synology Drive.
+
+1. First create a new shared folder named e.g. `Apps`
+   1. Follow the directions here [Create shared folder](../README.md#create-shared-family-folder)
+
+2. Create a sub directory to store your app data in
+   1. From the Synology web app open `File Station`
+   2. Navigate to `Apps` and create e.g. `OneUp`
+
+3. Enable Synology Drive for the `Apps` folder
+   1. From the Synology web app open `Synology Drive Admin Console`
+   2. Select `Team Folder` on the left
+   3. Select `Apps` on the right and click `Enable`
+   4. Keep `Enable version control` and set `Maximum Versions` to `30`
+   5. Click `OK`
+
+### Install and configure drive client
+[Install and configure the drive client](../drive/README.md#client-side)
+
+### Backup target files
+1. Launch the client as root `sudo synology-drive`
+2. Login to the server
+   1. Set `Synology NAS` to your server e.g. `192.168.1.5`
+   2. Set `NAS login username` e.g. `Frodo`
+   3. And set the corresponding password then click `Next`
+3. Create the Backup task
+   1. Choose `Backup Task`
+   2. Select the desired folders to backup e.g. `/var/lib/oneup`
+   3. Click the `Select` button and select the backup destination e.g. `/Apps`
+    * Note: your machine name will be appended e.g. `/Apps/homelab` 
+   4. Click 
+4. Configure folder to sync
+   1. Sync `/home` from server to your local machine. By default this will skip your `/home/Photos` 
+      directory on the server but will select anything else in `/home`
+   2. Choose a local directory on your machine as the other end of the sync
+
 ## Hyper Backup
+Focus: Synology and its storage drives.
+
 Synology offers their `Hyper Backup` application from the Package Center. Hyper Backup provides 
 backup capabilities for your NAS to backup folders or the entire system to an external destination.
 

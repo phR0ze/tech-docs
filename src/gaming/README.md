@@ -6,6 +6,8 @@ Documentation for various game configurations
 * [.. up dir](..)
 
 ### Linked pages
+* [Roblox](roblox/README.md)
+* [Steam](steam/README.md)
 * [Wine](wine/README.md)
 * [Wii Backup Manager](wii_backup_manager/README.md)
 * [Warcraft 2 - Battle.net Edition](warcraft2/README.md)
