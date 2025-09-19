@@ -9,46 +9,25 @@ Note: the primary use case for Synology Drive is to keep a copy of your files on
 such as your phone or laptop that you can work on while offline and then have them sync to the server 
 once back online. This does require though a full copy on both your local device as well as the 
 server so if you are using the server as a means of providing more storage than is available on your 
-local device then direct SMB would be a better option.
+local device then direct SMB would be a better option. That said if you have the storage then having 
+additional local copy increases the safety factor of your data.
 
 ### Quick links
 * [.. up dir](..)
+* [Client Side](#client-side)
+  * [Install on android](#install-on-android)
+  * [Install on NixOS](#install-on-nixos)
 * [Server Side](#server-side)
   * [Install](#install)
   * [Configure](#configure)
-* [Install on android](#install-on-android)
-* [Configure on NixOS](#configure-on-nixos)
 
-## Server Side
+## Client Side
 
-### Install Synology Drive
-1. Launch `Package Center`
-2. Search for `Synology Drive Server` and click `Install`
-5. Click through to finish
-
-### Configure Synology Drive
-The only folder that automatically shows up in Synology Drive is your home folder. Other folders will 
-not unless you specifically add them via the admin console
-
-Note: when enabling drive for folders it takes time for them to be indexed set up for syncying.
-
-1. Add additional folders to Synology Drive
-   1. Launch `Synology Drive Admin Console`
-   2. Select `Team Folder` on the left
-   3. Select the shared folders you'd like e.g. `Family` and `photo`
-   4. Click `Enable` button at top
-   5. Disable `Enable version control` since this is a performance hit and we have snapshots
-   6. Finally click `Ok`
-2. Disable versions for `My Drive (home)`
-   1. Select `My Drive (home)`
-   2. Click `Settings` button at top
-   3. Disable `Enable version control` and click `Ok`
-
-## Install on android
+### Install on android
 1. Search for `Synology Drive` in Google play and install
 2. Enter your QuickConnect ID, Username and Password
 
-## Configure on NixOS
+### Configure on NixOS
 
 1. Install
    ```nix
@@ -69,3 +48,32 @@ Note: when enabling drive for folders it takes time for them to be indexed set u
    1. Sync `/home` from server to your local machine. By default this will skip your `/home/Photos` 
       directory on the server but will select anything else in `/home`
    2. Choose a local directory on your machine as the other end of the sync
+
+## Server Side
+In order for Synology Drive to work you first have to install and configure it on your Synology 
+device.
+
+### Install Synology Drive
+1. Launch `Package Center`
+2. Search for `Synology Drive Server` and click `Install`
+5. Click through to finish
+
+### Configure Synology Drive
+The only folder that automatically shows up in Synology Drive is your home folder. Other folders will 
+not unless you specifically add them via the admin console
+
+Note: when enabling drive for folders it takes time for them to be indexed and set up for syncying.
+
+1. Add additional folders to Synology Drive
+   1. Launch `Synology Drive Admin Console`
+   2. Select `Team Folder` on the left
+   3. Select the shared folders you'd like e.g. `Family` and `photo`
+   4. Click `Enable` button at top
+   5. Disable `Enable version control` since this is a performance hit and we have snapshots
+   6. Finally click `Ok`
+2. Disable versions for `My Drive (home)`
+   1. Select `My Drive (home)`
+   2. Click `Settings` button at top
+   3. Disable `Enable version control` and click `Ok`
+
+

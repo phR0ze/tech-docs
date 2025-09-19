@@ -2,12 +2,12 @@
 
 Full remote desktop solutions in the Linux world have been rather poor in my opinion. Most early 
 solutions used `VNC`, `XRDP` or remote `X11`. None of these technologies though were very good. 
-Yes it is possible to carefully tune them to provide a decent solution; but out of the box usage for 
-non-experts was painful at best resulting in tearing, choppy, kludgy solutions that we're difficult 
-to setup and maintain. There were a few paid options (`Zoho Assist`, `Remote Access Plus`, and 
-others) that had better results. TeamViewer, despite its reputation, isn't that bad and I've used it 
-for years in personal solutions. That said it would frequently break depending on the kernel version 
-your on.
+Yes it is possible to carefully tune them to provide an acceptable solution; but out of the box usage 
+for non-experts was painful at best resulting in tearing, choppy, kludgy solutions that we're 
+difficult to setup and maintain. There were a few paid options (`Zoho Assist`, `Remote Access Plus`, 
+and others) that had better results. TeamViewer, despite its reputation, isn't that bad and I've used 
+it for years in personal solutions. That said it would frequently break depending on the kernel 
+version your on.
 
 **Requirements**
 - Free for personal use, preferably FOSS
@@ -17,6 +17,7 @@ your on.
 ### Quick links
 * [../](../README.md)
 * [Overview](#overview)
+  * [Browser based](#browser-based)
   * [Server Comparison](#server-comparison)
   * [Client Comparison](#client-comparison)
 * [Lightdm remote login](#lightdm-remote-login)
@@ -30,12 +31,26 @@ your on.
 
 ### Linked pages
 - [Guacamole](guacamole/README.md)
+- [Kasm](kasm/README.md)
 * [RustDesk](rustdesk/README.md)
+* [Selkies](selkies/README.md)
  
 ## Overview
 **References**
 * [NixOS Remoting](https://nixos.wiki/wiki/Remote_Desktop)
 * [Comparison - Wikipedia](https://en.wikipedia.org/wiki/Comparison_of_remote_desktop_software)
+
+### Browser based
+There is a subset of the remoting software space that deals with setting up a server that will serve 
+up an HTML5 experience of the desktop into a browser.
+
+* Selkies
+  * Modern, 60fps at 1080p hardware accelerated
+* Guacamole
+  * Older Apache solution Works for every OS
+* Kasm VNC
+  * Has their own flavor of VNC that works really well
+  * Works for every OS
 
 ### Server Comparison
 
@@ -72,7 +87,6 @@ Sunshine
 Remotely
 
 Zoho Assist
-
 
 ## Lightdm remote login
 Some VNC servers like `x11vnc` and TigerVNC's `x0vncserver` make the primary X session available for 

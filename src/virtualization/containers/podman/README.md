@@ -139,7 +139,23 @@ There are a number of ways to surface your container services. We can use `macvl
 assign our container an IP address on our LAN and allow it to participate as a first class citizen on 
 the LAN; however this poses some dangers as the container is running potentially untrusted code and 
 has supply chain weaknesses and a rather large attack surface. If the container were compromised it 
-is then in the heart of your LAN with access to all systems. That said a static IP associated with a 
+is then in the heart of your LAN with access to all systems.
+
+Best practice is to use a Docker bridge network per container which keeps that container in an 
+isolated virtual network. Then use a reverse proxy to handle access to the container. No need to map 
+ports to the docker host excpet for the reverse proxy's TCP/80 and TCP/443. The reverse proxy will 
+handle all the port forwarding itself.
+
+
+
+
+
+
+
+
+
+
+That said a static IP associated with a 
 container can be very convenient. One way we can get both isolation and a static IP is to use the 
 standard docker bridge networking with a dhcp internal address and then a separate host `macvlan` per 
 service with the host macvlan having an assigned IP.

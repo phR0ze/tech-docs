@@ -1,6 +1,6 @@
 # Traefik <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
-Traefik is an open source Application proxy that makes publishing your services a fun and easy 
+Traefik is an open source application proxy that makes publishing your services a fun and easy 
 experience. It receives requests on behalf of your system and identifies which components are 
 responsible for handling them, and routes them securly.
 
@@ -11,9 +11,11 @@ responsible for handling them, and routes them securly.
 * Automatically discovers the right configuration for your services based on labels
 * Natively compliant with Kubernetes, Docker, legacy bare metal and much more
 
-### Quick link
+### Quick links
 * [Overview](#overview)
+  * [Terminology](#terminology)
   * [Deploy Traefik](#deploy-traefik)
+* [Wildcard Certificates](#wildcard-certificates)
 
 ## Overview
 Traefik is an ***Edge Router***, this means it's the door to your platform, and that it intercepts 
@@ -68,3 +70,17 @@ networks:
   frontend:
     external: true # <-- (Optional) Change this to false if you want to create a new network
 ```
+
+## Wildcard Certificates
+With wildcard certificates you won't get cert errors anymore for your self-hosted services.
+
+**References**
+* [Traefik 3 - Techno Tim](https://www.youtube.com/watch?v=n1vOfdz5Nm8)
+
+### Get Domain
+1. 
+2. Use Cloudflare for DNS
+
+### Verify Domain with Cloudflare
+
+### Use Local DNS for service names
