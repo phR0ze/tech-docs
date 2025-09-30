@@ -140,7 +140,7 @@ to the shared space if so desired. This allows for a family collection without d
 both the personal and shared space while still allowing personal photos to remain personal as 
 desired.
 
-### Question and Answers
+### Questions and Answers
 For a family its often desirable to move most photos from the Personal space to the Shared space. 
 This allows for easy management and sharing in a central space while not duplicating photos in 
 multiple locations.
@@ -169,6 +169,10 @@ multiple locations.
     * It is not removed from mobile device
 
 ### Curation process
+Per [Questions and Answers](#question-and-answers). The process below will the photos will properly 
+show up in the shared timeline and be removed from the personal and your phone will simply report 
+them as out of sync and give you an option to delete them locally to sync with the NAS.
+
 1. Allow mobile backup to run as per usual which will dump it into the Personal user space on the NAS
 
 2. Using a file manager to browse the mounted share locally:

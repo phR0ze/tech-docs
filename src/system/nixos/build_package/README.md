@@ -1,36 +1,41 @@
 # Build Package
-Deploying a new NixOS system using Nix and building packages using Nix have overlapping terminology 
-and uses cases and becomes super confusing quickly. Fundamentally a NixOS system is composed of nix 
-packages with the additional modular packaging options that allows for glueing a customizable set of 
-nix packages together with configuration changes to deploy your system.
+Nix packages are the foundation of the Nix ecosystem. Although the NixOS operating system is entirely 
+composed of Nix packages, Nix packages can be installed on non-NixOS systems as well. Regardless of 
+their eventual deployment target Nix packages are built using the Nix expression language and managed 
+using the Nix package manager.
 
 ### Quick links
 * [Overview](#overview)
-  * [Terminology](#terminology)
+  * [Organization](#organization)
+  * [Show build dependencies](#show-build-dependencies)
 * [Packaging local files](#packaging-local-files)
-
 * [Build packages](#build-packages)
   * [Build phases](#build-phases)
   * [Build nixpkgs package locally](#build-nixpkgs-package-locally)
   * [Build nixpkgs package locally in phases](#build-nixpkgs-package-locally-in-phases)
-
   * [Override package unwrapped](#override-package-unwrapped)
 * [Package overrides](#package-overrides)
   * [override vs overrideAttrs](#override-vs-overrideattrs)
+* [Patch packages](#patch-packages)
 
 ## Overview
 
+* [Nix Pills](https://nixos.org/guides/nix-pills/09-automatic-runtime-dependencies)
 * [Customizing packages](https://bobvanderlinden.me/customizing-packages-in-nix/)
 * [Nix REPL](https://aldoborrero.com/posts/2022/12/02/learn-how-to-use-the-nix-repl-effectively/)
 
-### Terminology
+### Organization
 In the Nix packaging world there are usually two tasks that need to be performed. First the software 
 needs to be built to work with NixOS. Second the software needs to have a mechanism to apply options 
 for it to enable the end user to customize the install.
 
-* ***derivation*** means a reproducible build of software kind of like a flatpak
-* ***default.nix*** is the derivation i.e. actually building the software a.k.a. `unwrapped`
-* ***wrapper.nix*** is a wrapper around the the binary providing options
+* `packages/kasmvnc/default.nix` - nix expression to actually build the software
+* `options/service/raw/kasmvnc.nix` - nix expression to provide options for configuring the softare
+
+### Show Build Dependencies
+```
+$ nix-instantiate
+```
 
 ## Packaging local files
 The key to building derivations is `stdenv.mkDerivation` and its various builder helpers that wrap it 
@@ -58,7 +63,6 @@ on evaluation.
    trace: - .dircolors (regular)
    «lambda @ /nix/store/lwyjz70qh12nq6cb7fixl85vryzxqm3c-source/lib/fileset/default.nix:225:8»
    ```
-
 * Adding a new attribute to an attribute list then print it out
    ```
    nix-repl> foo = map (x: x // { foo = x.name; } ) [ { name = "foo"; value = 2; } ]
@@ -68,15 +72,6 @@ on evaluation.
    nix-repl> :p map (x: x // { foo = x.name; } ) [ { name = "foo"; value = 2; } ]
    [ { foo = "foo"; name = "foo"; value = 2; } ]
    ```
-* 
-   ```
-   nix-repl>
-   ```
-*
-   ```
-   nix-repl>
-   ```
-
 
 ```nix
 # Rename the set using the value.target field
@@ -92,25 +87,19 @@ all build inputs and outputs.
 * [Building a stdenv package in a nix-shell](https://nixos.org/manual/nixpkgs/stable/#sec-building-stdenv-package-in-nix-shell)
 
 ### Build phases
-Nix provides a number of environment variables for controlling which build phasese to run:
+Nix provides a number of environment variables for controlling which build phasese to run:;
 * [Build phases](https://nixos.org/manual/nixpkgs/stable/#sec-stdenv-phases)
 
 The `phases` environment variable controlls which phases to run and defaults to:
-* `$prePhases`
-* `unpackPhase`
+* `unpackPhase` - unpacks the code
 * `patchPhase`
-* `$preConfigurePhases`
 * `configurePhase`
-* `$preBuildPhases`
 * `buildPhase`
-* `checkPhase `
-* `$preInstallPhases`
+* `checkPhase`
 * `installPhase`
 * `fixupPhase`
 * `installCheckPhase`
-* `$preDistPhases`
 * `distPhase`
-* `$postPhases`
 
 ```bash
 phases="${prePhases[*]:-} unpackPhase patchPhase ${preConfigurePhases[*]:-} \
@@ -200,7 +189,7 @@ nix-build -K
 ### Build derivation for testing
 * [elatov's building a nix package](https://elatov.github.io/2022/01/building-a-nix-package)
 
-1. Save off the hellow derivation
+1. Save off the hello derivation
    1. Open the repl
       ```bash
       $ nix repl -f '<nixpkgs>'
