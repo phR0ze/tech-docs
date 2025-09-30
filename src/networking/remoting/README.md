@@ -22,7 +22,6 @@ version your on.
   * [Client Comparison](#client-comparison)
 * [Lightdm remote login](#lightdm-remote-login)
 * [Guacamole](#guacamole)
-* [Teamviewer](#teamviewer)
 * [x11spice](#x11spice)
 * [Clients](#clients)
   * [Remmina](#remmina)
@@ -31,9 +30,13 @@ version your on.
 
 ### Linked pages
 - [Guacamole](guacamole/README.md)
-- [Kasm](kasm/README.md)
+- [KasmVNC](kasmvnc/README.md)
 * [RustDesk](rustdesk/README.md)
 * [Selkies](selkies/README.md)
+* [Sunshine](sunshine/README.md)
+* [Teamviewer](teamviewer/README.md)
+* [x11vnc](x11vnc/README.md)
+* [x2go](x2go/README.md)
  
 ## Overview
 **References**
@@ -60,22 +63,25 @@ up an HTML5 experience of the desktop into a browser.
 
 ### Client Comparison
 
-| Name              | FOSS | UI      | Platform | Other 
-| ----------------- | ---- | ------- | -------- | --------------------
-| GNOME Connctions  | yes  | GTK     | Linux    | RDP, VNC
-| Remmina           | yes  | GTK     | Linux    | RDP, VNC, SPICE, X2Go, SSH, HTTP(S)
-| RustDesk          | yes  | Flutter | Cross    | P2P, end-to-end encryption
-| X2Go              | yes  | ?       | ?        | X2Go(NX3)
+| Name              | FOSS | Type           | Platform | Other 
+| ----------------- | ---- | -------------- | -------- | --------------------
+| GNOME Connctions  | yes  | Client         | Linux    | RDP, VNC
+| Remmina           | yes  | Client         | Linux    | RDP, VNC, SPICE, X2Go, SSH, HTTP(S)
+| RustDesk          | yes  | Combined App   | Cross    | P2P, end-to-end encryption
+| X2Go              | yes  | Client/Server  | Linux    | NX3, open source of NoMachine
+| Teamviewer        | no   | Combined App   | Cross    | Proprietary
+| Sunshine          | yes  | Server         | Cross    | Server for Moonlight
+| Moonlight         | yes  | Client         | Cross    | Client of Sunshine
+| x11vnc            | yes  | Server         | Linux    | VNC
+
+Steam Remote Play
 | Cendio ThinLinc   |
 AnyDesk
 Ericom Connect
 NetSupport Manager
-NX
 RealVNC
 ConnectWise Control
-Teamviewer
 xpra
-x11vnc
 Citrix XenApp
 QVD
 Veyon
@@ -83,9 +89,7 @@ XRDP
 TightVNC
 TigerVNC
 TurboVNC
-Sunshine
 Remotely
-
 Zoho Assist
 
 ## Lightdm remote login
@@ -120,73 +124,8 @@ It depends on `tigervnc` which needs to be installed on the server side.
    depth=24
    ```
 
-### x11vnc
-x11vnc doesn't require any special configuration from lightdm
-
 ### TigerVNC x0vncserver
 * [TigerVNC x0vncserver docs](https://tigervnc.org/doc/x0vncserver.html)
-
-## NX
-NX or NoMachine is proprietary but free-of-charge for non-commercial use. Created in 2003, NX 
-compresses the X display protocol to improve the preformance to be used over slow connections. It 
-also reduces round trips to improve the speed.
-
-**Spinoffs**
-* Freenx
-* Google's Neatx
-
-## X2Go
-X2Go is a Modified NX 3 protocol that provides all the classic remote features.
-
-### X2Go features
-* low bandwidth support
-* audio pass through with Puleaudio support
-* traffic is tunneled over SSH
-* file sharing from client to server
-* desktop sharing for remote support
-* separate sessions for remote access
-
-### Install X2Go on NixOS
-1. Install the server by simply including
-   ```nix
-   services.x2goserver.enable = true;
-   ```
-
-## xdmcp
-Is similar to telnet, using unencrypted authentication.
-
-## Teamviewer
-Teamviewer is a free for personal use remote desktop solution that in my opinion provided one of the 
-first decent out of box experiences out there.
-
-Typically I configure TV to only be accessible from my LAN and just use it locally or tunnel in over 
-SSH if I'm remote.
-
-1. Install Teamviewer
-  ```bash
-  sudo pacman -S teamviewer
-  sudo systemctl enable teamviewerd
-  sudo systemctl start teamviewerd
-  ```
-2. Autostart Teamviewer
-  ```bash
-  cp /usr/share/applications/teamviewer.desktop ~/.config/autostart
-  ```
-3. Configure Teamviewer  
-  a. Start teamviewer: `teamviewer`  
-  b. Click ***Accept License Agreement***  
-  c. Navigate to ***Extras >Options***  
-  d. Click ***General*** tab on left  
-  e. Set ***Your Display Name***  
-  f. Check the box ***Start Teamviwer with system***  
-  g. Set drop down ***Incoming LAN connections*** to ***accept exclusively***  
-  h. Click ***Security*** tab   
-  i. Set ***Password*** and ***Confirm Password***  
-  j. Leave ***Start Teamviewer with Windows*** checked and click ***OK*** then ***OK***  
-  k. Click ***Advanced*** tab on left  
-  l. Disable log files  
-  m. Check ***Disable TeamViewer shutdown***  
-  n. Click ***OK***  
 
 ## x11spice
 `x11spice` is patterned after `x11vnc` and allows for connecting to a running X server via a Spice 
