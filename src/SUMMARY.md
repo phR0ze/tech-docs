@@ -32,6 +32,7 @@
       - [Common Use Cases](development/cicd/github_actions/common_use_cases.md)
   - [Editors](development/editors/README.md)
     - [NeoVim](development/editors/neovim/README.md)
+      - [Word Processing](development/editors/neovim/word_processing/README.md)
     - [VSCode](development/editors/vscode/README.md)
       - [Dev Containers](development/editors/vscode/dev_containers/README.md)
       - [Golang](development/editors/vscode/golang/README.md)
