@@ -36,6 +36,14 @@ NixOS works well for managing Docker containers
 
 ## Docker Networking
 
+### Inspect network
+You can get the details of an network by inspecting it i.e. IP address ranges, active containers and 
+their DNS names.
+
+```bash
+$ sudo podman network inspect immich
+```
+
 ## Buid Docker Image
 
 ### Reproducible with Nix

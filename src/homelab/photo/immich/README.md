@@ -95,6 +95,20 @@ users.users.immich.extraGroups = [ "video" "render" ];
    * Note: the `Storage Template` can be used to auto-organizing files based on filename patterns but 
    will make changes to your files for you
 
+### Create a family user
+My main purpose in experimenting with Immich is to simply expose the family photo collection locally 
+in my home network to the family.
+
+1. Navigate to the user icon and select `Administration`
+2. Then click `Create user` near the top right
+3. Fill out the shared account ***without concerns for security***
+   1. Email e.g. `family@local`
+   2. Set the `Password` something simple e.g. `family`
+   3. Disable the `Require user to change password on first login`
+   4. Set the `Name` to e.g. `Family`
+   5. Click `Create`
+
+
 ### Configure Immich
 Immich can consume a ton of space with its default settings approximately 12.5% extra for thumbnails 
 and encoded video.

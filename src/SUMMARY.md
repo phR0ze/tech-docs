@@ -12,6 +12,7 @@
   - [MySQL](databases/mysql/README.md)
     - [mycli](databases/mysql/mycli/README.md)
     - [DBeaver](databases/mysql/dbeaver/README.md)
+  - [Redis](databases/redis/README.md)
 
 - [Development](development/README.md)
   - [Android](development/android/README.md)
@@ -235,6 +236,7 @@
     - [Nix Language](system/nixos/nix_language/README.md)
     - [Nix Binary Cache](system/nixos/nix_binary_cache/README.md)
     - [Patch binary](system/nixos/patch_binary/README.md)
+    - [Repl](system/nixos/repl/README.md)
     - [Secrets](system/nixos/secrets/README.md)
   - [Systemd](system/systemd/README.md)
   - [Synology](system/synology/README.md)

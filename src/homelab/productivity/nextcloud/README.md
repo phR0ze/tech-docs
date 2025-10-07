@@ -1,7 +1,7 @@
 # Nextcloud <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
 Nextcloud is a open-source self-hosted private cloud solution. The project aims to provide services 
-on par with the public cloud conglomerates
+on par with the public cloud conglomerates.
 
 ### Quick links
 * [.. up dir](../README.md)
@@ -20,11 +20,10 @@ on par with the public cloud conglomerates
   * [Recognize](#recognize)
 
 ## Overview
-Nextcloud Hub 10 is the latest
+Nextcloud Hub is the core and provides multiple Nextcloud products: Files, Talk, Groupware, Office 
+and Assistant into a single platform, optimizing the flow for collaboration.
 
 **References**
-* [Nextcloud Admin docs](https://docs.nextcloud.com/server/latest/admin_manual/)
-* [Nextcloud Installation docs](https://docs.nextcloud.com/server/latest/admin_manual/installation/index.html)
 * [linuxserver/nextcloud](https://docs.linuxserver.io/images/docker-nextcloud/)
 * [Timezone list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
 
@@ -51,6 +50,100 @@ Navigate to your new Nextcloud instance e.g. `https://192.168.1.61:443`
 ### First impressions
 * Has `Dashboard`, `Files`, `Photos` and `Activity` apps installed by default
 
+## Deploy Nextcloud
+There are multiple ways of deploying Nextcloud. Deploying with Docker gives, I think, the most 
+ability to control where the persistent data goes and the specific version to use independent of OS 
+upgrades. Additionally it opens up newer versions that are not available in OS repos.
+
+**References**
+* [Nextcloud Admin docs](https://docs.nextcloud.com/server/latest/admin_manual/)
+* [Nextcloud Installation docs](https://docs.nextcloud.com/server/latest/admin_manual/installation/index.html)
+* [Deploy Nextcloud with Docker - Chris Grime](https://chrisgrime.medium.com/deploy-nextcloud-with-docker-compose-935a76a5eb78)
+
+```yaml
+services:
+  nextcloud:
+    image: nextcloud:32.0.0-apache
+    container_name: nextcloud
+    restart: unless-stopped
+    networks: 
+      - cloud
+    depends_on:
+      - nextclouddb
+      - redis
+    ports:
+      - 8081:80
+    volumes:
+      - ./html:/var/www/html
+      - ./custom_apps:/var/www/html/custom_apps
+      - ./config:/var/www/html/config
+      - ./data:/var/www/html/data
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Los_Angeles
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_PASSWORD=dbpassword
+      - MYSQL_HOST=nextclouddb
+      - REDIS_HOST=redis
+
+  nextclouddb:
+    # See compatibility matrix for Nextcloud 31
+    # https://docs.nextcloud.com/server/31/admin_manual/installation/system_requirements.html
+    image: mariadb:10.11.14
+    image: mariadb
+    container_name: nextcloud-db
+    restart: unless-stopped
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    networks: 
+      - cloud
+    volumes:
+      - ./nextclouddb:/var/lib/mysql
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Los_Angeles
+      - MYSQL_RANDOM_ROOT_PASSWORD=true
+      - MYSQL_PASSWORD=dbpassword
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      
+  collabora:
+    image: collabora/code
+    container_name: collabora
+    restart: unless-stopped
+    networks: 
+      - cloud
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Los_Angeles
+      - password=password
+      - username=nextcloud
+      - domain=example.com
+      - extra_params=--o:ssl.enable=true
+    ports:
+      - 9980:9980
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    volumes:
+      - ./redis:/data  
+    networks: 
+      - cloud
+```
+
+### Domain Name
+* Forward ports 80, 81, 443
+
+### Volume Configuration
+There are two separate volumes needed
+* Data
+* DB
+
+
 ## Nextcloud Apps
 Under the user options there is a `+ Apps` where you can add additional apps
 
@@ -69,6 +162,9 @@ the other applications.
 * Sharing can be done easily between other Nextcloud servers as well via built in Federation
 
 ### Notes
+
+### Imaginary
+Provides previews for `heic`, `heif`, `illustrator`, `pdf`, `svg`, `tiff`, `webp` and more
 
 ### Chat and Talk
 
