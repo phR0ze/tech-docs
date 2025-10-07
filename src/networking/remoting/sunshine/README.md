@@ -1,14 +1,17 @@
 # Sunshine <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
-Sunshine 
+Sunshine is part of the new era of remoting software taking advantage of faster networks and modern 
+video/audio streaming protocols. Primarily built for gaming it also provides an excellent remote 
+desktop experience with 1080p video and audio forwarded.
 
 **Summary**
 * Pros
-  * 
+  * Available in nixpkgs
+  * Seems to work pretty well
 * Cons
-  * 
+  * A little brittle, the moonlight client keeps crashing
 * Result
-  * 
+  * Still experimenting with it
 
 ### Quick links
 * [../](../README.md)

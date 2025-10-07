@@ -13,7 +13,8 @@ being made.
   * protects a web site, hiding the web site's IP address
   * load balancing across a pool of servers 
   * caching for static content
-  * handles SSL encryption for the server
+  * makes management of SSL certs easier
+  * handles SSL encryption for the server i.e. provides HTTPS
 
 ### Quick links
 * [.. up dir](../README.md)
@@ -33,15 +34,16 @@ interface. However it has some issues with automatic certificate renewal. With l
 known issues in Proxy Manager the community is switching to Traefik. Traefik is more capable and 
 featureful and being used in enterprises as well. It is super flexible.
 
-* Caddy
+* Caddy 2
   * pros
-    * Written in Golang
+    * Written in Golang 67k stars
     * Simpler to configure than others
-    * Let's Encrypt automation for automatic cert renewal
+    * Built in easy to configure let's Encrypt automation for automatic cert renewal
   * cons
     * No visualization UI
 * Traefik
   * pros
+    * Written in Golang 56k starts
     * Has a web UI for showing how routes are handled
     * More modern than others
     * Let's Encrypt automation for automatic cert renewal
@@ -58,8 +60,10 @@ featureful and being used in enterprises as well. It is super flexible.
 * Nginx Proxy Manager
   * pros
     * Extremly powerful
+    * Nice intuitive Web UI for configuration
     * Let's Encrypt automation
   * cons
     * Difficult to setup
+    * Small open source project
     * Can't handle more complex enviroments
     * Not able to handle dynamic container env well

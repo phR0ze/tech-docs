@@ -7,4 +7,6 @@ Documenting various database technologies
 
 ### Linked pages
 - [EER Model](eer_model/README.md)
+- [MySQL](mysql/README.md)
+- [Redis](redis/README.md)
  
