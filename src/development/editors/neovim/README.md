@@ -55,7 +55,7 @@ now are:
 * `packer` - no longer maintained
 
 ### Lazy.nvim
-***Lazy.nvim*** is the mo
+[Lazy.nvim](https://www.lazyvim.org/) is both a plugin manager and a distribution of Vim.
 
 ### vim-plug
 [vim-plug](https://github.com/junegunn/vim-plug) is a minimalist vim plugin manager with super fast
@@ -76,8 +76,8 @@ $ nvim ~/.config/nvim/init.vim
 ```
 
 ## Plugins
-
-Vim plugins in the `vim-plug` world are just github repositories
+Vim plugins in the `vim-plug` world are just github repositories.
+* [inspirational list of language plugins](https://github.com/sheerun/vim-polyglot)
 
 ### Utilities
 ```
