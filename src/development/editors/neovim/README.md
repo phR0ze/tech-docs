@@ -3,6 +3,10 @@ NeoVim is a fork of Vim aiming to improve user experience and plugin implementat
 
 ### Quick links
 - [.. up dir](../README.md)
+* [One offs](#one-offs)
+  * [Configuration](#configuration)
+  * [Config location](#config-location)
+  * [Check version](#check-version)
 * [Getting started](#getting-started)
   * [Install NeoVim](#install-neovim)
   * [Migrating to NeoVim](#migrating-to-neovim)
@@ -15,10 +19,75 @@ NeoVim is a fork of Vim aiming to improve user experience and plugin implementat
 * [Ctrl+tab](#ctrl+tab)
 * [Command Syntax](#command-syntax)
 
+### Linked pages
+* [LazyVim](lazyvim/README.md)
+* [Lua](lua/README.md)
+* [Word Processing](word_processing/README.md)
+
+## Tips
+
+### Configuration
+Nvim supports using the `~/.config/nvim/init.lua` as your configuration file. To run any other Lua 
+script on startup automatically then you can put it in `~/.config/nvim/plugin/`.
+
+**Runtime path**
+```bash
+$XDG_CONFIG_HOME/nvim
+$XDG_CONFIG_HOME/nvim/after
+$XDG_DATA_HOME/nvim/site
+$XDG_DATA_HOME/nvim/site/after
+$VIMRUNTIME
+```
+
+**Example structure path:**
+```
+~/.config/nvim
+|-- after/
+|-- ftplugin/
+|-- lua/
+|   |-- myluamodule.lua
+|   |-- other_modules/
+|       |-- anothermodule.lua
+|       |-- init.lua
+|-- plugin/
+|-- syntax/
+|-- init.vim
+```
+
+* Lua code `require("myluamodule")` would load `~/.confi/nvim/lua/myluamodule.lua`
+* Lua code `require("other_modules/anothermodule")` would load `~/.confi/nvim/lua/other_modules/anothermodule.lua`
+* Lua code `require("other_modules")` would load `~/.confi/nvim/lua/other_modules/init.lua`
+
+### Print runtime paths
+```bash
+$ nvim --headless +'echo &runtimepath' +q
+```
+
+### Loaded script names
+```
+: scriptnames
+```
+
+### Config location
+```
+:echo stdpath('config')
+```
+
+### Check version
+Open vim and enter the `:version` command to see version and LuaJIT support
+```
+NVIM v0.11.3
+Build type: Release
+LuaJIT 2.1.1741730670
+Run ":verbose version" for more info
+```
+
 ## Getting started
 
-### Install NeoVim
+### Configuration
+Nvim supports 
 
+### Install NeoVim
 ```nix
 programs.neovim = {
   enable = true;
@@ -47,12 +116,21 @@ Simply copy your `~/.vimrc` to `~/.config/nvim/init.vim` as a starting point
 * ***Data directory for swap files:*** `~/.local/share/nvim`
 
 ## Plugin Managers
-Every month or so a new plugin manager is created for the Vim world. Some of the top mangers right 
-now are:
-* `lazy.nvim` - most popular right now
-* `vim-plug`
-* `mini.deps` - 
-* `packer` - no longer maintained
+The latest vim plugin manager push is leaning into Lua, performance and fine-grained load control. 
+They require newer versions of Neovim and support automatic lazy loading of plugins.
+
+* [lz.n](https://github.com/lumen-oss/lz.n)
+  * minimal lazy loading library *not* a plugin manager 
+    * events, filetype, key mappings, user commands, colorscheme events
+  * does not handle
+    * plugin installs
+    * dependency management
+  * Favored by Nix users as plugin managment is done with Nix
+* [lazy.nvim](https://lazy.folke.io/)
+  * automatic plugin installation
+  * partial git clones
+  * lazy load by event, filetype, command, key mappings, etc..
+  * dependency management ordering for loading
 
 ### Lazy.nvim
 [Lazy.nvim](https://www.lazyvim.org/) is both a plugin manager and a distribution of Vim.

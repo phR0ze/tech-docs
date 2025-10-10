@@ -35,6 +35,21 @@ $ nix repl -f '<nixpkgs>'
   nix-repl> :p foo
   [ { foo = "foo"; name = "foo"; value = 2; } ]
   ```
+* Build a vim plugin from github and check the file structure
+  ```
+  nix-repl> miniPairs = vimUtils.buildVimPlugin {
+    pname = "mini-pairs";
+    version = "2025-10-08";
+    src = fetchFromGitHub {
+      owner = "nvim-mini";
+      repo = "mini.pairs";
+      rev = "b9aada8c0e59f2b938e98fbf4eae0799eba96ad9";
+      sha256 = "sha256-KFWpyITaKc9AGhvpLkeq9B3a5MELqed2UBo9X8oC6Ac=";
+    };
+  }
+  nix-repl> miniPairs.outPath
+  "/nix/store/402i1c4dmksqziv317m2hwn2dcw9j0x3-vimplugin-mini-pairs-2025-10-08"
+  ```
 
 ### Load flake from disk
 * Load from the current directory
