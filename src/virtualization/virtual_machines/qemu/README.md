@@ -11,6 +11,12 @@ hypervisors. Its one downside is that its rather complicated.
   - [Install QEMU](#install-qemu)
   - [QEMU Monitor](#qemu-monitor)
   - [Quickemu](#quickemu)
+- [Getting Started](#getting-started)
+  - [Boot from ISO](#boot-from-iso)
+  - [Windows Virtio Support](#windows-virtio-support)
+  - [Create Windows 7 VM](#create-windows-7-vm)
+  - [Create Windows 8 VM](#create-windows-8-vm)
+  - [Create Windows 10 VM](#create-windows-10-vm)
 - [Video params](#video-params)
   - [QXL VGA](#qxl-vga)
 - [Parameters](#parameters)
@@ -23,11 +29,6 @@ hypervisors. Its one downside is that its rather complicated.
   - [Create Network Bridge](#create-network-bridge)
   - [Access denied by acl file](#access-deniced-by-acl-file)
   - [Port forwarding](#port-forwarding)
-- [VM Templates](#vm-templates)
-  - [Windows Virtio Support](#windows-virtio-support)
-  - [Create Windows 7 VM](#create-windows-7-vm)
-  - [Create Windows 8 VM](#create-windows-8-vm)
-  - [Create Windows 10 VM](#create-windows-10-vm)
 - [VM Snapshots](#vm-snapshots)
   - [Run in Immutable mode](#run-in-immutable-mode)
 
@@ -82,8 +83,146 @@ Quickemu works off the assumption that there is a lot going on in QEMU and its h
 Quickemu will figure out a lot of it for you and store it in a config along side your `qcow2` image 
 so you can refer to that.
 
+## Getting Started
+There is so much to QEMU and you might just need a simple place to start. This section is for that.
+
+### Boot from ISO
+I often want to test out bootable ISOs
+
+1. Create a new sparse qcow2 drive to install to
+   ```bash
+   $ cd ~/Projects/nixos-config
+   $ qemu-img create -f qcow2 nixos.qcow2 20G
+   ```
+
+3. Create a new VM using the new drive and ISO
+   ```bash
+   $ qemu-system-x86_64 \
+       -name NixOS \
+       -enable-kvm \
+       -m 4G -cpu host -smp 4 \
+       -nic user \
+       -vga virtio -display sdl,gl=on \
+       -hda nixos.qcow2 \
+       -cdrom result/iso/cyberlinux-25.11.20250809.85dbfc7-x86_64-linux.iso
+   ```
+
+### Windows Virtio Support
+The [Virtio Win Guest Tools](https://github.com/virtio-win/virtio-win-guest-tools-installer) project 
+provides a pre-built installer that you can use inside the guest to provide support for the Virtio 
+drivers. Once installed you can reboot using the `virtio` backend driver.
+
+### Create Windows 7 VM
+see [Parameters](#paramters) for explanations
+
+Windows doesn't have drivers to support Virtio 
+* `-nic user` non virtio simple pass-through networking for install
+* `-hda` for simply generic hdd support without advanced virtio drivers
+
+Adding in bridge networking see [QEMU Networking >Create Network Bridge](qemu_networking/README.md#create-network-bridge)
+* `-nic bridge,br=virbr0,helper=$(type -p qemu-bridge-helper)`
+
+1. Create a new sparse qcow2 drive to install to
+   ```bash
+   $ cd ~/Projects/vms
+   $ qemu-img create -f qcow2 win7.qcow2 40G
+   ```
+
+3. Create a new VM using the new drive and ISO
+   ```bash
+   $ qemu-system-x86_64 \
+       -name Win7 \
+       -enable-kvm \
+       -m 4G -cpu host -smp 4 \
+       -nic user \
+       -vga virtio -display sdl,gl=on \
+       -hda win7.qcow2 \
+       -cdrom win7.iso
+   ```
+
+4. Walk through the Windows installation wizard
+   * Configure as you like it and shutdown
+
+5. Ensure the network bridge is started
+   ```bash
+   $ virsh net-start default
+   ```
+
+6. Run that same VM later
+   ```bash
+   $ qemu-system-x86_64 -name Win7 -enable-kvm -m 4G -cpu host -smp 4 -vga virtio \
+      -nic bridge,br=virbr0,helper=$(type -p qemu-bridge-helper) \
+      -display sdl,gl=on -hda win7.qcow2
+   ```
+
+### Create Windows 8 VM
+see [Parameters](#paramters) for explanations
+
+Windows doesn't have drivers to support Virtio 
+* `-net nic -net user` non virtio simple pass-through networking for install
+* `-hda` for simply generic hdd support without advanced virtio drivers
+
+Adding in bridge networking see [QEMU Networking >Create Network Bridge](qemu_networking/README.md#create-network-bridge)
+* `-nic bridge,br=virbr0,helper=$(type -p qemu-bridge-helper)`
+
+1. Create a new sparse qcow2 drive to install to
+   ```bash
+   $ cd ~/Projects/vms
+   $ qemu-img create -f qcow2 win8.qcow2 40G
+   ```
+
+3. Create a new VM using the new drive and ISO
+   ```bash
+   $ qemu-system-x86_64 \
+       -name Win8 \
+       -enable-kvm \
+       -m 4G -cpu host -smp 4 \
+       -net nic -net user \
+       -vga virtio -display sdl,gl=on \
+       -hda win8.qcow2 \
+       -cdrom win8.iso
+   ```
+
+4. Walk through the Windows installation wizard
+   * Configure as you like it and shutdown
+
+5. Ensure the network bridge is started
+   ```bash
+   $ virsh net-start default
+   ```
+
+6. Run that same VM later
+   ```bash
+   $ qemu-system-x86_64 -name Win8 -enable-kvm -m 4G -cpu host -smp 4 -vga virtio \
+      -nic bridge,br=virbr0,helper=$(type -p qemu-bridge-helper) \
+      -display sdl,gl=on -hda win8.qcow2
+   ```
+
+### Create Windows 10 VM
+see [Parameters](#paramters) for explanations
+
+Quickemu will automate downloading all necessary drivers for a good experience as well as creating a 
+configuration file for you to then launch the VM with these drivers.
+
+1. Create windows 10 configuration and download needed drivers to `windows-10`
+   ```bash
+   $ quickget windows 10
+   ```
+
+2. 
+**Config**
+```bash
+guest_os="windows"
+iso="win10.iso"
+fixed_iso="virtio-win.iso"
+disk_img="win10.qcow2"
+tpm="on"
+secureboot="off"
+```
+
+
 ## Video params
-There are a log of emulated display devices in QEMU. Typical recommendations are use:
+There are a lot of emulated display devices in QEMU. Typical recommendations are use:
 1. `virtio vga` or `virtio gpu` with guest drivers
 2. `qxl vga` with guest drivers
 
@@ -276,122 +415,6 @@ Port forward VM's port 22 to host port 2222 such that any requests over host:222
 redirected to the VM on port 22.
 ```
 -netdev user,id=net0,hostfwd=tcp::2222-:22
-```
-
-## VM Templates
-Documenting a few setups I can experiement with
-
-### Windows Virtio Support
-The [Virtio Win Guest Tools](https://github.com/virtio-win/virtio-win-guest-tools-installer) project 
-provides a pre-built installer that you can use inside the guest to provide support for the Virtio 
-drivers. Once installed you can reboot using the `virtio` backend driver.
-
-### Create Windows 7 VM
-see [Parameters](#paramters) for explanations
-
-Windows doesn't have drivers to support Virtio 
-* `-nic user` non virtio simple pass-through networking for install
-* `-hda` for simply generic hdd support without advanced virtio drivers
-
-Adding in bridge networking see [QEMU Networking >Create Network Bridge](qemu_networking/README.md#create-network-bridge)
-* `-nic bridge,br=virbr0,helper=$(type -p qemu-bridge-helper)`
-
-1. Create a new sparse qcow2 drive to install to
-   ```bash
-   $ cd ~/Projects/vms
-   $ qemu-img create -f qcow2 win7.qcow2 40G
-   ```
-
-3. Create a new VM using the new drive and ISO
-   ```bash
-   $ qemu-system-x86_64 \
-       -name Win7 \
-       -enable-kvm \
-       -m 4G -cpu host -smp 4 \
-       -nic user \
-       -vga virtio -display sdl,gl=on \
-       -hda win7.qcow2 \
-       -cdrom win7.iso
-   ```
-
-4. Walk through the Windows installation wizard
-   * Configure as you like it and shutdown
-
-5. Ensure the network bridge is started
-   ```bash
-   $ virsh net-start default
-   ```
-
-6. Run that same VM later
-   ```bash
-   $ qemu-system-x86_64 -name Win7 -enable-kvm -m 4G -cpu host -smp 4 -vga virtio \
-      -nic bridge,br=virbr0,helper=$(type -p qemu-bridge-helper) \
-      -display sdl,gl=on -hda win7.qcow2
-   ```
-
-### Create Windows 8 VM
-see [Parameters](#paramters) for explanations
-
-Windows doesn't have drivers to support Virtio 
-* `-net nic -net user` non virtio simple pass-through networking for install
-* `-hda` for simply generic hdd support without advanced virtio drivers
-
-Adding in bridge networking see [QEMU Networking >Create Network Bridge](qemu_networking/README.md#create-network-bridge)
-* `-nic bridge,br=virbr0,helper=$(type -p qemu-bridge-helper)`
-
-1. Create a new sparse qcow2 drive to install to
-   ```bash
-   $ cd ~/Projects/vms
-   $ qemu-img create -f qcow2 win8.qcow2 40G
-   ```
-
-3. Create a new VM using the new drive and ISO
-   ```bash
-   $ qemu-system-x86_64 \
-       -name Win8 \
-       -enable-kvm \
-       -m 4G -cpu host -smp 4 \
-       -net nic -net user \
-       -vga virtio -display sdl,gl=on \
-       -hda win8.qcow2 \
-       -cdrom win8.iso
-   ```
-
-4. Walk through the Windows installation wizard
-   * Configure as you like it and shutdown
-
-5. Ensure the network bridge is started
-   ```bash
-   $ virsh net-start default
-   ```
-
-6. Run that same VM later
-   ```bash
-   $ qemu-system-x86_64 -name Win8 -enable-kvm -m 4G -cpu host -smp 4 -vga virtio \
-      -nic bridge,br=virbr0,helper=$(type -p qemu-bridge-helper) \
-      -display sdl,gl=on -hda win8.qcow2
-   ```
-
-### Create Windows 10 VM
-see [Parameters](#paramters) for explanations
-
-Quickemu will automate downloading all necessary drivers for a good experience as well as creating a 
-configuration file for you to then launch the VM with these drivers.
-
-1. Create windows 10 configuration and download needed drivers to `windows-10`
-   ```bash
-   $ quickget windows 10
-   ```
-
-2. 
-**Config**
-```bash
-guest_os="windows"
-iso="win10.iso"
-fixed_iso="virtio-win.iso"
-disk_img="win10.qcow2"
-tpm="on"
-secureboot="off"
 ```
 
 ## VM Snapshots

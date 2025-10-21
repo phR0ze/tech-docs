@@ -70,34 +70,10 @@ in and a message is shown in the [installation-device.nix](https://github.com/Ni
 
 **Attempt #1** originally I used home-manager to create a custom `.bash_profile` in the `nixos` user's 
 home directory which contained the launcher for my installer script. This worked well but requires 
-home-manager which is more configuration and maintenance than I want.
-```nix
-{ args, pkgs, lib, ... }: {
-  imports = [
-    args.home-manager.nixosModules.home-manager
-    "${args.nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
-  ];
-  home-manager = {
-    extraSpecialArgs = { inherit args; };
-    users.nixos = {
-      home.file.".bash_profile".text = ''
-        # install script launcher
-      '';
-      home.username = "nixos";
-      home.homeDirectory = "/home/nixos";
-      home.stateVersion = args.settings.stateVersion;
-    };
-  };
-  users.users.nixos.password = "nixos";
-  users.extraUsers.root.password = "nixos";
-  environment.systemPackages = with pkgs; [
-    git                 # Needed for clu installer automation
-    jq                  # Needed for clu installer automation
-  ];
-}
-```
+home-manager which is more configuration and maintenance than I want. Primarily I decided I don't 
+want to be dependent on yet another configuration service.
 
-**Attempt #2** a better approach `profiles/iso/default.nix` was to just drop it into the shared 
+**Attempt #2** a better approach `profiles/iso.nix` was to just drop it into the shared 
 `/etc/bashrc`.
 ```nix
 {
