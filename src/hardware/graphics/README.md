@@ -1,4 +1,4 @@
-# Accelerated Graphics
+# Graphics
 
 Notes on how I determined the correct configuration for the video card.
 

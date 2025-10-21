@@ -17,6 +17,7 @@
 ### Linked pages
 - [Rescue](rescue/README.md)
 - [Truenas](truenas/README.md)
+- [USB](usb/README.md)
 
 ## Drives
 

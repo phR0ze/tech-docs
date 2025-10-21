@@ -32,8 +32,8 @@
       - [Common Use Cases](development/cicd/github_actions/common_use_cases.md)
   - [Editors](development/editors/README.md)
     - [NeoVim](development/editors/neovim/README.md)
-      - [LazyVim](development/editors/neovim/lazyvim/README.md)
       - [Lua](development/editors/neovim/lua/README.md)
+      - [Lz-n](development/editors/neovim/lz-n/README.md)
       - [Word Processing](development/editors/neovim/word_processing/README.md)
     - [VSCode](development/editors/vscode/README.md)
       - [Dev Containers](development/editors/vscode/dev_containers/README.md)
@@ -121,9 +121,10 @@
   - [Wii Backup Manager](gaming/wii_backup_manager/README.md)
 
 - [Hardware](hardware/README.md)
-  - [Accelerated Graphics](hardware/accelerated_graphics/README.md)
+  - [Graphics](hardware/graphics/README.md)
   - [Printers](hardware/printers/README.md)
   - [Storage](hardware/storage/README.md)
+    - [USB](hardware/storage/usb/README.md)
     - [Rescue](hardware/storage/rescue/README.md)
     - [TrueNAS](hardware/storage/truenas/README.md)
 
@@ -202,6 +203,8 @@
   - [Router](networking/router/README.md)
     - [pfsense](networking/router/pfsense/README.md)
     - [Tomato Router](networking/router/tomator_router/README.md)
+  - [Streaming](networking/streaming/README.md)
+    - [Download](networking/streaming/download/README.md)
 
 - [Productivity](productivity/README.md)
   - [Office](productivity/office/README.md)

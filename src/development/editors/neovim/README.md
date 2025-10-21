@@ -20,8 +20,8 @@ NeoVim is a fork of Vim aiming to improve user experience and plugin implementat
 * [Command Syntax](#command-syntax)
 
 ### Linked pages
-* [LazyVim](lazyvim/README.md)
 * [Lua](lua/README.md)
+* [Lz-n](lz-n/README.md)
 * [Word Processing](word_processing/README.md)
 
 ## Tips
