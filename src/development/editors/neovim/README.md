@@ -22,6 +22,8 @@ NeoVim is a fork of Vim aiming to improve user experience and plugin implementat
 ### Linked pages
 * [Lua](lua/README.md)
 * [Lz-n](lz-n/README.md)
+* [Runtimepath](runtimepath/README.md)
+* [Treesitter](treesitter/README.md)
 * [Word Processing](word_processing/README.md)
 
 ## Tips

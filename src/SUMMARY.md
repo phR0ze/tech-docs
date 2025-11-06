@@ -34,6 +34,8 @@
     - [NeoVim](development/editors/neovim/README.md)
       - [Lua](development/editors/neovim/lua/README.md)
       - [Lz-n](development/editors/neovim/lz-n/README.md)
+      - [RuntimePath](development/editors/neovim/runtimepath/README.md)
+      - [Treesitter](development/editors/neovim/treesitter/README.md)
       - [Word Processing](development/editors/neovim/word_processing/README.md)
     - [VSCode](development/editors/vscode/README.md)
       - [Dev Containers](development/editors/vscode/dev_containers/README.md)
