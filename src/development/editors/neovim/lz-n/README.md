@@ -25,9 +25,6 @@ recommended by Fernando.
 
 **References**
 * [Nvim bundle](https://github.com/jla2000/nvim-bundle)
-* 
-
-
 
 ### Lazy Vim's features
 `lazy.nvim` provides the following features:
@@ -326,9 +323,8 @@ return {
 - `mini.icons`
 
 **Configuration**
-```lua
 
-```
+`project.nvim` - Detects the root of your project and sets that as the CWD for FZF
 
 https://github.com/KijitoraFinch/nanode.nvim
 https://github.com/2KAbhishek/nerdy.nvim
@@ -336,12 +332,7 @@ https://github.com/MeanderingProgrammer/render-markdown.nvim
 https://github.com/Wansmer/symbol-usage.nvim
 https://github.com/christoomey/vim-tmux-navigator
 https://github.com/dmtrKovalenko/fff.nvim
-https://github.com/folke/flash.nvim
 https://github.com/folke/lazydev.nvim
-https://github.com/folke/persistence.nvim
-https://github.com/folke/snacks.nvim
-https://github.com/folke/tokyonight.nvim
-https://github.com/folke/which-key.nvim
 https://github.com/ibhagwan/fzf-lua
 https://github.com/j-hui/fidget.nvim
 https://github.com/kylechui/nvim-surround
@@ -349,15 +340,9 @@ https://github.com/lewis6991/gitsigns.nvim
 https://github.com/mfussenegger/nvim-lint
 https://github.com/neanias/everforest-nvim
 https://github.com/neovim/nvim-lspconfig
-https://github.com/nvim-tree/nvim-web-devicons
-https://github.com/nvim-treesitter/nvim-treesitter
-https://github.com/nvim-treesitter/nvim-treesitter-context
-https://github.com/nvim-treesitter/nvim-treesitter-textobjects
 https://github.com/saecki/crates.nvim
 https://github.com/saecki/live-rename.nvim
 https://github.com/sindrets/diffview.nvim
 https://github.com/stevearc/conform.nvim
-https://github.com/stevearc/oil.nvim
-https://github.com/windwp/nvim-autopairs
 https://github.com/Saghen/blink.cmp
 https://github.com/catppuccin/nvim
