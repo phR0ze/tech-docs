@@ -32,6 +32,7 @@
       - [Common Use Cases](development/cicd/github_actions/common_use_cases.md)
   - [Editors](development/editors/README.md)
     - [NeoVim](development/editors/neovim/README.md)
+      - [Fuzzy Finding](development/editors/neovim/fuzzy_finding/README.md)
       - [Lua](development/editors/neovim/lua/README.md)
       - [Lz-n](development/editors/neovim/lz-n/README.md)
       - [RuntimePath](development/editors/neovim/runtimepath/README.md)
