@@ -20,6 +20,7 @@ NeoVim is a fork of Vim aiming to improve user experience and plugin implementat
 * [Command Syntax](#command-syntax)
 
 ### Linked pages
+* [Fuzzy Finding](fuzzy_finding/README.md)
 * [Lua](lua/README.md)
 * [Lz-n](lz-n/README.md)
 * [Runtimepath](runtimepath/README.md)
