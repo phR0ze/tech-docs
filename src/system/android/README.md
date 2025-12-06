@@ -1,15 +1,13 @@
-# Android
+# Android <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
 
 ### Quick links
-* [General procedures](#general-procedures)
-  * [Load SIM card](#load-sim-card)
-  * [OEM unlocking is greyed out](#oem-unlocking-is-greyed-out)
-  * [Factory reset](#factory-reset)
-  * [Enable Developer mode](#enable-developer-mode)
-  * [Allow OEM unlocking and USB debugging](#allow-oem-unlocking-and-usb-debugging)
-  * [Opting out of the Beta program](#opting-out-of-the-beta-program)
-* [Rooting](rooting/README.md)
+* [.. up dir](..)
+* [New phone choice](#new-phone-choice)
+* [New phone setup](#new-phone-setup)
 * [New phone configuration](#new-phone-configuration)
+
+### Linked pages
+* [Rooting](rooting/README.md)
 
 ## New phone choice
 My must have features for a new phone in my opinion:
@@ -26,7 +24,7 @@ This walk through is being done with the Google Pixel 6 Pro a.k.a `raven`
 * OS support ***LineageOS 21/Android 14***
 * [LineageOS Device Wiki page](https://wiki.lineageos.org/devices/raven/)
 
-### 1. Ensure device is functional as is
+### Ensure device is functional as is
 1. [Load your SIM card into your new phone and boot it](#load-sim-card)  
 2. Ensure everything is working with the Android that came with it  
    1. Send and receive SMS  
@@ -34,7 +32,7 @@ This walk through is being done with the Google Pixel 6 Pro a.k.a `raven`
    3. Use Wifi and LTE both  
    4. Use Camera and Video  
 
-### 2. Flash Stock Android 14
+### Flash Stock Android 14
 WIP not tested
 
 1. [Allow OEM unlocking and USB debugging on your device](#allow-oem-unlocking-and-usb-debugging)
@@ -69,44 +67,6 @@ WIP not tested
       $ fastboot reboot
       ```
 
-
       $ fastboot flashing unlock
 
-
-## General procedures
-
-### Load SIM card
-1. Power down the phone
-2. Plug in the SIM card
-3. Power the phone back up
-
-### OEM unlocking is greyed out
-1. Power down and remove SIM
-2. Factory reset your phone
-3. Initiate setup enabling Wi-Fi
-2. Re-enable developer mode
-   * if OEM unlocking is still greyed out there is no workaround
-
-### Factory reset
-1. Navigate to ***Settings >System >Reset options***
-2. Select ***Erase all data (factory reset)***
-
-### Enable Developer mode
-1. Navigate to ***Settings >About phone***
-2. Swipe to the bottom and tap the ***Build number*** 7-8 times until it prompts your for your 
-   password and says ***you are now a developer***
-
-### Allow OEM unlocking and USB debugging
-1. First [enable developer mode](#enable-developer-mode)
-2. Navigate to ***Settings >System >Developer options***
-3. Toggle on ***OEM unlocking***
-   * [OEM unlocking is greyed out](#oem-unlocking-is-greyed-out)
-3. Toggle on ***USB debugging***
-
-### Opting out of the Beta program
-1. Navigatge to https://www.google.com/android/beta
-2. Loging with your google account associated with your device
-3. Choose the Opt out option
-   * ***WARNING*** you will then be required to downgrade to the latest stable version which will 
-   erase all your data on your phone.
 
