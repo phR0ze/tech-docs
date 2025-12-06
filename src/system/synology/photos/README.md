@@ -169,9 +169,9 @@ multiple locations.
     * It is not removed from mobile device
 
 ### Curation process
-Per [Questions and Answers](#question-and-answers). The process below will the photos will properly 
-show up in the shared timeline and be removed from the personal and your phone will simply report 
-them as out of sync and give you an option to delete them locally to sync with the NAS.
+Per [Questions and Answers](#question-and-answers) following the process below will make the photos 
+properly show up in the shared timeline and be removed from the personal and your phone will simply 
+report them as out of sync and give you an option to delete them locally to sync with the NAS.
 
 1. Allow mobile backup to run as per usual which will dump it into the Personal user space on the NAS
 

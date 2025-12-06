@@ -32,6 +32,7 @@ components. Development specific technologies are in the top level
 * [Wine](wine)
 
 ### Linked pages
+* [Android](android/README.md)
 * [Systemd](systemd/README.md)
 * [Synology](synology/README.md)
 
