@@ -14,10 +14,12 @@ remote network and use the resources there regardless of how that network is com
 * [.. up dir](../README.md)
 * [Overview](#overview)
   * [Overlay networks](#overlay-networks)
+* [OpenConnect](#openconnect)
 
 ### Linked pages
-* [OpenConnect](#openconnect)
+* [Istio](istio/README.md)
 * [OpenVPN](openvpn/README.md)
+* [TailScale](tailscale/README.md)
 * [WireGuard](wireguard/README.md)
 
 ## Overview

@@ -4,6 +4,7 @@
 * [.. up dir](..)
 
 ### Linked pages
+* [Cryptocurrency](cryptocurrency/README.md)
 * [IAM](iam/README.md)
 * [Password Managers](password_managers/README.md)
 

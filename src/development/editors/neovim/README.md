@@ -3,14 +3,14 @@ NeoVim is a fork of Vim aiming to improve user experience and plugin implementat
 
 ### Quick links
 - [.. up dir](../README.md)
-* [One offs](#one-offs)
-  * [Configuration](#configuration)
-  * [Config location](#config-location)
-  * [Check version](#check-version)
+* [Pro-tips](#pro-tips)
+  * [Keymaps](#keymaps)
+  * [Commands](#commands)
 * [Getting started](#getting-started)
   * [Install NeoVim](#install-neovim)
   * [Migrating to NeoVim](#migrating-to-neovim)
-* [Config Locations](#config-locations)
+* [Configuration](#configuration)
+  * [Config Locations](#config-locations)
 * [Plugin Managers](#plugin-managers)
   * [Lazy.nvim](#lazy-nvim)
 * [Plugins](#plugins)
@@ -27,9 +27,61 @@ NeoVim is a fork of Vim aiming to improve user experience and plugin implementat
 * [Treesitter](treesitter/README.md)
 * [Word Processing](word_processing/README.md)
 
-## Tips
+## Pro-tips
 
-### Configuration
+### Keymaps
+Although there are neat tools like which key that help it doesn't seem to catch them all.
+
+* LSP Diagnostics
+  * `]d` - to move forward to the next LSP diagnostic
+  * `[d` - to move backward to the previous LSP diagnostic
+  * `gl` - display the full diagnostic in a floating window
+    * `h`, `j`, `k`, `l` - dismiss the floating window by simply navigating away
+    * `gl` - invoke again to switch into the diagnostic floating window to be able to copy text
+    * `q` - quit out of the floating window if inside
+
+* LSP Code Actions
+  * `gc` - comment out the visually selected block of text using the languages comment symbols
+
+* LSP Navigation
+  * `gd` - Goto definition, defined in snacks
+  * `gD` - Goto Declaration, defined in snacks
+  * `gI` - Goto the implementation for the item
+  * `gr` - Show a list of references to the item
+
+### Commands
+* `:LspInfo` - determin if the LSP is running and get info it including which buffers its attached to
+* `:echo executable('lua-language-server')` - check if NVIM can find an executable in the path
+* `:echo stdpath('config')` - list out the configuration location
+* `:version` - command to see version and LuaJIT support
+* `nvim --headless +'echo &runtimepath' +q` - print runtime paths
+* `:scriptnames` - List loaded script names
+
+## Getting started
+
+### Install NeoVim
+```nix
+programs.neovim = {
+  enable = true;
+  defaultEditor = true;
+  viAlias = true;
+  vimAlias = true;
+  configure = ''
+    set number
+    set cc=80
+    set list
+    set listchars=tab:→\ ,space:·,nbsp:␣,trail:•,eol:¶,precedes:«,extends:»
+    if &diff
+      colorscheme blue
+    endif
+  '';
+};
+```
+
+### Migrating to NeoVim
+Simply copy your `~/.vimrc` to `~/.config/nvim/init.vim` as a starting point
+
+## Configuration
 Nvim supports using the `~/.config/nvim/init.lua` as your configuration file. To run any other Lua 
 script on startup automatically then you can put it in `~/.config/nvim/plugin/`.
 
@@ -61,58 +113,7 @@ $VIMRUNTIME
 * Lua code `require("other_modules/anothermodule")` would load `~/.confi/nvim/lua/other_modules/anothermodule.lua`
 * Lua code `require("other_modules")` would load `~/.confi/nvim/lua/other_modules/init.lua`
 
-### Print runtime paths
-```bash
-$ nvim --headless +'echo &runtimepath' +q
-```
-
-### Loaded script names
-```
-: scriptnames
-```
-
-### Config location
-```
-:echo stdpath('config')
-```
-
-### Check version
-Open vim and enter the `:version` command to see version and LuaJIT support
-```
-NVIM v0.11.3
-Build type: Release
-LuaJIT 2.1.1741730670
-Run ":verbose version" for more info
-```
-
-## Getting started
-
-### Configuration
-Nvim supports 
-
-### Install NeoVim
-```nix
-programs.neovim = {
-  enable = true;
-  defaultEditor = true;
-  viAlias = true;
-  vimAlias = true;
-  configure = ''
-    set number
-    set cc=80
-    set list
-    set listchars=tab:→\ ,space:·,nbsp:␣,trail:•,eol:¶,precedes:«,extends:»
-    if &diff
-      colorscheme blue
-    endif
-  '';
-};
-```
-
-### Migrating to NeoVim
-Simply copy your `~/.vimrc` to `~/.config/nvim/init.vim` as a starting point
-
-## Config Locations
+### Config Locations
 * ***Config file location:*** `~/.config/nvim/init.vim`
 * ***Global user config file location:*** `/etc/xdg/nvim/sysinit.vim`
 * ***Global default config file location:*** `/usr/share/nvim/sysinit.vim`

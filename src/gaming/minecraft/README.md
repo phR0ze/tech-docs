@@ -93,7 +93,7 @@ advertisements or spyware. It's just a nice client that does what its supposed t
    6. Finally double click on the new server entry
 
 ### Install Essential Mod
-Prism Launcher integrates directly with Modrinth and CurseForge and can download and update 
+Prism Launcher integrates directly with `Modrinth` and `CurseForge` and can download and update 
 individual mods in addition to modpacks. Prism Launcher can manage modpacks easily, while keeping 
 them clean. You no longer have to install and update modpacks manually.
 

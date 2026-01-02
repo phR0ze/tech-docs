@@ -9,8 +9,12 @@ machine continues to run over the main LAN network.
 * [Overview](#overview)
   * [Configuration location](#configuration-location)
   * [Sharing network namespaces](#sharing-network-namespace)
+  * [DNS Leaks](#dns-leaks)
+* [Mullvad](#mullvad)
+  * [Mullvad registration](#mullvad-registration)
+  * [Mullvad configuration](#mullvad-configuration)
 * [Private Internet Access](#private-internet-access)
-  * [PIA with Wireguard](#pia-with-wireguard)
+  * [PIA configuration](#pia-configuration)
 
 ## Overview
 Network namespaces can be used to run specific applications over a specific network or tunnel while 
@@ -49,7 +53,36 @@ $ voponon exec --provider PrivateInternetAccess --server us_west --protocol wire
 $ voponon exec --provider PrivateInternetAccess --server us_west --protocol wireguard chromium
 ```
 
+### DNS Leaks
+Browse to [DNS Leak check](http://dnsleak.com)
+
+
+## Mullvad
+As of 2025 the privacy and security communities online have positioned Mullvad as the defacto 
+standard for safe VPN use i.e. regular no log audits, etc...
+
+**References**
+* [Mullvad demo](https://www.youtube.com/watch?v=Z9y29Wxo060)
+
+### Mullvad registration
+Mullvad offers anonymous registration. They don't require your personal information to create an 
+account. They generate an account number and that is it. You can then login and add time to your 
+account and setup your VPN configuration.
+
+1. Click the `GENERATE ACCOUNT NUMBER`
+   1. Save your account number that is all that is needed to login
+3. Login to your new account `Add time to your account`
+   1. Use `Monero (XMR)` to pay anonymously
+
+### Mullvad configuration
+From the website you'll need to configure your connection configuration
+
+1. 
+
 ## Private Internet Access
+***WARNING:*** I'm no longer recommending PIA as they were acquired by Kape Technologies which the 
+security community is openenly shunning for alleged nefarious behaviors.
+
 Private Internet Access is the only commercial VPN that accepts Walmart gift cards as payment. They 
 also allow for unlimited access with up to 5 connected devices and have the lowest rates out there, 
 last time I checked.
@@ -59,7 +92,7 @@ last time I checked.
 * [PIA docs](https://helpdesk.privateinternetaccess.com/guides/linux/linux-manual-connection-scripts)
 * [PIA dns docs](https://helpdesk.privateinternetaccess.com/kb/articles/using-pia-dns-in-custom-configurations)
 
-### PIA with Wireguard
+### PIA configuration
 [WireGuard](https://www.wireguard.com/) is a modern VPN technology that provides some benefits over 
 the original OpenVPN method, namely less resources needed and more security.
 
@@ -87,7 +120,3 @@ the original OpenVPN method, namely less resources needed and more security.
 7. Validate that your connection is over the VPN
    1. Browse to [PIA's what's my IP](https://www.privateinternetaccess.com/pages/whats-my-ip)
 
-### DNS Leaks
-Browse to [DNS Leak check](http://dnsleak.com)
-
-TBD?
