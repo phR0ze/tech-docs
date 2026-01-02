@@ -22,6 +22,18 @@ distribution. I'm switching over to Snack's picker for fuzzy finding based on:
 * Snacks offers a backdrop option to dim the background which is awesome
 * Snacks offers more control over the layout customization of the pickers
 
+**References**
+* [Snacks Explorer](https://github.com/folke/snacks.nvim/blob/main/docs/explorer.md)
+
+### Keys
+* Explorer picker keys
+  * `<Tab>` - select files to work with
+  * `a` - add a new file or a folder if it ends in `/`
+  * `d` - delete the current file
+  * `c` - to copy selected files
+  * `m` - to move selected files
+  * `r` - rename the current file
+
 ### Change picker layouts
 The way to modify the picker's appearance it through changing the picker's layout. The picker plugin 
 supports custom layouts.

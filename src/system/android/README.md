@@ -7,6 +7,7 @@
 * [New phone configuration](#new-phone-configuration)
 
 ### Linked pages
+* [LineageOS](lineageos/README.md)
 * [Rooting](rooting/README.md)
 
 ## New phone choice

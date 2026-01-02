@@ -25,18 +25,31 @@ navigatge between. Telescope, fzf-lua and Snacks picker are all good options. I'
 **References**
 * [Kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim)
 
-### Information
-Find out information about the LSP including what buffers its currently attached to.
+LSP checking usually won't get invoked until after you switch out of insert mode to normal mode so 
+its not constantly running while typing.
 
-```
-:LspInfo
-```
+### Omni Completion
+Once you have the LSP up and running you can do `vim.` then press `Ctrl+x`, `Ctrl+o` to invoke omni 
+completion. Read about it with `:help ins-completion`
+
+### Get help in installing Lua LSP
+1. Launch help with `leader-f-h`
+2. Filter on `lspconfig`
+3. Switch to list with `Ctrl+l`
+4. Select `lspconfig-all`
+5. Switch to preview with `Ctrl+p`
+6. Search for `lua_ls` and skip to the heading section `lua_ls`
 
 ## Rust
+Rust can be configured vis `nvim-lspconfig` but also has a plugin dedicated to all things Rust called 
+`Rustaceanvim`.
 
 ### rustaceanvim
-`rustacenvim` is a Neovim plugin that sets up Rust development easier. It interacts with and uses:
-* `lspconfig` - lsp configuration plugin
+`rustacenvim` is a Neovim plugin that sets up Rust development easier. It handles everything 
+separately from nvim-lspconfig at least from a manual configuration perspective.
+
+It interacts with and uses:
+* `nvim-lspconfig` - lsp configuration plugin
 * `rust-analyzer` - LSP for Rust
 * `CodeLLDB` - debugger
 * `Vimspector` - plugin
