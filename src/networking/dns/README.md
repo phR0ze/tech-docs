@@ -1,8 +1,9 @@
-# DNS
+# DNS <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
 
-Documentation for `systemd-resolved`
+Documentation for `systemd-resolved` and other DNS utils.
 
 ### Quick links
+* [.. up dir](../README.md)
 * [resolved overview](#resolved-overview)
   * [Modern DNS with nss-resolve](#modern-dns-with-nss-resolve)
   * [Traditional DNS with nss-dns](#traditional-dns-with-nss-dns)
@@ -19,6 +20,9 @@ Documentation for `systemd-resolved`
   * [DNS status](#dns-status)
   * [DNS lookup](#dns-lookup)
   * [DNS flush](#dns-flush)
+
+### Linked pages
+- [Cloudflare DNS](cloudflare_dns/README.md)
 
 ## resolved overview
 

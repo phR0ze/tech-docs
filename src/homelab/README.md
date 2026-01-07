@@ -17,9 +17,12 @@ documenting my research and choices here.
 The [linuxserver.io](https://www.linuxserver.io/our-images) has a lot of really high quality image 
 builds of various dockerized services.
 
-### External Access
+### Remote access
+* netbird
 * Twingate
 * Tailgate
+
+### Public access
 * Cloudflare DDNS
 
 ### Music

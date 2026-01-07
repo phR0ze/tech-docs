@@ -4,6 +4,7 @@
 * [.. up dir](../README.md)
 
 ### Linked pages
+- [DNS](dns/README.md)
 - [Browsers](browsers/README.md)
 - [Remoting](remoting/README.md)
 - [Overlay Networks](overlay_networks/README.md)

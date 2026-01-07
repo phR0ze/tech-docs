@@ -2,3 +2,8 @@
 
 ### Quick links
 * [.. up dir](../README.md)
+
+### Linked pages
+- [Nextcloud](nextcloud/README.md)
+- [Web Server](web_server/README.md)
+
