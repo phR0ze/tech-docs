@@ -18,6 +18,7 @@ remote network and use the resources there regardless of how that network is com
 
 ### Linked pages
 * [Istio](istio/README.md)
+* [netbird](netbird/README.md)
 * [OpenVPN](openvpn/README.md)
 * [TailScale](tailscale/README.md)
 * [WireGuard](wireguard/README.md)

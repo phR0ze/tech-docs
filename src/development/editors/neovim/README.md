@@ -27,10 +27,10 @@ NeoVim is a fork of Vim aiming to improve user experience and plugin implementat
 * [Treesitter](treesitter/README.md)
 * [Word Processing](word_processing/README.md)
 
-## Pro-tips
+## Keymaps
+Although there are neat tools like ***which key*** that help it doesn't seem to catch them all.
 
-### Keymaps
-Although there are neat tools like which key that help it doesn't seem to catch them all.
+### LSP keymaps
 
 * LSP Diagnostics
   * `]d` - to move forward to the next LSP diagnostic
@@ -48,6 +48,16 @@ Although there are neat tools like which key that help it doesn't seem to catch 
   * `gD` - Goto Declaration, defined in snacks
   * `gI` - Goto the implementation for the item
   * `gr` - Show a list of references to the item
+
+### Picker keymaps
+* Actions
+  * `a` - add a new file
+
+* Navigation between sections
+  * `i` - switch to the input section
+  * `Ctrl+i` - switch to the input section
+  * `Ctrl+l` - switch to the list section
+  * `Ctrl+p` - switch to the preview section
 
 ### Commands
 * `:LspInfo` - determin if the LSP is running and get info it including which buffers its attached to

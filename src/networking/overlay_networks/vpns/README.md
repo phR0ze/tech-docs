@@ -17,6 +17,9 @@ network's resources. Common use cases:
 * [Mulllvad](#mullvad)
 * [Proton VPN](#proton-vpn)
 
+### Linked pages
+* [Mullvad](mullvad/README.md)
+
 ## Overview
 The security influencer community has consistently recommended only 2 VPNs as being safe and privacy 
 focused. The wash of other options are all either corporate garbage, in Five Eyes countries, don't 
