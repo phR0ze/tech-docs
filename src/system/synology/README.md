@@ -11,12 +11,15 @@
   * [QuickConnect](#quickconnect)
 
 ### Linked pages
+* [Adguard](adguard/README.md)
 * [Backup](backup/README.md)
 * [NFS](nfs/README.md)
 * [SMB](smb/README.md)
-* [Synology Drive](drive/README.md)
-* [Synology Photos](photos/README.md)
-* [Synology Snapshots](snapshots/README.md)
+* [Drive](drive/README.md)
+* [Photos](photos/README.md)
+* [Portainer](portainer/README.md)
+* [Snapshots](snapshots/README.md)
+* [Tailscale](tailscale/README.md)
 
 ## Getting started
 

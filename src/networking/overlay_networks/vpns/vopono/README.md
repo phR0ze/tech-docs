@@ -1,4 +1,4 @@
-# Vopono <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
+# Vopono <img style="margin: 6px 13px 0px 0px" align="left" src="../../../../data/images/logo_36x36.png" />
 
 Vopono provides the ability to run specific applications through a VPN tunnel using network 
 namespaces. This allows for specific applications to run through a VPN tunnel while the rest of your 
