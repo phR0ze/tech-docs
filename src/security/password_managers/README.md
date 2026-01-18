@@ -4,6 +4,8 @@
 * [.. up dir](..)
 # [Bitwarden](#bitwarden)
 # [Buttercup](#buttercup)
+# [KeepassXC](#keepassxc)
+  # [TOTP Support](#totp-support)
 
 ## Bitwarden
 
@@ -32,6 +34,12 @@ Maintained fork of KeePassX which was the original port of KeePass to Linux.
 **Cons**
 * A bit dated looking
 
-<!-- 
-vim: ts=2:sw=2:sts=2
--->
+### TOTP Support
+KeePassXC now supports TOTP.
+
+1. Create a password entry in KeePassXC
+2. Right click on it an select `TOTP >Set up TOTP...`
+3. On the next screen entry the QR Code translated to a text code
+   1. You can use a screen capture tool like `Share X`
+   2. From the decoded URL copy out the value to the `secret` property
+   3. Alternatively most will have can't scan QR code and display text

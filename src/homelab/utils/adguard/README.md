@@ -7,8 +7,9 @@ solution called ***AdGuard Home*** that competes with other open source options 
 ### Quick links
 * [Overview](#overview)
 * [Install Adguard Home](#install-adguard-home)
-  * [Install on NixOS](#install-on-nixos)
-  * [Install on Proxmox](#install-on-proxmox)
+  * [Install via NixOS](#install-via-nixos)
+  * [Install via Proxmox](#install-via-proxmox)
+  * [Install via Portainer](#install-via-portainer)
 * [Configure Adguard Home](#configure-adguard-home)
   * [Basic settings](#basic-settings)
   * [DNS blocklists](#dns-blocklists)
@@ -17,6 +18,7 @@ solution called ***AdGuard Home*** that competes with other open source options 
   * [Custom filtering rules](#custom-filtering-rules)
   * [Manually block from query log](#manually-block-from-query-log)
   * [Setup device profiles](#seteup-device-proviles)
+  * [Pre-seed](#pre-seed)
 * [Configure Router](#configure-router)
   * [Configure LAN DNS](#configure-lan-dns)
 * [Configure Clients](#configure-clients)
@@ -48,7 +50,7 @@ blocked components may leave noticible gaps or layout issues.
 
 ## Install Adguard Home
 
-### Install on NixOS
+### Install via NixOS
 
 **References**
 * [Adguard Home - NixOS docs](https://wiki.nixos.org/wiki/Adguard_Home)
@@ -88,7 +90,7 @@ services.adguardhome = {
 };
 ```
 
-### Install on Proxmox
+### Install via Proxmox
 Using the proxmox helper scripts we can easily install an AdGuard Home linux container
 
 1. Copy the Proxmox helper script
@@ -116,12 +118,82 @@ Using the proxmox helper scripts we can easily install an AdGuard Home linux con
    4. Set a static ip for your instance e.g. `192.168.1.53/24` and gateway
    5. Reboot the container
 
+### Install via Portainer
+***WARNING*** see [pre-seed the adguard configuration file](#configure)
+
+**References**
+* [Docker hub instructions](https://hub.docker.com/r/adguard/adguardhome)
+
+1. Launch Portainer
+2. Click `Stacks` on the left hand side then `+ Add stack`
+3. Name the stack `adguard`
+4. Build out the `docker-compose.yml` and paste into the web editor
+   1. Starting from the yaml below copied from the docker hub instructions
+     ```yaml
+     docker run --name adguardhome\
+       --restart unless-stopped\
+       -v /my/own/workdir:/opt/adguardhome/work\
+       -v /my/own/confdir:/opt/adguardhome/conf\
+       -p 53:53/tcp -p 53:53/udp\
+       -p 67:67/udp -p 68:68/udp\
+       -p 80:80/tcp -p 443:443/tcp -p 443:443/udp -p 3000:3000/tcp\
+       -p 853:853/tcp\
+       -p 784:784/udp -p 853:853/udp -p 8853:8853/udp\
+       -p 5443:5443/tcp -p 5443:5443/udp\
+       -d adguard/adguardhome
+     ```
+   2. Use [Composerize](https://www.composerize.com/) to convert into a compose file
+      ```yaml
+      services:
+        adguardhome:
+          image: adguard/adguardhome:v0.107.71
+          container_name: adguard
+          restart: unless-stopped
+          security_opt:
+            - no-new-privileges:true  # enhance security
+          network_mode: host          # use host mode for DNS reliabliity
+          mem_limit: 1g               # limit to no more than 1g
+          cpu_shares: 768             # limit to no more than 768 shares
+          environment:
+            TZ: America/Boise
+          volumes:
+            - /volume1/docker/adguard/work:/opt/adguardhome/work:rw
+            - /volume1/docker/adguard/conf:/opt/adguardhome/conf:rw
+          # Ports will be dropped as were using hostmode
+          # - instead configure using AdGuardHome.yaml in the conf dir
+          # ports:
+          #   - 53:53/tcp         # plain DNS
+          #   - 53:53/udp         # plain DNS
+          #   - 67:67/udp         # optional for DHCP
+          #   - 68:68/udp         # optional for DHCP
+          #   - 80:80/tcp         # optional admin portal
+          #   - 443:443/tcp       # optional admin portal
+          #   - 443:443/udp       # optional admin portal
+          #   - 3000:3000/tcp     # admin portal
+          #   - 853:853/tcp       # optional DNS over TLS
+          #   - 784:784/udp       # optional DNS over QUIC
+          #   - 853:853/udp       # optional DNS over QUIC
+          #   - 8853:8853/udp     # optional DNS over QUIC
+          #   - 5443:5443/tcp     # optional DNS crypt
+          #   - 5443:5443/udp     # optional DNS crypt
+      ```
+   3. Delete the project name line at the top
+   4. static image version e.g. `adguard/adguardhome:v0.107.71`
+   5. Add `security_opt: - no-new-privileges: true` to constrain the container
+   6. Change the volumes as desired e.g. on synology `/volume1/docker/adguard/`
+      * Also suffix the volumes with `:rw`
+   7. Remove the ports and instead use host mode for reliable DNS
+      ```yaml
+      network_mode: host
+      ```
+   8. Set the timezone to your local e.g. `TZ: America/Boise`
+5. Click `Deploy the stack`
+
 ## Configure Adguard Home
 
 ### Basic settings
 1. Configure first run wizard
-   1. Open a browser up to e.g. `http://192.168.1.53:3000` this will change to just port `80` after 
-      the first run configuration is done
+   1. Open a browser up to e.g. `http://192.168.1.5:3000`
    2. Switch to dark mode but clicking the button at the bottom
    3. Advance through the setup leaving the defaults
    4. Create an administrator account
@@ -139,10 +211,18 @@ Using the proxmox helper scripts we can easily install an AdGuard Home linux con
    1. Replace the default `https://dns10.quad9.net/dns-query` with cloudflare's 
       `https://dns.cloudflare.com/dns-query`
    2. Scroll down and set the fallback to `https://dns10.quad9.net/dns-query`
+   3. Change `Boostrap DNS servers` to:
+      ```
+      1.1.1.1
+      9.9.9.10
+      ```
    3. Click the `Test upstreams`
    4. Click the `Apply`
    5. Change `DNS server configuration >Rate limit` to `0`
    6. Click `Save`
+3. Navigate to `Settings >DNS settings >Access settings`
+   1. Add any clients that should be blocked entirely to `Disallowed clients` list
+      * Note: this is where entries go when you select `Query Log >... >Dissallow this client`
 
 ### DNS blocklists
 There are many blocklists that are compatible with AdGuard Home
@@ -158,26 +238,41 @@ There are many blocklists that are compatible with AdGuard Home
 1. Login to AdGuard Home
 2. Navigate to `Filters >DNS blocklists`
 3. Click `Add blocklist` then `Choose from the list`
+  * Note: small, big are addative so pick one
+  * Note: normal, pro, pro++ are also addative so pick one
   * General
-    * `AdAway Default Blocklist`
+    * `1Hosts (Lite)`
+      * Xtra blocked public libraries
+    * `AdGuard DNS filter`
     * `AdGuard DNS Popup Hosts filter`
     * `AWAvenue Ads Rule`
     * `Dan Pollock's List`
     * `HaGeZi's Pro++ Blocklist`
     * `OISD Blocklist Big`
     * `Peter Lowe's Blocklist`
+    * `ShadowWhisperer Tracking List`
     * `Steven Black's List`
   * Other
     * `Dandelion Sprout's Anti Push Notifications`
     * `Dandelion Sprout's Game Console Adblock List`
     * `HaGeZi's Allowlist Referral`
+    * `HaGeZi's Anti-Piracy Blocklist`
+    * `HaGeZi's Apple Tracker Blocklist`
+    * `HaGeZi's Gambling Blocklist`
+    * `HaGeZi's OPPO & Realme Tracker Blocklist`
     * `Perflyst and Dandelion Sprout's Smart-TV Blocklist`
+    * `ShadowWhisperer's Dating List`
+    * `Ukrainian Security Filter`
   * Security
     * `Phishing URL Blocklist (PhishTank and OpenPhish)`
     * `Dandelion Sprout's Anti-Malware List`
     * `HaGeZi's Badware Hoster Blocklist`
+    * `HaGeZi's DNS Rebind Protection`
     * `HaGeZi's DynDNS Blocklist`
+    * `HaGeZi's Encrytped DNS/VPN/TOR/Proxy Bypass`
+    * `HaGeZi's The World's Most Abused TLDs`
     * `HaGeZi's Threat Intelligence Feeds`
+    * `HaGeZi's URL Shortener Blocklist`
     * `NoCoin Filter List`
     * `Phishing Army`
     * `Scam Blocklist by DurableNapkin`
@@ -190,6 +285,9 @@ There are many blocklists that are compatible with AdGuard Home
     * [EasyList](https://v.firebog.net/hosts/Easylist.txt)
     * [EasyPrivacy](https://v.firebog.net/hosts/Easyprivacy.txt)
     * [Blocklist adult content](https://blocklistproject.github.io/Lists/adguard/porn-ags.txt)
+4. Navigate to `Filters >DNS allowlists`
+   1. Click `Add allowlist`
+   2. Fill out [phR0ze allows](https://raw.githubusercontent.com/phR0ze/adguard-lists/refs/heads/main/allow/allow.txt)
 
 ### Local DNS entries
 You can use AdGuard Home to setup DNS names for your local systems so you can stop using their IP 
@@ -224,13 +322,16 @@ AdGuard Home supports custom one off rules to block or allow sites
 ||analytics.twitter.com^$important
 ||app.adjust.*^$important
 ||app.*.adjust.com^$important
-||app.appsflyer.com^$important
 ||doubleclick.net^$important
 ||googleadservices.com^$important
 ||guce.advertising.com^$important
 ||metric.gstatic.com^$important
 ||mmstat.com^$important
 ||statcounter.com^$important
+# Block firefox telemetry
+||firefox.settings.services.mozilla.com^$important
+||firefox-settings-attachments.cdn.mozilla.net^$important
+||getpocket.cdn.mozilla.net^$important
 ```
 
 ### Manually block from query log
@@ -253,6 +354,52 @@ IPs for your devices.
 2. Click the drop down options elipse for an entry and choose `Add as a persistent client`
 3. For well known IOT devices you might want to also simply ignore them in the logs
 
+### Pre-seed
+You can pre-create the configuration file e.g. `/volume1/docker/adguard/conf/AdGuardHOme.yaml` before
+you start the app and it will load all those configuration values.
+
+```yaml
+http:                                   # Web interface configuration section
+  address: 0.0.0.0:3000                 # address and port 3000 to use for UI
+  session_ttl: 720h                     # Upstream default ttl
+  pprof:
+    enabled: false                      # Disable profiling
+https:
+  enabled: false                        # Disable the https UI access
+theme: dark                             # Use the dark theme
+dhcp:
+  enabled: false                        # Disable DHCP server
+tls:
+  enabled: false                        # Nothing fancy just plain DNS
+dns:
+  bind_hosts:
+    - 0.0.0.0
+  port: 53
+  upstream_dns:
+    - https://dns.cloudflare.com/dns-query
+  fallback_dns:
+    - https://dns10.quad9.net/dns-query
+user_rules:
+  - "# Block Ads/Tracking not blocked by AdGuard"
+  - "||adservice.google.*^$important"
+  - "||adsterra.com^$important"
+  - "||amplitude.com^$important"
+  - "||analytics.edgekey.net^$important"
+  - "||analytics.twitter.com^$important"
+  - "||app.adjust.*^$important"
+  - "||app.*.adjust.com^$important"
+  - "||app.appsflyer.com^$important"
+  - "||doubleclick.net^$important"
+  - "||googleadservices.com^$important"
+  - "||guce.advertising.com^$important"
+  - "||metric.gstatic.com^$important"
+  - "||mmstat.com^$important"
+  - "||statcounter.com^$important"
+  - "# Block firefox telemetry"
+  - "||firefox.settings.services.mozilla.com^$important"
+  - "||firefox-settings-attachments.cdn.mozilla.net^$important"
+  - "||getpocket.cdn.mozilla.net^$important"
+```
 
 ## Configure Router
 
@@ -260,7 +407,8 @@ IPs for your devices.
 For your LAN you'll want to configure your DHCP server on your router to use your local DNS service 
 as the default DNS service that will be passed to clients receiving networking settings via DHCP.
 
-* Specify `DNS Server` and the value e.g. `192.168.1.53`
+* Navigate to your DHCP settings
+* Specify `DNS Server` and the value e.g. `192.168.1.5`
 
 ## Configure Clients
 
