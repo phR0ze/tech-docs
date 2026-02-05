@@ -1,11 +1,6 @@
-# LineageOS <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
+# Pixel 8 Pro <img style="margin: 6px 13px 0px 0px" align="left" src="../../../../data/images/logo_36x36.png" />
 
-LineageOS provides and open source alternative to cellphone vendor distributed Android versions. 
-
-LineageOS:
-* removes cellphone vendor garbage
-* provides support for older devices including security patches
-* includes community driven customization on top of Android
+Instructions for installing LineageOS 23 i.e. Android 16 on my Pixel 8 Pro
 
 ### Quick links
 * [.. up dir](..)
@@ -21,11 +16,6 @@ LineageOS:
 * [Root LineageOS](#root-lineageos)
 * [Config LineageOS](#config-lineageos)
   * [Use Google Apps](#use-google-apps)
-
-### Linked pages
-* [LG G6 H872](lg_g6_h872/README.md)
-* [Pixel 4 XL](pixel_4_xl/README.md)
-* [Pixel 8 Pro](pixel_8_pro/README.md)
 
 ## Overview
 

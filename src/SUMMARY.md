@@ -237,6 +237,8 @@
     - [iodeOS](system/android/iodeos/README.md)
     - [LineageOS](system/android/lineageos/README.md)
       - [LG G6 H872](system/android/lineageos/lg_g6_h872/README.md)
+      - [Pixel 4 XL](system/android/lineageos/pixel_4_xl/README.md)
+      - [Pixel 8 Pro](system/android/lineageos/pixel_8_pro/README.md)
   - [Desktop Environments](system/desktop_environments/README.md)
     - [System 76](system/desktop_environments/system_76/README.md)
     - [XFCE](system/desktop_environments/xfce/README.md)
