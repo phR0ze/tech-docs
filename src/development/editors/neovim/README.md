@@ -28,7 +28,8 @@ NeoVim is a fork of Vim aiming to improve user experience and plugin implementat
 * [Word Processing](word_processing/README.md)
 
 ## Keymaps
-Although there are neat tools like ***which key*** that help it doesn't seem to catch them all.
+Although there are neat tools like ***which key*** that help it doesn't seem to catch them all so I'm
+documenting my keymaps here for reference.
 
 ### LSP keymaps
 
@@ -48,7 +49,7 @@ Although there are neat tools like ***which key*** that help it doesn't seem to 
   * `gD` - Goto Declaration, defined in snacks
   * `gI` - Goto the implementation for the item
   * `gr` - Show a list of references to the item
-
+ 
 ### Picker keymaps
 * Actions
   * `a` - add a new file

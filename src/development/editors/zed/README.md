@@ -7,13 +7,16 @@ for performance and modern use cases. They aim to focus on speed, `AI` and colla
 - [.. up dir](../README.md)
 * [Overview](#overview)
   * [Features](#features)
+  * [Basic operations](#basic-operations)
 * [Installation](#installation)
   * [Local Zed](#local-zed)
   * [Remote Zed](#remote-zed)
 * [Commands](#commands)
   * [Cheat Sheet](#cheat-sheet)
 * [Configuration](#configuration)
+  * [File locations]()
   * [NixOS](#nixos)
+  * [Claude](#claude)
 * [Debugging](#debugging)
 
 * [Troubleshooting](#troubleshooting)
@@ -58,7 +61,7 @@ which is a feature Zed provides.
 ### Remote Zed
 Zed has the ability to work with a remote system from your local system. In order to do so though the 
 Zed remote server needs installed on the remote system. As such the `zed-editor` package also 
-produces a `remote_server` binary that matches teh client version that is accessible in Nix as 
+produces a `remote_server` binary that matches the client version that is accessible in Nix as 
 `${pkgs.zed-editor.remote_server}/bin/remote_server`
 
 ## Commands
