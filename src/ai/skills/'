@@ -1,0 +1,144 @@
+# Skills <img style="margin: 6px 13px 0px 0px" align="left" src="../../../../data/images/logo_36x36.png" />
+
+Agent Skills are modular capabilities that extend Claude's functionality. Each Skill packages
+instructions, metadata, and optional resources (scripts, templates) that Claude uses automatically
+when relevant. The key benefits are:
+* Specialize Claude's focus
+* Reusable prompts with handy slash command or by agents
+* Composable in a chain
+
+### Quick Links
+- [.. up dir](..)
+- [Overview](#overview)
+  - [Directory Structure](#directory-structure)
+  - [Frontmatter](#frontmatter)
+  - [Prompt](#prompt)
+- [Markdown](#markdown)
+
+## Overview
+Skills much like the majority of AI orchestration is all natual language based. This can be
+unsettling and disorienting for those coming from a programming backtground where everything is very
+prescriptive. Skills are composed of two documents:
+1. YAML `frontmatter` document - composed of predefined fields for skill discovery
+2. Markdown `prompt` document - composed of free form markdown describing the skill
+
+**References**
+* [Claude skill cookbook](https://platform.claude.com/cookbook/skills-notebooks-01-skills-introduction)
+
+### Frontmatter
+The frontmatter yaml document at the top of the skill section does in fact use defined static field
+names for skill discovery.
+
+| Field          | Purpose                                          |
+| -------------- | ------------------------------------------------ |
+| name           | Creates the /rust-review slash command           |
+| description    | Lets Claude auto-invoke the skill when relevant  |
+| argument-hint  | Shows expected args in autocomplete              |
+| allowed-tools  | Tools usable without permission prompts          |
+| user-invocable | Set false to hide from / menu (default: true)    |
+| context: fork  | Run in an isolated subagent (read-only)          |
+| model          | Override model (e.g., opus)                      |
+
+### Prompt
+The prompt or body of the skill is natural language used to describe the procedural knowledge,
+workflows, best practices and general instructions used to carry out the desired operation. It is
+organized as a markdown document with natural language free form headers that you specify to attach
+meaning to your intent. This means there are no predefined headers or value to use other than a few
+general purpose ones:
+* Using the inline code space `foobar` will draw the AI's attention to an element and can be used to:
+  * suggest a link back to a header
+  * refer to other skills
+  * refer to documents
+* `IMPORTANT:` without the backticks is used to require the AI follow an instruction line
+
+### Directory
+
+
+## Markdown
+Turns out this skill is able to convert from images or other formats as well into nicely formatted markdown.
+
+```md
+---
+name: markdown
+description: Convert text to raw markdown. Use when asked to "/markdown", "convert to markdown", or "format as markdown".
+version: 1.0.0
+---
+
+# Purpose
+Convert text to markdown
+
+# Constraints
+* Output raw markdown inside a fenced code block (```markdown ... ```).
+* Do not add trailing whitespace on any line.
+
+## Tables
+* Align all pipe characters with padding.
+* Include a dashed header separator row.
+```
+
+## Review Rust
+```md
+---
+name: rust-review
+description: Review Rust code for correctness, performance, idioms, and safety.
+argument-hint: [file-or-path]
+allowed-tools: Read, Grep, Glob, Bash(cargo *)
+---
+
+# Rust Code Review
+
+Review the provided Rust code: `$ARGUMENTS`
+
+## Criteria
+
+### Correctness
+- Proper error handling, lifetimes, and ownership
+- No unnecessary unsafe blocks
+
+### Performance
+- Avoid unnecessary allocations and clones
+- Appropriate algorithmic complexity
+
+### Idiomatic Style
+- Rust naming conventions (snake_case, PascalCase)
+- Prefer pattern matching, Result/Option over exceptions-style code
+
+### Safety
+- Justified unwrap()/expect() calls
+- Bounds checking
+
+## Output Format
+
+- **Summary**: 1-2 sentence assessment
+- **Issues**: Critical problems first
+- **Suggestions**: Concrete improvements with code examples
+```
+
+## Prime context
+```md
+---
+description: Load context for a new agent session by analyzing codebase structure and README
+allowed-tools: Bash, Read
+---
+
+# Prime
+This command loads essential context for a new agent session by examining the codebase structure and
+reading the project README.
+
+## Instructions
+
+- Run `git ls-files` to understand the codebase structure and file organization
+- Read the README.md to understand the project purpose, setup instructions, and key information
+- Provide a concise overview of the project based on the gathered context
+
+## Context
+
+- Codebase structure git accessible: !`git ls-files`
+- Codebase structure all: !`eza . --tree`
+- Project README: @README.md
+- Documentation:
+  - @.ai/cc_hooks_docs.md
+  - @.ai/uv-single-file-scripts.md
+
+When you finish run the tts summary agent, and let the user know you are done.
+```

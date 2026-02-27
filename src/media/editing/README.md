@@ -10,6 +10,7 @@
   * [Drop tracks](#drop-tracks)
   * [Cut video](#cut-video)
   * [losslesscut](#losslesscut)
+* [Speed up a slow motion video](#speed-up-a-slow-motion-video)
 * [Extracting specific chapters](#extracting-specific-chapters)
 * [Burning an DVD](#burning-an-dvd)
 * [Lossless Rotate](#lossless-rotate)
@@ -137,6 +138,22 @@ $ mkvmerge -o output.mkv --split parts:00:00:27.945-01:43:21.696 input.mkv
    2. Choose the Output container format e.g. `mp4`
    3. Select the appropriate audio and subs tracks to keep
    4. Finally click the `Export+merge` button again
+
+## Speed up a slow motion video
+
+### First determine the speed
+1. Run the tool
+   ```bash
+   $ ffprobe input.mp4
+   ```
+2. Find the fps output e.g. `120 fps`
+
+### Execute the speed up
+ffmpeg is going to be your best bet
+
+```bash
+$ ffmpeg -i input.mp4 -vf "setpts=0.25*PTS" -af "atempo=2.0,atempo=2.0" output.mp4
+```
 
 ## Extracting specific chapters
 Note often when doing a full dvd backup the first chapter will be the menu

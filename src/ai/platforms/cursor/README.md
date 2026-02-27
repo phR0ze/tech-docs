@@ -1,4 +1,4 @@
-# Cursor <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
+# Cursor <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
 Cursor laude's itself as the AI Code Editor. Essentially the took the open source Code editor and 
 layered in AI to make development easier. This has the advantage of being more thoroughly integrated 

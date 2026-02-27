@@ -2,14 +2,12 @@
 
 Instructions for installing LineageOS 23 i.e. Android 16 on my Pixel 4 xl
 
-WIP: starting from my Pixel 8 Pro instructions
-
 ### Quick links
 * [.. up dir](..)
 * [Overview](#overview)
   * [Versions](#versions)
+  * [Prerequisites](#prerequisites)
 * [Unlock bootloader](#unlock-bootloader)
-  * [First test SIM card](#first-test-sim-card)
   * [Enable OEM unlocking](#enable-oem-unlocking)
   * [Bootloader unlock process](#bootloader-unlock-process)
 * [Installation](#installation)
@@ -22,7 +20,8 @@ WIP: starting from my Pixel 8 Pro instructions
 ## Overview
 
 ### Versions
-The Pixel 8 Pro ships with Android 14 and supports the latest which is Android 16 as of Dec 2025.
+The Pixel 4 XL ships with Android 10 and supported up to Android 13, but LineageOS has extended that
+up to Android 16 with LineageOS 23.0
 
 | LineangeOS  | Android 
 | ----------- | -----------------
@@ -31,40 +30,11 @@ The Pixel 8 Pro ships with Android 14 and supports the latest which is Android 1
 | `22.2`      | 15
 | `23`        | 16
 
+### Prerequisites
+On NixOS you'll need to install `android-tools` to get `adb` and `fastboot`
+
 ## Unlock bootloader
 The primary reason to unlock your bootloader is to be able to flash custom ROMs such as LineageOS
-
-### Prerequisites
-1. On NixOS install `android-tools` to get `adb` and `fastboot`
-2. Upgrade or downgrade your vendor provided Android version to match the LineageOS version
-
-### First test SIM card
-Before attempting to unlock the bootloader first ensure your device works with your SIM card. To do 
-so safely you'll want to reset the device then work through the first run wizard then install your 
-SIM card and test that it works.
-
-1. Work through first run wizard
-  * Android 14
-    1. Select `Get started`
-    2. Select `Skip` to avoid setting up with another phone
-    3. Select `Set up offline` 
-    4. Select `Skip`, `Continue` for rest
-  * Android 16
-    1. Select the big forward arrow
-    2. Select `English`
-    3. Select `Skip` to avoid set up using another device
-    4. Select `Skip` to avoid Wi-Fi setup
-    5. Select `Set up offline` to skip and `Continue`
-    6. Set the date, pin and ignore everything else
-
-2. Factory reset to ensure everything is kosher
-   1. Navigate to `Settings >System >Reset options`
-   2. Select `Erase all data (factory reset)`
-
-3. Load SIM card
-   1. Power down the phone
-   2. Plug in the SIM card
-   3. Power the phone back up
 
 ### Enable OEM unlocking
 1. Enable developer mode
@@ -83,37 +53,35 @@ SIM card and test that it works.
    3. [Enable OEM unlocking](#enable-oem-unlocking)
 2. Activate debugging on your phone
    1. Plug your device into your computer using a USB cable
-   2. On the phone check the box for `Allow USB debugging?`
+   2. Open a shell on your PC and run `adb devices`
+   3. On the phone check the box for `Allow USB debugging?` in the pop up dialog
    3. Then hit the `Allow`
-3. Open a shell and run `adb devices` and ensure your device is listed
-   * Ensure that it doesn't say `unauthorized` otherwise see step #1 again
-4. Now reboot the phone into the bootloader
+   4. Rerun `adb devices` on the PC and ensure the `unauthorized` changes to `device`
+3. Now reboot the phone into the bootloader
    1. With the device powered on run `adb reboot bootloader`
    * you should see the bootloader screen and in red `Fastboot Mode`
-5. Now unlock the bootloader
+4. Now unlock the bootloader
    1. Run `fastboot flashing unlock`
    2. On the phone use the volume keys to switch to `Unlock the bootloader`
    3. Press the power button to activate that option
    4. Validate it worked, on pc run: `fastboot getvar unlocked`
+   5. Exit: `fastboot reboot`
 
 ## Installation
-I'll be using the Pixel 8 Pro in my installation steps and [LineageOS Wiki install guide]()
-
-**References**
-* [Google Pixel 8 Pro - LineageOS Wiki](https://wiki.lineageos.org/devices/husky/)
+[Google Pixel 4 XL - LineageOS Wiki](https://wiki.lineageos.org/devices/coral/)
 
 ### Upgrade Android
-The first thing you'll want to do is upgrade to the latest Android version that corresponds with the 
-LineageOS version that your using. For Pixel devices it is not necessary to upgrade to intermediate 
-versions first. For example the Pixel 8 Pro shipped with Android 14 and I'll be jumping straight to 
-Android 16.
+For the Pixel 4 XL we need to upgrade to the newest version of Android that was available for this
+device which is Android 13.
+
+Note: if your already running an older version of LineageOS you'll first need to 
 
 1. First [unlock the bootloader](bootloader-unlock-process)
 
-4. Download the Android image
+2. Download the Android image
    1. Navigate to [Developers Android Images](https://developers.google.com/android/images)
-   2. Search for `"husky" for Pixel 8 Pro`
-   2. Download Android 16 latest `BP4A.251205.006, Dec 2025`
+   2. Search for `"coral" for Pixel 4 XL`
+   2. Download the very last one Android 13.0.0 `13.0.0 (TP1A.221005.002.B2, Feb 2023)`
       * File is named `husky-bp4a.251205.006-factory-1ffce50c.zip`
    3. Unzip the OTA image
 
@@ -142,33 +110,24 @@ Android 16.
    11. Run: `adb sideload husky-ota-bp4a.251205.006-c5c57836.zip`
    12. Once complete boot the system into Android OS ensuring it boots successfully
 
+
 ### Flash LineageOS to Device
 Once the prerequisite [upgrade of Android](#upgrade-android) has been done then we can move on to 
 switching over to LineageOS.
 
 1. Download the images artifacts
-   1. Navigate to [LineangeOS husy images](https://download.lineageos.org/devices/husky)
+   1. Navigate to [LineangeOS coral images](https://download.lineageos.org/devices/coral/builds)
    2. Download:
+     * `lineage-23.2-20260208-nightly-coral-signed.zip`
      * `boot.img`
      * `dtbo.img`
-     * `vendor_boot.img`
-     * `vendor_kernel_boot.img`
-     * `lineage-23.0-20251205-nightly-husky-signed.zip`
-3. Reboot into bootloader `adb reboot bootloader` then run
-   ```bash
-   $ fastboot flash boot boot.img
-   $ fastboot flash dtbo dtbo.img
-   $ fastboot flash vendor_kernel_boot vendor_kernel_boot.img
-   $ fastboot flash vendor_boot vendor_boot.img
-   ```
-4. Reboot into new Lineage Recovery `adb reboot recovery`
-5. Pepare for the Lineage OS install
-   1. Tap `Factory Reset`
-   2. `Format data/factory reset` and confirm
-   3. Return the the main menu
-6. Sideload the LineageOS `.zip` but do not reboot
-   1. On the device tap `Apply Update` then `Apply from ADB`
-   2. On PC run: `adb -d sideload lineage-23.0-20251205-nightly-husky-signed.zip`
+     * `super_empty.img`
+     * `vbmeta.img`
+3. Reboot into LineageOS recovery sideload tool:
+   1. Run: `adb -d reboot sideload`
+      * The phone will be in LineageOS recovery with `ADB Sideload` and `Cancel` selected
+   2. Install latest LineageOS, run: `adb -d sideload lineage-23.2-20260208-nightly-coral-signed.zip`
+      * It should finish with `Reboot system now` selected
    3. Reboot to recovery to start installing add-ons
 7. Install Google add-ons
    1. Navigate to [the google apps](https://wiki.lineageos.org/gapps/) page
