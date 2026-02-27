@@ -77,7 +77,3 @@ Note: this fixed my slow google docs experience
 2. Hit the `Restart` button
 3. Click the `Refresh Firefox` button
 4. Click `Refresh Firefox`, it won't clear bookmarks
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

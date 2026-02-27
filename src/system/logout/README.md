@@ -24,7 +24,3 @@ date I've only found a few but `oblogout` seems to have been the first.
 
 It has since been moved out of main line into the AUR as its not being actively maintained and is
 using python2 dependencies `python2-pillow` and `python2-dbus`
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

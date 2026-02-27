@@ -121,7 +121,3 @@ services similar to other authenticator apps.
 
 **Cons**
 * A bit simplistic looking
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

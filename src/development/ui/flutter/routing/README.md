@@ -106,7 +106,3 @@ errorBuilder: (context, state) {
 ### ShellRoute
 Go router has different kinds of routes. The `ShellRoute` is a basic container that provides a 
 `builder` where any content widgets would get rendered.
-
-<!-- 
-vim: ts=2:sw=2:sts=2
---

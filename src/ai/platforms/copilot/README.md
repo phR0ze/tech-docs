@@ -72,7 +72,3 @@ it limits chat requests to 50 per month and 2000 code completions wihch is nothi
  5. Click `Authorize Visual-Studio-Code`
  6. The Copilot robot should show up in the bottom right left of all other icons
 
-<!-- 
-vim: ts=2:sw=2:sts=2
--->
-

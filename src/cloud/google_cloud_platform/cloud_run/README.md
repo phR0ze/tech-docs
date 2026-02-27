@@ -50,7 +50,3 @@ Firebase is Google's app development platform for building and hosting apps and 
 
 * Vanity `NAME.web.app` subdomain and free custom domains
 * Access to a global CDN that requires effectively no additional configuration
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

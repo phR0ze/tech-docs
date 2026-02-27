@@ -299,7 +299,3 @@ nnoremap  <silent> <s-tab>  :if &modifiable && !&readonly && &modified <cr> :wri
 nnoremap <leader>b :buffers<cr>:b<space> 
 nnoremap <leader>d :bdelete<cr>
 ```
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

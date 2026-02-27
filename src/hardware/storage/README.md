@@ -263,7 +263,3 @@ the RAID on the new server while keeping your data intact do the following:
    boot.swraid.enable = true;
    boot.swraid.mdadmConf
    ```
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

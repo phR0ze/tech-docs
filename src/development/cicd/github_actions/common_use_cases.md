@@ -172,7 +172,3 @@ jobs:
     - name: Build Docker image
       run: docker build . --file Dockerfile --tag alpine-base:${GITHUB_REF}
 ```
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

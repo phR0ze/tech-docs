@@ -106,7 +106,3 @@ jobs:
           MATRIX_CONTEXT: ${{ toJson(matrix) }}
         run: echo "$MATRIX_CONTEXT"
 ```
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

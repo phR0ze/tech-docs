@@ -18,7 +18,3 @@ that are non-empty.
 ### Get all records for a store
 The recommended way to get all records for a given store is to use the `find` functionality without a 
 filter.
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

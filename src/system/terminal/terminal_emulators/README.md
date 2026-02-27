@@ -97,7 +97,3 @@ key_bindings:
 Supposedly merged in with https://github.com/alacritty/alacritty/pull/2786
 
 1. lkj
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

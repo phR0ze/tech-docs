@@ -118,7 +118,3 @@ tee .vscode/tasks.json <<EOL
 }
 EOL
 ```
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

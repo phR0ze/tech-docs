@@ -34,7 +34,3 @@ per year on determining which tool to use and where to get the data.
 ### AppSheet
 AppSheet powers no-code apps for Google Workspace i.e. build solutions that simplify work without 
 coding using GenAI. It is an interactive dialog with DuetAI to build your app for you.
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

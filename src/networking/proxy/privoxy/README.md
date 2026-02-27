@@ -88,7 +88,3 @@ kids.example.com
 toys.example.com
 games.example.com
 ```
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

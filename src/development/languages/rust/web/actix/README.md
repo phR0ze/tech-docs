@@ -46,7 +46,3 @@ same url path prefix. The application prefix always contains a leading `/` slash
 prefix does not contain the leading `/` slash it is automatically inserted. For an application with 
 scope `/app` any request of the form `/app`, `/app/`, or `/app/test` would match while `/application` 
 would not.
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

@@ -39,7 +39,3 @@ All the sections below are UI sidebar entries
 
 ### Alert Coverage Gaps
 * Selecting an entry and clicking `Alert` will provide some suggested alerts
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

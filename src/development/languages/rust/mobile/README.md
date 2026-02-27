@@ -78,7 +78,3 @@ founder of Red Badger.
 
 ## Bazel
 Bazel makes building Rust for mobile platforms easier.
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

@@ -498,7 +498,3 @@ Wrapper around Nvidia's PhysX
 # Gaming theory
 
 ## Entity Component Systems (ECS)
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

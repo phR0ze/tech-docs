@@ -227,7 +227,3 @@ The [MATE Desktop](https://mate-desktop.com/) is a fork of `GNOME 2`. I'm evalua
 the [XUbuntu](https://xubuntu.org/download) distro.
 
 * GTK+ toolkit
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

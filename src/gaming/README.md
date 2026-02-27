@@ -11,7 +11,3 @@ Documentation for various game configurations
 * [Wine](wine/README.md)
 * [Wii Backup Manager](wii_backup_manager/README.md)
 * [Warcraft 2 - Battle.net Edition](warcraft2/README.md)
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

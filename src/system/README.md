@@ -451,7 +451,3 @@ sudo systemctl start shutdown.timer
    $ update-mime-database ~/.local/share/mime
    ```
 5. Relog
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

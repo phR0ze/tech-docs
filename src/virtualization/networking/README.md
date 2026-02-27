@@ -105,7 +105,3 @@ ip route add 192.168.1.60/32 dev macvlan0
 ```bash
 ip route del 192.168.1.0/24
 ```
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

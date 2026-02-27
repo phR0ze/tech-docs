@@ -8,7 +8,3 @@
 * [Markdown](markdown/README.md)
 * [Ruby](ruby/README.md)
 * [Rust](rust/README.md)
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

@@ -417,7 +417,3 @@ $ nix-shell -p cowsay --run "cowsay Nix"
 ### Search for packages
 You can [search the NixOS packages](https://search.nixos.org/packages)
 
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

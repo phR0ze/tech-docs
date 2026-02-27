@@ -218,7 +218,3 @@ Note for title block you'll need to change the template to `Arch_D_Landscap_cust
 
 
 ### Insert dimensions
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

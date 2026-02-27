@@ -9,7 +9,3 @@ suckless philosophy tabbed provides tabbing for all rather than having each appl
 their own tabbing capabilities.
 
 Tabbed adds a generic tabbed frontend to xembed aware applictions.
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

@@ -79,7 +79,3 @@ into your go path and keep it up to date i.e. `~/Projects/go/bin` for cyberlinux
     ]
 }
 ```
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

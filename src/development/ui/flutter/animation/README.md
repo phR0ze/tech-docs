@@ -326,7 +326,3 @@ The SlideTransition takes the result of a `Tween<Offset>`
 
 ### Animated Widget
 
-
-<!-- 
-vim: ts=2:sw=2:sts=2
---

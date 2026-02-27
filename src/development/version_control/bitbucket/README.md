@@ -62,7 +62,3 @@ Use SSH to avoid password prompts when you push code to Bitbucket
 4. Click the `SSH keys` option on the left
 5. Click `Add key`
 6. Give the key a label then paste in your public key
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

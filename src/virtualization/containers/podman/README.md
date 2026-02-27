@@ -210,7 +210,3 @@ NixOS allows for advanced declarative networking to allow containers to communic
 }
 ```
 
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

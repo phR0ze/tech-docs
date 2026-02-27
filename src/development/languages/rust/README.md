@@ -1533,7 +1533,3 @@ from another ecosystem. Rust makes working with c type libs a breeze.
 ## Go Interop
 Compile your Go code as a C Shared library https://github.com/vladimirvivien/go-cshared-examples then
 simply call it from Rust.
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

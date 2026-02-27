@@ -261,7 +261,3 @@ Flushes all DNS resource record caches the service maintains locally
 ```bash
 $ sudo resolvectl flush-caches
 ```
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

@@ -164,7 +164,3 @@ rows.Close()
 tx.Exec(insert_statement_2)
 tx.Commit()
 ```
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

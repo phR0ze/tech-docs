@@ -33,7 +33,3 @@ No Rust
 
 ## Progressive Web Apps
 Slow and lame
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

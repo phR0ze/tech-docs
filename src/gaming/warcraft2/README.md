@@ -117,7 +117,3 @@ will be `~/.wine/prefixes/warcraft2/drive_c/GOG\ Games/Warcraft\ II\ BNE/`
 5. Enter your desired username e.g. `foobar`
 6. Click `Create Game`
 7. Have other players follow same process then `Join Game`
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

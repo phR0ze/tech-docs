@@ -5,7 +5,3 @@ Documenting my learning experience with Rust Web frameworks
 ### Quick links
 * [.. up dir](..)
 * [Overview](#overview)
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

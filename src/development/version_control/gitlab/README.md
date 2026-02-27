@@ -36,7 +36,3 @@ Available right now for free to any GitLab user while in Beta.
 **Reference**
 * [Gitlab Pages docs](https://docs.gitlab.com/ee/user/project/pages/)
 * [100MB max artifact size](https://docs.gitlab.com/ee/administration/instance_limits.html)
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

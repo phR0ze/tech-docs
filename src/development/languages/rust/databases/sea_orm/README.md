@@ -154,7 +154,3 @@ generate the migration placeholder files then you can just copy those into place
    ```
 5. I modified the model structs to use `chrono::NaiveDateTime` manually.
 6. Additionally I modified the model structs to be `serde::{Deserialize, Serialize}`
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

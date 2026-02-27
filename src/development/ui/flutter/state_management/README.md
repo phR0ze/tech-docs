@@ -127,7 +127,3 @@ I'm going to implement a simple todo in both to sort out my take on the subject.
 * Riverpod
   * Access the state object from the UI using the `ref.read() ref.watch(), ref.listen()`
   * No need to create all the event files
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

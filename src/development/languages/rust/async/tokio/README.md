@@ -41,7 +41,3 @@ and logging.
 ## Bytes
 At the core, networking applications manipulate byte streams. Bytes provides a rich set of utilities 
 for manipulating byte arrays.
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

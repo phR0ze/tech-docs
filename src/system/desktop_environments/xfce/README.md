@@ -40,7 +40,3 @@ $ xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/presentation-mode 
 ```
 
 ## xfce4-terminal
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

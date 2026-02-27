@@ -120,7 +120,3 @@ The following creates a virtual bridge named `br0` using the physical link `eth0
    sudo ip link br0 down
    sudo ip link delete br0 type bridge
    ```
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

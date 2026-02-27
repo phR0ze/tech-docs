@@ -47,7 +47,3 @@ changed.
 
 7. Wrap todo page `body` with a `BlocListener`
 
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

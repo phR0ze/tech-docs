@@ -299,7 +299,3 @@ editor it's implemented for usually via a plugin or extension.
 Extensions are stored in ***~/.vscode/extensions***
 
 To clean up all extensions simply remove this directory
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

@@ -27,7 +27,3 @@ doesn't exist. It essentially lets the database know about the releationship so 
 contraints that the database will enforce.
 
 * [SQLite Foreign Key docs](https://www.sqlitetutorial.net/sqlite-foreign-key/)
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

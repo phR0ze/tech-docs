@@ -146,7 +146,3 @@ manager that you choose to display the view holder objects.
 * Create a `RecyclerView.ViewHolder` subclass
 * Create a `RecyclerView.Adapter` subclass
 * Use a `RecyclerView.LayoutManager` like the built in `linear layout manager` or `grid layout manager`
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

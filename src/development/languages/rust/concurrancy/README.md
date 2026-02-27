@@ -155,7 +155,3 @@ The naive way to write an application that works on many things at the same time
 thread for every task. This will lead to unsustainable amounts of overhead as the number of tasks 
 becomes large. Improving on this concept is to have a pool of worker threads that are reused and pull 
 work from a queue.
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

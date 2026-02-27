@@ -176,7 +176,3 @@ Has some initial work and toy apps but not ready for prime tine
 * 
 
 ### Flutter RS
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

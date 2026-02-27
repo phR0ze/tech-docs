@@ -349,6 +349,3 @@ $ nix copy your-config file:///path/to/usbstick/folder
 ```
 $ nix copy file:///path/to/usbstick/folder your-config 
 ```
-<!-- 
-vim: ts=2:sw=2:sts=2
--->
