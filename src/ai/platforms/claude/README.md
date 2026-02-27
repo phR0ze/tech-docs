@@ -171,6 +171,18 @@ difference would be that there is no code editing window to show you changes.
 
 I find the decoupling from a browser or the IDE to be freeing and exciting.
 
+#### Enterprise
+Enterprises have the option of configuring open telemetry configuration to track what their employees
+are doing with their Claude subscription. When configured Claude Code will send:
+
+- Token usage (input, output, cache)
+- Cost tracking
+- Tool execution details
+- Lines of code modified, git commits, PRs
+- Session activity and API error
+
+Essentially everything you do will be tracked and logged for scrutiny :(
+
 ## Getting started
 Claude Code can work in directly in your terminal to edit files, run commands and manage your entire
 project from the command line.
@@ -178,7 +190,7 @@ project from the command line.
 ### Install with NixOS
 The upstream Claude Code installation for NixOS is slightly older at `2.1.39` while the curl bashing
 approach provides the latest `2.1.45`, but isn't compatible with NixOS. So I've 
-[rolled my own](https://github.com/phR0ze/nixos-config/tree/main/options/development/claude-code) to keep
+[rolled my own](https://github.com/phR0ze/nixos-config/tree/main/options/apps/dev/claude) to keep
 up with latest:
 
 ### Install with curl
@@ -203,7 +215,9 @@ Super easy install method that gives you the latest version, but not compatible 
 2. Choose you're color theme
 
 3. Now you'll have to login via your browser
-   1. Choose `Anthropic Cosole account - API usage billing` for Enterprise accounts
+   1. Choose your login method. Most people will be using the first option
+      * `Claude account with subscription - Pro, Max, Team or Enterprise`
+      * `Anthropic Cosole account - API usage billing`
    2. You'll be prompted in a browser to `Authorize` Claude Code connecting to your Anthropic account
    3. Back in the shell it will say `Login successful. Press Enter to continue`
    4. Continue through the security warning
