@@ -1,59 +1,30 @@
 # AI <img style="margin: 6px 13px 0px 0px" align="left" src="../data/images/logo_36x36.png" />
 
-Documenting various AI technologies
+AI technology is moving fast.
 
 ### Quick Links
 - [.. up dir](..)
-* [Overview](#overview)
-  * [Protocols](#protocols)
-  * [Benefits](#benefits)
-  * [Platform](#platform)
-  * [Halucinations](#halucinations)
-* [Popular AI Tools](#popular-ai-tools)
-* [Prompt Engineering](#prompt-engineering)
+- [Overview](#overview)
+  - [Primitives](#primitives)
+  - [Protocols](#protocols)
+  - [Halucinations](#halucinations)
+  - [Progressive disclosure](#progressive-disclosure)
+- [Popular AI Tools](#popular-ai-tools)
+- [Prompt Engineering](#prompt-engineering)
 
 ### Linked pages
-- [Copilot](copilot/README.md)
-- [Cursor](cursor/README.md)
-- [Duet](duet/README.md)
+- [Agents](agents/README.md)
+- [Context Engineering](context_engineering/README.md)
+- [Platforms](platforms/README.md)
+- [Skills](skills/README.md)
  
 ## Overview
 AI is predicted to be a golden age of innovation rivaling Cloud, Mobile possibly Internet:
-
 * AI will touch every business in every sector
+* AI is a composition of LLMs (i.e. the model) and agents (i.e context, pompt and tools)
+* Engineers, with their rigorous conditioning in critical thinking, are potently positioned to orchestrate AI
 * AI is being democritized, meaning that it is available beyond just specialized situations and trained personel
-* Google is investing BIG across everything with its new [Vertex AI platform](https://cloud.google.com/vertex-ai)
 
-                               .----- AI Ecosystem ----.
-                          ..../                         \....
-                      Vertex AI                           Duet AI
-
-### Protocols
-* ***A2A (Agent2Agent)***
-  * Google introduced A2A
-  * Built to provide agents the ability to discover each other and negotiate tasks, exchange message 
-    and collaborate across systems.
-  * A2A allows agents to be part of a networked agentic team
-
-* ***MCP (Model Context Protocol)***
-  * Anthropic introduced MCP
-  * Equips agents to be able to interact with external tools
-
-* ***ADK (Agent Development Kit)***
-  * Google introduced ADK
-  * Purpose is to help developers build agents that can participate in A2A flows
-  * ADK provides prebuilt components to help devs build agents faster
-
-### Benefits
-AI can reduce toil and improve efficiency
-* Development
-  * Enhance unit test coverage
-  * Enhance documentation, summarize documents
-  * Create content using GenAI (Email)
-  * Automating business processes
-  * Referenceability is key to building confidence with GenAI
-
-### Platform
 Foundationally AI is built on top of ***Large language models*** which are:
   * ML algorithms that can recognize, predict, and generate human languages
   * Pre-trained on petabyte scale datasets of text, images, video, chat, audio etc...
@@ -66,6 +37,18 @@ demanding AI workloads. `TPUs` are specialized processors for machine learning c
 require more traffice to learn at first but later are more impactful with less power consumption.
 
 TPUs are 15-30 times faster than current GPUs for AI workloads
+
+### Primitives
+There are 4 core primitives in AI engineering: `Context`, `Model`, `Prompt`, `Tools`. An AI agent
+provides the context, prompt and tools to leverage the model.
+
+### Protocols
+There are a few protocols out there for interacting with LLMs, but Anthropic's MCP won the battle for
+dominance.
+
+* ***MCP (Model Context Protocol)***
+  * Anthropic introduced MCP
+  * Equips agents to be able to interact with external tools
 
 ### Halucinations
 AI has been plagued with what they call AI halucinations, in that you haven't been able to trust the 
@@ -89,7 +72,18 @@ This will get better over time but will likely always be a thing.
 | Synthesia       | Video
 | Zapier          | Automation
 
+### Progressive disclosure
+To protect context skills are loaded in a progressive way.
+1. Metadata
+   * Name: 64 chars
+   * Description: 1024 chars
+2. Full instructions
+   * should be < 5k tokens
+3. Linked files
+   * additional resources loaded only if needed
+
 ## Prompt Engineering
+The primitives in te LLMs understand natural language well enough
 In order to get the most out of AI you need to be good and coaxing AI to respond the way you want it 
 to. This is the art of prompt engineering.
 
@@ -104,100 +98,3 @@ to. This is the art of prompt engineering.
 * Answer the question below ***QUESTION***
 * Answer what's important. Be consice ***PERSONALIZATION***
 * If you are not sure then answer that you don't have enough information and hand over to human agent
-
-## AI Search
-Allows for followup questions about the same material. You have a context to work from.
-
-## Google Cloud Next 2023
-
-### Vertex AI
-Vertex AI is an enterprise ready generative AI. It allows you to take a snapshot of the Google LLMs 
-and train and work with it in your own secure private space without leaking your information back to 
-the whole.
-
-* Vertex platform is where all your AI needs run
-* You leverage Vertex AI for your own AI tools
-* GKE Enterprise "new offering" for AI training performance
-  * Mix of GPUs (A3 nvidia) and TPUs
-* Vertex Model Garden
-  * Ability to add third party models for use as well
-  * Llama 2 and Claude 2 (third party) along side PaLM API for text (first party)
-  * Tune and train on third party models while retaining control of your data
-  * Grounding - tune AI responses for your enterprise data
-    * e.g. question's about 401k once grounded will be specific to your company
-  * Extensions - allows devs to integrate real-time data nad real-world actions
-    * e.g. google built and partner built extensions for specific technologies
-  * Tuning - different levels
-    * Prompt design > Adapter tuning > Reinforcement > Full fine tuning 
-* New AI tools based on Vertex AI for generating applications for your use cases
-  * Simply describe the requirements and AI builds it for you
-
-### Chirp
-Speech to text model
-
-### Codey
-Text to code generation on Vertex AI
-
-  * Gitlabs is using this
-
-### Imagen
-Text to image generation on Vertex AI
-
-  * Provides Digital Watermarking for AI generated images in a way that is invisiable to the human eye
-  * Verification tools can be used to search for water marks to see if was generated by AI
-
-### Notes
-* Workload Optimized Infrstructure
-  * 
-
-* Duet AI
-  * AppSheet for Google Chat
-    * "I need to capture incident reports. Each incident has a type, a status, a description, and a 
-    date. Each incident should be assigned to a team member"
-    * "Type should be major or minor"
-    * Create App
-  * Unstructured audio capture with Duet AI
-  * Generate code
-    * Describe code to be generated
-    * Select generated code and say "write unit tests"
-
-* Cloud Run Jobs
-  * Run to completion capability for background work
-  * It hides all the infra complexity (serverless)
-  * When not running, costs nothing (serverless)
-
-* Complexity for shipping code
-  * How many engineers are required for a simple boolean change?
-  * How long does it take to build and deploy?
-  * Solve by empowering vertical and horizontal ownership
-  * Building extensible but shared infrastructure
-    * One over everything: one workload identity, one network, one ...
-  * Use open source tools and APIs where possible
-  * Platform and product architecture enables development and release velocity whether it's through 
-  pluggability or portability or use of shared services our goal is to deliver the best functionality 
-
-* `Cloud Build` and `Cloud Deploy` for CI and CD
-  * Just added console UI support showing pipelines
-  * Promoting images in UI, canary deployments etc...
-  * How to application respond to scaling events
-  * Infra is easy to maintain to spend more time adding value than keeping the lights on
-  * Cloud Run performance 1 always running instance, CPU boost
-  * Assured OSS checks
-
-* Secure Software Supply Chain (S3C)
-  * How are we securing out developer env
-  * How are we ensuring the integrity of the build process
-
-* Cloud Workstations
-  * vscode in the browser
-  
-* Jump Start Solutions
-  * Reduce toil by shifting it down into the platform
-  * Jump start provides a one click to deploy the resources needed automatically
-  * Shows products used, architecture, guided step by step guide and reference docs
-  * Jump start solutions are open source and available on github
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->
-

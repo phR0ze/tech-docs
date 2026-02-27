@@ -1,13 +1,19 @@
 # Summary
 
-[Tech Docs](README.md)
+[Tech Docs](./README.md)
 
 - [AI](ai/README.md)
-  - [Copilot](ai/copilot/README.md)
-  - [Cursor](ai/cursor/README.md)
-  - [Duet](ai/duet/README.md)
+  - [Agents](ai/agents/README.md)
+  - [Context Engineering](ai/context_engineering/README.md)
+    - [Spec Driven Dev](ai/context_engineering/spec_driven_dev/README.md)
+  - [Platforms](ai/platforms/README.md)
+    - [Claude](ai/platforms/claude/README.md)
+    - [Copilot](ai/platforms/copilot/README.md)
+    - [Cursor](ai/platforms/cursor/README.md)
+    - [Gemini](ai/platforms/gemini/README.md)
+  - [Skills](ai/skills/README.md)
 
-- [Databases](databases/README.md)
+- [Databases](./databases/README.md)
   - [EER Model](databases/eer_model/README.md)
   - [MySQL](databases/mysql/README.md)
     - [mycli](databases/mysql/mycli/README.md)
@@ -230,6 +236,8 @@
     - [JWT](security/iam/jwt/README.md)
     - [MFA](security/iam/mfa/README.md)
     - [OAuth](security/iam/oauth/README.md)
+    - [Solutions](security/iam/solutions/README.md)
+      - [Auth0](security/iam/solutions/auth0/README.md)
   - [Password Managers](security/password_managers/README.md)
 
 - [System](system/README.md)

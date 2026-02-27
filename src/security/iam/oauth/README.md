@@ -8,69 +8,138 @@ system. Thus you are authorizing one system to act on behalf of you on that othe
 * [.. up dir](..)
 * [Overview](#overview)
   * [Terms](#terms)
-  * [JSON Web Token](#json-web-token)
-  * [RFC 7662 Token Introspecdtion](#rfc-7662-token-introspection)
-  * [RFC 7009 Token Revocation](#rfc-7009-token-revocation)
-  * [RFC 8693 Token Exchange](#rfc-8693-token-exchange)
-  * [RFC 8414 Authorization Server Metadata](#rfc-8414-authorization-server-metadata)
+  * [Client Registration](#client-registration)
+  * [Client Credentials flow](#client-credentials-flow)
+  * [Authorization Code flow](#authorization-code-flow)
+  * [Why auth code](#why-auth-code)
+  * [OAuth Scopes](#oauth-scopes)
 * [OAuth Core](#oauth-core)
-* [OAuth with client](#oauth-with-client)
+* [OAuth Extensions](#oauth-extensions)
+  * [RFC 6749 - PKCE](#rfc-6749-pkce)
+  * [RFC 7662 - Token Introspecdtion](#rfc-7662-token-introspection)
+  * [RFC 7009 - Token Revocation](#rfc-7009-token-revocation)
+  * [RFC 8693 - Token Exchange](#rfc-8693-token-exchange)
+* [OIDC](#oidc)
+  * [JSON Web Token](#json-web-token)
+  * [OIDC Login Example](#oidc-login-example)
 
 ## Overview
-OAuth is a loose operating agreement, not a contract. It leaves a lot of things undefined on purpose. 
-This is where extensions come in.
+OAuth solves the problem of allowing 3rd party applications access to your data in other
+applications. There are a few different flows a.k.a. grant types but the only ones that should really
+be used at this point are:
+* ***Authorization Code w/PKCE*** for human interaction
+* ***Client Credentials*** for machine to machine with no human interaction
 
 **References**
+* [OAuth & OIDC explanation](https://www.youtube.com/watch?v=996OiexHze0)
+  * [OAuth debugger](https://oauthdebugger.com/)
+  * [OIDC debugger](https://oidcdebugger.com/)
+    * [Writeup](https://recaffeinate.co/post/introducing-openid-connect-debugger/)
 * [JWT Introspection](https://jwt.io)
 * [OAuth and OIDC examples](https://github.com/caseysoftware/oauth-and-openid-connect)
 * [Okta API Access Manager](https://developer.okta.com)
 * [OAuth Playground](https://developers.google.com/oauthplayground)
-* [OAuth and Ruby](https://medium.com/@hashimmazhar15/oauth-implementing-oauth-in-ruby-on-rails-using-doorkeeper-and-oauth2-gems-2490162b9cac)
 
 ### Terms
-* Resource owner - that's you
-* Resource server - what you're granting access to
-* Grant type - how the application is asking for access
-* Scope - permissions that the app is asking for
-* Authorization server - who the application is asking for access
-* Token - how the application gets that access
-* Claims - details on the authorization granted
+* `Resource owner` - that's you
+* `Resource server` - what you're granting access to
+* `Grant type` - how the application is asking for access
+* `Scope` - permissions that the app is asking for
+* `Authorization server` - who the application is asking for access
+* `Access Token` - how the application gets that access
+* `Claims` - details on the authorization granted
+* `Back channel` - HTTPS from my server to another server with credentials i.e. secure
+* `Front channel` - Mobile/browser based apps that can't be shipped with shared secrets
 
-### JSON Web Token
-JWTs are an extension to OAuth
+### Client Registration
+Before your application can use OAuth 2, you must register with the Authorization Server as a one
+time configuration to get their `Client ID` and `Client Secret` which are used to prove the client is
+who they say they are. This is done through the Authorization Server's Web Portal or API management
+interface. During this process you'll provide:
+* `Application Name`: a human-readable name that users will see during authorization
+* `Application Website`: your application's homepage or documentation URL
+* `Redirect URI (Callback URL)`: the exact URL where the authorization server will send users after
+they authorize or deny your application.
 
-* OAuth doesn't require JWTs but they're common
-* JWTs are encoded, not encrypted
-* JSON Web Encryption (JWE)
-* Includes `iss` issuer, `iat` issued at, `sub` subject, `aud` audience, and `exp` expiration
+### Client Credentials flow
+The Client Credentials flow is a back channel only flow that use the client credentials to exchange
+for an access token directly with no need for user consent or the auth code step. This is useful for
+Machine to Machine (M2M) or service communication. 
 
-### RFC 7662 Token Introspection
-* Examines a token to describe its contents
-* Useful for opaque tokens
-* Describes if the token is active or not
-* Mandatory if you have Token Revocation
+### Authorization Code flow
+You can authorize the 3rd party app to see for example your contacts in Gmail. This is the most
+common OAuth flow and involves the front and back channels both:
 
-### RFC 7009 Token Revocation
-* Revokes tokens (optional)
+1. The app is already registered with and accepted by your IdP
+2. You are presented with a button that says e.g. `Connect with Google`
+3. When you click on the button you'll be prompted to login to Google if not all ready
+4. You'll then be presented with a dialog to consent to the 3rd party app's request for access
+5. Once you click yes you'll be redirected back to the app's callback/redirect URI
+6. The app will then be allowed the requested access that you consented to
+7. You can revoke the app's access at any point
 
-### RFC 8693 Token Exchange
-* Trading or exchanging tokens
+### Why auth code
+The OAuth 2 Authorization code flow returns a code from the Authorization server instead of the
+access token directly and requires another step to then get the access token. The reason for this is
+that we need to securely deal with front channel (i.e. mobile and web apps). All of the OAuth flow
+steps could happen on the front channel and are potentially just page redirects with information
+passed along as query parameters of your request. Thus if someone was looking over your shoulder or
+you had a malicious toolbar or something they could see the auth code as it is also trasmitted back
+to the app via the front channel. However the final exchange mechanism of the auth code for the
+access token happens on the back channel over HTTPS and includes a secret key that only the client
+and server have via pre-registration.
 
-### RFC 8414 Authorization Server Metadata
-Optional discovery endpoint that can be queried to find out which extension our implementation 
-supports.
+**Auth code request**
+```
+https://accounts.google.com/o/oauth2/v2/auth?
+  client_id=absc123&
+  redirect_uri=https://yelp.com/callback&
+  scope=profile&
+  response_type=code&
+  state=foobar
+```
 
-### HTTP Redirects
+**Auth code response**
+```
+https://yelp.com/callback?
+  code=sdlfkjsdfliujsdlfkjsdl&
+  state=foobar
+```
 
-### Secure browser storage
+**Exchange access token request**
+```
+POST www.googleapis.com/oauth2/v4/token
+Content-Type: application/x-www-form-urlencoded
 
-### OIDC
-OpenID Connect is the most important OAuth extension that gives us a user's profile information.
-* Provides a standard way to request and share profile data
-* Gives us a `Sign in with` on hundreds of sites
-* Depends on JSON Web Tokens or JWTs
-* Doesn't support client credential flow i.e. only works with users
-  * i.e. no machine to machine support
+code=sdlfkjsdfliujsdlfkjsdl&
+client_id=absc123&
+client_secret=secret123&
+grant_type=authorization_code
+```
+
+**Exchange access token response**
+```json
+{
+  "access_token": "secret-access-token",
+  "expires_in": 3920,
+  "token_type": "Bearer"
+}
+```
+
+**Access request**
+```
+GET api.google.com/some/endpoint
+Authorization: Bearer secret-access-token
+```
+
+### OAuth Scopes
+As simple or complex as you want.  Better to stay simple and increase it later. There is no unified 
+approach and the scope strings are free form and can be any format. Best to unify your own.
+
+* github example: `repo`, `public_repo`, `repo:invite`, `write:repo_hook`
+* google example: `Analytics API: https://www.googleapois.com/auth/analytics`
+* okta example: `okta.apps.manage`, `okta.apps.read`
+* Example: create, read, update, delete
 
 ## OAuth Core
 Only the `/authorize` and `/token` endpoints are required. All the other ones are optional. So do you 
@@ -99,32 +168,70 @@ support OAuth can mean different things.
 ***/revoke***
 * endpoint for apps to deactivate or invalidate
 
-### Grant Types or OAuth flows
-There are a number of grant types that solve different use cases:
-* Authorization Code - server only
-* Implicit or Hybrid - don't use b/c weaknesses
-* Resource Owner Password - legacy, transitional use case
-* Client Credentials - back end systems without user interaction
-* Device Code - dumb devices like terminals
-* Authorization Code with PKCE
+## OAuth Extensions
+OAuth is a loose operating agreement, not a contract. It leaves a lot of things undefined on purpose. 
+Extensions were added to define additional functionality on top of the existing OAuth standard so
+that this new functionality would be built in a similar way across the industry and stop the
+fragmentation.
 
-**Grant type to use**
-* ***Human*** => ***Authorization Code w/PKCE***
-* ***No human*** => ***Client Credentials***
+### RFC 6749 - PKCE
+PKCE, or Proof Key for Code Exchange, is essential for public clients as it protects against
+authorization code interception attacks.
 
-### OAuth Scopes
-As simple or complex as you want.  Better to stay simple and increase it later. There is no unified 
-approach and the scope strings are free form and can be any format. Best to unify your own.
+**References**
+* [IETF RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749)
 
-* github example: `repo`, `public_repo`, `repo:invite`, `write:repo_hook`
-* google example: `Analytics API: https://www.googleapois.com/auth/analytics`
-* okta example: `okta.apps.manage`, `okta.apps.read`
-* Example: create, read, update, delete
+### RFC 7662 - Token Introspection
+* Examines a token to describe its contents
+* Useful for opaque tokens
+* Describes if the token is active or not
+* Mandatory if you have Token Revocation
 
-## OAuth with client
-Many apps today are actually just a front-end for a series of API calls. Whether its a Web app, 
-desktop client or mobile client they are simply calling the backend API directly to store and 
-interact with their data. The most common modern solution for security in this case is OAuth2.
+### RFC 7009 - Token Revocation
+* Revokes tokens (optional)
 
-Typically the ***Authorization Code w/PKCE*** grant is used.
+### RFC 8693 - Token Exchange
+* Trading or exchanging tokens
 
+### RFC 8414 - Authorization Server Metadata
+Optional discovery endpoint that can be queried to find out which extension our implementation 
+supports.
+
+## OIDC
+OIDC fundamentally just provides an ID token (i.e. a JWT that encodes information about the user).
+The OAuth flow is identical to standard OAuth but now includes the `openid` scope request and you
+also get back in addition to the access token the ID token. Because OIDC is just an extension on top
+of OAuth 2 you will see many homegrown OIDC like implementations that do something similar to OIDC
+using OAuth but might not actually be fully OIDC compatible. This gives rise to the confusion that
+OAuth can do authentication because everyone hacked their own solution together for this or have
+converted to the standard OIDC to solve this.
+
+It is likely the most important OAuth extension that:
+* Provides a standard way to get user info via the `/userinfo` endpoint
+  * get additional meta data e.g. profile picture
+* Is the basis for `Sign in with` on hundreds of sites
+* Depends on JSON Web Tokens or JWTs to encode user information
+* Doesn't support client credential flow i.e. only works with users
+  * i.e. no machine to machine support
+
+### JSON Web Token
+JWTs are an extension to OAuth popularized by the OIDC extension. JWTs provide a mechanism for
+encoding information typically about the user. This information called claims is used together with
+a signature that can be validated to ensure nothing has been tampered with.
+
+* OAuth doesn't require JWTs but they're common
+* JWTs are encoded, not encrypted
+* Composed of `header.claims.signature`
+* Claims are loosely defined but often include:
+  * `iss` issuer
+  * `sub` subject e.g. `you@gmail.com`
+  * `name` name e.g. `Nate Barbettini`
+  * `aud` audience e.g. `sdlfkjsdf`,
+  * `iat` issued at e.g. `1311281970`
+  * `exp` expiration e.g. `1311281970`
+  * `auth_time` auth_time e.g. `1311281970`
+
+### OIDC Login example
+Client will login with the Authorization server to get an Access token and ID token. The
+client will then likely generate a session cookie and store it in the browser to keep track of the
+user. And on the back end the client will just hang on to the Access token and the ID token.

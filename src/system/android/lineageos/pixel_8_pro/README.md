@@ -95,10 +95,7 @@ SIM card and test that it works.
    4. Validate it worked, on pc run: `fastboot getvar unlocked`
 
 ## Installation
-I'll be using the Pixel 8 Pro in my installation steps and [LineageOS Wiki install guide]()
-
-**References**
-* [Google Pixel 8 Pro - LineageOS Wiki](https://wiki.lineageos.org/devices/husky/)
+[Google Pixel 8 Pro - LineageOS Wiki](https://wiki.lineageos.org/devices/husky/)
 
 ### Upgrade Android
 The first thing you'll want to do is upgrade to the latest Android version that corresponds with the 
