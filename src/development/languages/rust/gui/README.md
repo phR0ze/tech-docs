@@ -125,7 +125,3 @@ use Tailwind to allow you to get up and running faster and use fewer class names
 ## BULMA CSS
 Bulma is a free, open source framework that provides ready-to-use frontend components that you can 
 easily combine to build responsive web interfaces.
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

@@ -105,7 +105,3 @@ got me curious about what hes was working on. His screen shots look really neat.
   * Sub pixel order: RGB
   * Custom DPI: 96
   * Terminal font `Hack`
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

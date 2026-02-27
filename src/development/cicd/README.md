@@ -4,7 +4,3 @@
 CI/CD docuementation for various technologies
 
 ### Quick links
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

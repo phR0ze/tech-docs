@@ -85,7 +85,3 @@ https://dev.to/dnamsons/ruby-debugging-in-vscode-3bkj
   ]
 }
 ```
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

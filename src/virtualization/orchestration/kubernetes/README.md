@@ -125,7 +125,3 @@ Ephemeral or persistent storage
 * GCP now allows you to enable Prometheus scraping into Cloud Monitoring
 * Grafana can pull from Monarch i.e. Google's Cloud Monitoring tool
 * Monarch knows PromQL
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

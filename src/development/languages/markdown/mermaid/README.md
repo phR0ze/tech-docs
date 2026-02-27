@@ -150,7 +150,3 @@ xychart-beta
 ```
 
 ![XY diagram](../../../../data/images/mermaid-xy-diagram.png)
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

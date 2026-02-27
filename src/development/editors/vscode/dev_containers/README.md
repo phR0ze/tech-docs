@@ -121,7 +121,3 @@ The key Ruby pieces for VS Code are the `Ruby LSP` extension from Shopify.
 4. Select `Ruby` by the `devcontainers` group
 5. Select `3.1-bookworm` as the base docker image
 5. 
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

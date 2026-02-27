@@ -27,7 +27,3 @@ Build in Rust and uses WASM for plugins
 * Zellij has sane defaults and a nice UI out of the box
 
 ![Zellij example view](../../../data/images/zellij-mutliple-tabs-and-panes.png)
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

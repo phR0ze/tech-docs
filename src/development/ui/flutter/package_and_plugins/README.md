@@ -47,7 +47,3 @@ persisting basic application configs.
 1. Use `xdg_directories` and/or `path_provider` to handle pathing
 2. Use `global_configuation` singleton pattern
 3. Use `cli_config` yaml support concept
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

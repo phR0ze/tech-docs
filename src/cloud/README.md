@@ -8,7 +8,3 @@ Cloud and Alibaba Cloud fit the description.
 
 **References**
 * [RedHat Hyberscaler](https://www.redhat.com/en/topics/cloud/what-is-a-hyperscaler)
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

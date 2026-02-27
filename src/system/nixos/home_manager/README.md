@@ -12,7 +12,3 @@ applications are uniformly available to all users.
 an additional daemon running in the background just to install user configuration. Instead I built a 
 simple nix module that does some of the basics for me which is invoked on boot and checks for any 
 changes needed.
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

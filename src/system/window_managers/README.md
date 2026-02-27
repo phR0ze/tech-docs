@@ -62,7 +62,3 @@ Takes a little longer to configure but makes you more productive in the long run
 * exwm
   * emacs tiling window manager
   * single threaded, slow and crashes
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

@@ -145,7 +145,3 @@ provide control and monitoring for various aspects of networking.
    sudo ip route add 192.168.1.61/32 dev macvlan0
    sudo ip route add 192.168.1.62/32 dev macvlan0
    ```
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

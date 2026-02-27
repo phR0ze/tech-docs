@@ -265,7 +265,3 @@ In API 30 further restrictions were made to exclude
 
 WARNING: accessing many files through the document tree is known to be slow
 
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

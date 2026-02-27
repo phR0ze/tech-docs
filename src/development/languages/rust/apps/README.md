@@ -26,7 +26,3 @@ projects that have caught my eye.
 ### Zellij - Terminal Window Manager
 * [Author Github](https://github.com/imsnif)
 * [Zellij Github](https://github.com/zellij-org/zellij)
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

@@ -185,7 +185,3 @@ PageView provides a nice way to swipe to load the next page.
 * Works well with Dismissible's swipe scrolling
 * Breaks InteractiveViewer's pinch to zoom
 
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

@@ -142,7 +142,3 @@ needs to be set to 32MB or better yet 64MB for higher performance.
 
 * Default values: `ram='65536' vram='65536' vram64='0' vgamem='16384'`
 * `vgamem` is the frame buffer size
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

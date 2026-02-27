@@ -7,7 +7,3 @@ opionated and/or simply a collection of notes and links to things I want to reme
 your own risk. Any damages, issues, losses or problems caused by the use of the information contained 
 in this project are strictly the responsiblity of the end users and not the developer/creator of 
 ***tech-docs*** information repository.
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

@@ -165,7 +165,3 @@ Consists of patterns similar to a gitignore file with owners associated with the
 matches.
 
 * gitignore type file pattern match followed by one or more users or groups using the `@org/team-name` format
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

@@ -269,7 +269,3 @@ Delete all matching remote tags
 ```bash
 $ git push origin --delete $(git tag -l)
 ```
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

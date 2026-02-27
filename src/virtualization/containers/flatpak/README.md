@@ -121,7 +121,3 @@ $ flatpak info --show-permissions <package>
 ## Build flatpak packages
 * warcraft 2
 * hedgewars
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

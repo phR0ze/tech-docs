@@ -45,7 +45,3 @@ $ cp -r ~/Downloads/WiiBackupManager_Build78 ~/.wine/prefixes/wiibm/drive_c
 2. Mount the USB Drive
    1. Navigate to `Options > Settings >Startup`
    2. Under `Drive 1` select 
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

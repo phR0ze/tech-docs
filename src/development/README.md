@@ -28,7 +28,3 @@ Move the testing aspects of the lifecycle upstream to the developers.
 
 ### Shift down
 Move more toil onto the platform automation off from the developer
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

@@ -58,7 +58,3 @@ separate markdown file.
 ### Publish your book
 Once created you'll want to host your book somewhere. Thus you need to build it which will generate 
 HTML in the `book` directory that cna be used on any web server.
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

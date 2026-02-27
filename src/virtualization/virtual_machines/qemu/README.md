@@ -423,7 +423,3 @@ redirected to the VM on port 22.
 Running a VM in immutable mode will discard all changes when the VM is powered off just by running 
 with the `-snapshot` parameter. However you can still save the state as a snapshot if you run the 
 `commit all` from the monitor console.
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

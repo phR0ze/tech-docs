@@ -88,7 +88,3 @@ $ sudo pacman -S docker-compose
 * Ultimate Addons for Gutenburg
 * Smush
 * UpdraftPlus WordPress Backup Plugin
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

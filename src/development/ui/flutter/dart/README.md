@@ -66,6 +66,3 @@ $ dart create -t TEMPLATE PROJECT_NAME
 ```
 
   
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

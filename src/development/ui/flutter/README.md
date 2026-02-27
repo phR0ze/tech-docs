@@ -901,7 +901,3 @@ class Test {
 **References**
 * [Cargo flutter](https://github.com/flutter-rs/cargo-flutter)
 * [Flutter app demo desktop](https://github.com/flutter-rs/flutter-app-demo)
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

@@ -49,7 +49,3 @@ Features to compare over:
 * High performancea, all CPU cores and GPU (faster than Sublime)
 * Multiplayer
 * Stay in Flow
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

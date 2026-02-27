@@ -7,7 +7,3 @@
 * [Cryptocurrency](cryptocurrency/README.md)
 * [IAM](iam/README.md)
 * [Password Managers](password_managers/README.md)
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

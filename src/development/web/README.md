@@ -318,7 +318,3 @@ together a web platform.
 ## WordPress
 Workpress is the oldest and most widely used content management system for blogging out there. Its 
 plugin system makes it highly configurable to suite any purpose.
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

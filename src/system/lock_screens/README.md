@@ -69,7 +69,3 @@ Features:
 Cinnamon-screensaver was my favorite for some time providing a simple image with a bluring layer and
 the current time and date and would offer password entry when activated. However due to its numerous
 cinnamon desktop dependencies I've abandoned it.
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

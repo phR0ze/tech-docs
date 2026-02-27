@@ -103,7 +103,3 @@ $ sudo exportfs -r
 # Check what is currently being served
 $ sudo exportfs -v
 ```
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

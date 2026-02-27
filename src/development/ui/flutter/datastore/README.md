@@ -82,7 +82,3 @@ Sqflite is a popular local database solution built on top of SQLite.
 **Cons**
 * Cross platform on desktop is a bit wonky with FFI to system lib
 * Performance might be a concern with complex queries
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

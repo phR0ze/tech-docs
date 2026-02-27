@@ -189,7 +189,3 @@ EOL
 # Restarting the service completes immediately meaning we fixed it
 $ sudo systemctl restart systemd-networkd-wait-online
 ```
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

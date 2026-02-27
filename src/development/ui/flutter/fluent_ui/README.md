@@ -20,7 +20,3 @@ tree view widgets.
 * [package - bitsdogo window](https://pub.dev/packages/bitsdojo_window) 
 * [package - Fluent UI](https://pub.dev/packages/fluent_ui) 
 * [package - Fluent UI System Icons](https://pub.dev/packages/fluentui_system_icons) 
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

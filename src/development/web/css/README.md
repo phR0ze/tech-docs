@@ -62,7 +62,3 @@ additions made each year.
 * Allows the developer to make significant decisions on how the interface should look
 * No pre-built components but fundamental tools to do so
 * Better for developers with experience that want to create their own user interfaces
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

@@ -117,7 +117,3 @@ A fork of Anbox it runs Android in a container using LXC. Waydroid offers:
 
 ### Anbox
 Deprecated and lacks Google Play Store support
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

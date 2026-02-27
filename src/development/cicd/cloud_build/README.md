@@ -27,7 +27,3 @@ them.
 You can build a custom builder image with custom tools installed to be used by Cloud Build. 
 Additionally there is a large list of community contributed builders available as well.
 
-<!-- 
-vim: ts=2:sw=2:sts=2
--->
-

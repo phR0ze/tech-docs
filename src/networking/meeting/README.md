@@ -32,7 +32,3 @@ $ sudo pacman -Sy zoom
 ### Google Meet
 Google meet, part of the Google Suite, and available as a web app is another great option. It worked 
 out of the box with Chromium and my plantronics headset and webcam without any issues.
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

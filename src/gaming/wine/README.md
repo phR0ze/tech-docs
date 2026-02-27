@@ -107,7 +107,3 @@ Example:
 ```bash
 $ sudo pacman -S lib32-nvidia-340xx-utils lib32-nvidia-340xx
 ```
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

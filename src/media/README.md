@@ -33,7 +33,3 @@ The two best are ***SimpleScreenRecorder*** and ***RecordMyDesktop***
 1. Install: `sudo pacman -S perl-image-exiftool`
 2. List out the existing exif info: `exiftool <file>`
 3. Remove gps exif data: `exiftool -all= <file>`
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

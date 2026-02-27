@@ -179,7 +179,3 @@ and all of their items are dropped on the ground.
 ### Just Enough Items (Jei)
 [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) is an item and recipe viewing mod for 
 Minecraft, built from the ground up for stability and performance.
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

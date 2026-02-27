@@ -182,7 +182,3 @@ build runner are then used to read your builder and run it in the end user's pro
    ```
 
 
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->

@@ -324,7 +324,3 @@
     - [VirtManager](virtualization/virtual_machines/virt_manager/README.md)
 
 --------
-
-<!-- 
-vim: ts=2:sw=2:sts=2
--->
