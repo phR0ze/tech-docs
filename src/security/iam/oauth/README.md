@@ -1,24 +1,35 @@
 # OAuth <img style="margin: 6px 13px 0px 0px" align="left" src="../data/images/logo_36x36.png" />
 
-Fundamentally OAuth is a technique that allows applications to communicate with one another without 
-the need for sharing the user's credentials. Users can delagate access to one system over to another 
-system. Thus you are authorizing one system to act on behalf of you on that other system.
+Fundamentally OAuth is an open standard for allowing applications to communicate with one another
+without the need for sharing the user's credentials. Users can delegate access to one system over to
+another system. Thus you are authorizing one system to act on behalf of you on that other system.
+
+OAuth assumes that everything occurs on secure channels i.e. over TLS.
 
 ### Quick links
 * [.. up dir](..)
 * [Overview](#overview)
   * [Terms](#terms)
+  * [Four OAuth Roles](#four-oauth-roles)
   * [Client Registration](#client-registration)
-  * [Client Credentials flow](#client-credentials-flow)
-  * [Authorization Code flow](#authorization-code-flow)
   * [Why auth code](#why-auth-code)
   * [OAuth Scopes](#oauth-scopes)
 * [OAuth Core](#oauth-core)
+  * [Authorization Code](#authorization-code)
+  * [Client Credentials](#client-credentials)
+  * [Refresh Token](#refresh-token)
+  * [Deprecated grants](#deprecated-grants)
+  * [Core endpoints](#core-endpoints)
 * [OAuth Extensions](#oauth-extensions)
-  * [RFC 6749 - PKCE](#rfc-6749-pkce)
-  * [RFC 7662 - Token Introspecdtion](#rfc-7662-token-introspection)
-  * [RFC 7009 - Token Revocation](#rfc-7009-token-revocation)
-  * [RFC 8693 - Token Exchange](#rfc-8693-token-exchange)
+  * [Discovery/Metadata](#discoverymetadata)
+  * [RFC 7515 - JWS](#rfc-7515---jws)
+  * [RFC 7636 - Authorization Code + PKCE](#rfc-7636---authorization-code-+-pkce)
+  * [RFC 8628 - Device Authorization](#rfc-8628---device-authorization)
+  * [RFC 7662 - Token Introspecdtion](#rfc-7662-token---introspection)
+  * [RFC 7009 - Token Revocation](#rfc-7009---token-revocation)
+  * [RFC 7523 - JWT Bearer](#rfc-7523---jwt-bearer)
+  * [RFC 7522 - SAML 2.0 Bearer](#rfc-7522---saml-20-bearer)
+  * [RFC 8693 - Token Exchange](#rfc-8693---token-exchange)
 * [OIDC](#oidc)
   * [JSON Web Token](#json-web-token)
   * [OIDC Login Example](#oidc-login-example)
@@ -41,42 +52,46 @@ be used at this point are:
 * [OAuth Playground](https://developers.google.com/oauthplayground)
 
 ### Terms
+* `Access Token` - how the application gets that access
+* `Authorization server` - who the application is asking for access, handles interactive consent
+* `Authorization endpoint` - alias for authorization server
+* `Back channel` - HTTPS from my server to another server with credentials i.e. secure
+* `Claims` - attributes packaged inside a token with credibility from signature
+* `Digital Signature` - proves message integrity and ownership using public-key crypto
+* `Discovery endpoint` - `/.well-known/openid-configuration` advertises the server's capabilities in JSON
+* `Front channel` - Mobile/browser based apps that can't be shipped with shared secrets
+* `Grants` - step-by-step procedures a client uses to obtain tokens
 * `Resource owner` - that's you
 * `Resource server` - what you're granting access to
-* `Grant type` - how the application is asking for access
 * `Scope` - permissions that the app is asking for
-* `Authorization server` - who the application is asking for access
-* `Access Token` - how the application gets that access
-* `Claims` - details on the authorization granted
-* `Back channel` - HTTPS from my server to another server with credentials i.e. secure
-* `Front channel` - Mobile/browser based apps that can't be shipped with shared secrets
+* `Token endpoint` - machine-to-machine, issues tokens
+
+### Four OAuth Roles
+
+| Role                 | Description               | Example              |
+| -------------------- | ------------------------- | -------------------- |
+| Resource Owner       | The user                  | Gmail account holder |
+| Resource Server      | The API guardian          | Gmail API            |
+| Client               | The app requesting access | LinkedIn             |
+| Authorization Server | Issues tokens             | Gmail's auth server  |
+
+### Authorization request params
+* `response_type=id_token` — I want an ID token
+* `response_mode=form_post` — deliver it via HTML form POST (not URL fragment — avoids browser history leaks; avoids size limits)
+* `redirect_uri` — exact address to receive the token (must be strict match — loose matching enables token hijacking)
+* `scope=openid` profile email — what to include in the token
+* `nonce` — a random value saved in a cookie on the client side; the server includes it in the token,
+  proving the token is for this request and not injected from a hijacker
 
 ### Client Registration
-Before your application can use OAuth 2, you must register with the Authorization Server as a one
-time configuration to get their `Client ID` and `Client Secret` which are used to prove the client is
-who they say they are. This is done through the Authorization Server's Web Portal or API management
-interface. During this process you'll provide:
+Before an application can use OAuth 2, it must be registered with the Authorization Server as a one
+time configuration to get the app's `Client ID` and `Client Secret` which are used to prove the
+client is who it claims to be. This is done through the Authorization Server's Web Portal or API
+management interface. During this process the app owner needs to provide:
 * `Application Name`: a human-readable name that users will see during authorization
 * `Application Website`: your application's homepage or documentation URL
 * `Redirect URI (Callback URL)`: the exact URL where the authorization server will send users after
 they authorize or deny your application.
-
-### Client Credentials flow
-The Client Credentials flow is a back channel only flow that use the client credentials to exchange
-for an access token directly with no need for user consent or the auth code step. This is useful for
-Machine to Machine (M2M) or service communication. 
-
-### Authorization Code flow
-You can authorize the 3rd party app to see for example your contacts in Gmail. This is the most
-common OAuth flow and involves the front and back channels both:
-
-1. The app is already registered with and accepted by your IdP
-2. You are presented with a button that says e.g. `Connect with Google`
-3. When you click on the button you'll be prompted to login to Google if not all ready
-4. You'll then be presented with a dialog to consent to the 3rd party app's request for access
-5. Once you click yes you'll be redirected back to the app's callback/redirect URI
-6. The app will then be allowed the requested access that you consented to
-7. You can revoke the app's access at any point
 
 ### Why auth code
 The OAuth 2 Authorization code flow returns a code from the Authorization server instead of the
@@ -142,6 +157,45 @@ approach and the scope strings are free form and can be any format. Best to unif
 * Example: create, read, update, delete
 
 ## OAuth Core
+[IETF RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749) defines the OAuth 2.0 core grants.
+OAuth is based on the `Grant Type` primitive. A grant is the step-by-step procedures a client uses to
+obtain tokens for a given scenario.
+
+### Authorization Code
+You can authorize the 3rd party app to see for example your contacts in Gmail. This is the most
+common OAuth flow and involves the front and back channels both:
+
+1. The app is already registered with and accepted by your IdP
+2. The app presents you with a button that says e.g. `Connect with Google`
+3. When you click on the button:
+   1. The app will redirect you to Google's authorization server
+   2. You'll be prompted to login to Google if not all ready
+   3. You'll be presented with a dialog to consent to the 3rd party app's request for access
+   4. Once you click yes you'll be redirected back to the app's callback/redirect URI
+4. Your browser will deliver the code in memory back to the app
+5. The app will then present the code + client credentials to the Google token endpoint
+6. The Google Authorization server will then issue an access token 
+7. The app will then be able to present the access token to Google APIs for access
+8. You can revoke the app's access at any point
+
+### Client Credentials
+The Client Credentials grant is a back channel only flow that use the client credentials to exchange
+for an access token directly with no need for user consent or the auth code step. This is useful for
+Machine to Machine (M2M) or service communication. 
+
+### Refresh Token
+Refresh tokens are defined in RFC 6749 (the core OAuth 2.0 spec) and are not a separate grant type
+but does use a grant type value `grant_type=refresh_token`
+
+1. Client sends the `refresh_token` to the token endpoint
+2. AS issues a new access token (and optionall a new refresh token)
+3. Old refresh token is invalidated (rotation is recommended, required in OAuth 2.1)
+
+### Deprecated grants
+* `Implicit` - originally for SPAs this is now deprecated
+* `Resource owner password credentials (ROPC)` - provides user/pass directly to client and is deprecatd
+
+### Core endpoints
 Only the `/authorize` and `/token` endpoints are required. All the other ones are optional. So do you 
 support OAuth can mean different things.
 
@@ -174,12 +228,60 @@ Extensions were added to define additional functionality on top of the existing 
 that this new functionality would be built in a similar way across the industry and stop the
 fragmentation.
 
-### RFC 6749 - PKCE
-PKCE, or Proof Key for Code Exchange, is essential for public clients as it protects against
-authorization code interception attacks.
+Some of the extensions define new structures and processes and some provide new Grant types.
 
-**References**
-* [IETF RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749)
+***Modern Use***
+* `Authorization Code + PKCE` for web apps, spas, mobile
+* `Client Credentials` for M2M or services
+* `Device Authorization`  for devices
+* Avoid the rest as they are deprecated in OAuth 2.1
+
+### Discovery/Metadata
+These endpoints let clients auto-discover entpoints, supported grant types, scopes, etc... without
+hardcoding URLs. They are the foundation for OpenID Connect Discovery.
+
+***WARNING*** the root location e.g. `/.well-known...` is required to adhere to the specification.
+Clients will take the issuer URL and append the well-known path e.g.
+`https://iam.example.com/.well-known/oauth-authorization-server`. RFC 8615 defines `/.well-known` as
+the prefix for site-wide metadata across many protocols (not just OAuth2).
+
+#### Authorization Server Metadata - RFC 8414
+Authorization Server Metadata lets clients auto-discover entpoints, supported grant types, scopes,
+etc... without hardcoding URLs.
+
+```bash
+curl -s localhost:8080/.well-known/oauth-authorization-server
+```
+
+#### JSON Web Key Set - RFC 7517
+The JSON Web Key Set publishes the server's public signing keys so resource servers can verify JWTs
+without calling back to the auth server.
+
+```bash
+curl -s localhost:8080/.well-known/jwks.json
+```
+
+### RFC 7515 - JWS
+JSON Web Signature (JWS) is a standard for respresenting content secured with a digital signature or
+MAC (Message Authentication Code) encoded as a compact, URL-safe string. A JWS has three
+`Base64url-encoded` parts separated by dots e.g. `header.payload.signature`
+* `Header` is the algorithm used e.g. `RS256`, `HS256`, `ES256` and is included in the signing
+* `Payload` is the data being signed (arbitrary bytes)
+* `Signature` is the cryptographic signature over `header.payload`
+
+JWS is the mechanism that makes JWTs trustworthy. JWT is essentially a JWS with special payload data
+i.e. the claims or in other words a JWT is JSON claims encoded as a JWS.
+
+* Access tokens are often JWTs
+* ID tokens in OIDC are always JWTs
+
+### RFC 7636 - Authorization Code + PKCE
+PKCE, or Proof Key for Code Exchange, is essential for public clients as it protects against
+authorization code interception attacks. It is used by SPAs and mobile apps use this `grant` to
+replace the deprecated `Implicit` grant.
+
+### RFC 8628 - Device Authorization
+For devices with no browser like (smart TVs, CLIs)
 
 ### RFC 7662 - Token Introspection
 * Examines a token to describe its contents
@@ -190,12 +292,14 @@ authorization code interception attacks.
 ### RFC 7009 - Token Revocation
 * Revokes tokens (optional)
 
-### RFC 8693 - Token Exchange
-* Trading or exchanging tokens
+### RFC 7523 - JWT Bearer
+Client asserts identity via signed JWT instead of redirect
 
-### RFC 8414 - Authorization Server Metadata
-Optional discovery endpoint that can be queried to find out which extension our implementation 
-supports.
+### RFC 7522 - SAML 2.0 Bearer
+Federation with SAML identity providers
+
+### RFC 8693 - Token Exchange
+Impersonation / delegation between services
 
 ## OIDC
 OIDC fundamentally just provides an ID token (i.e. a JWT that encodes information about the user).
@@ -222,16 +326,43 @@ a signature that can be validated to ensure nothing has been tampered with.
 * OAuth doesn't require JWTs but they're common
 * JWTs are encoded, not encrypted
 * Composed of `header.claims.signature`
-* Claims are loosely defined but often include:
-  * `iss` issuer
-  * `sub` subject e.g. `you@gmail.com`
-  * `name` name e.g. `Nate Barbettini`
-  * `aud` audience e.g. `sdlfkjsdf`,
+* Header:
+  * `alg` signing algorithm
+  * `kid` key identifier (used to find the right public key)
+* Payload claims are loosly defined by often include:
+  * `iss` issuer - who signed the token
+  * `aud` audience (which app this token is for, i.e. must match your client ID) e.g. `sdlfkjsdf`,
+  * `sub` subject (user identifier) e.g. `you@gmail.com`
   * `iat` issued at e.g. `1311281970`
   * `exp` expiration e.g. `1311281970`
   * `auth_time` auth_time e.g. `1311281970`
+  * Identity claims
+    * `name` name e.g. `Nate Barbettini`
+    * `email` email e.g. `you@gmail.com`
+    * `picture` picture
+
+#### Recommended JWT checks
+1. Verify the signature
+2. Check `iss` matches expected user
+3. Check `aud` matches your client id
+4. Check `exp` token is not expired
+5. Check `nonce` matches what you sent
+
+#### Alternative JWT check
+Send it to the authorization server's introspection endpoint and ask if it is valid. The server would
+then respond with validity + claims, but this introduces:
+* an extra network hop
+* availability dependency
+* potential throttling
+
+The recommendation is to prefer local JWT validation
 
 ### OIDC Login example
-Client will login with the Authorization server to get an Access token and ID token. The
-client will then likely generate a session cookie and store it in the browser to keep track of the
-user. And on the back end the client will just hang on to the Access token and the ID token.
+1. Browser hits protected route
+2. Middleware -> 302 redirects to authorization endpoint
+3. Browser hits authorization endpoint
+4. Auth server authenticates the user, sets its own session cookie
+5. Auth server returns HTML pages with `<form` auto-submitted via JS
+6. Form POSTS ID token to the app's `redirect_uri`
+7. App validates token, sets session cookie, 302 redirects to original route
+8. Browser accesses protected route with cookie -> 200 OK

@@ -1,6 +1,10 @@
-# OpenSSH
+# OpenSSH <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
+
 MacOS comes with an OpenSSH server installed by default. You can enable it in 
 `System Preferences >General >Sharing` section.
+
+### Quick links
+- [.. up dir](..)
 
 ## Mobile Device Management workaround
 Fleet systems will often have SSH disabled such that you can't ssh into your system. To work around 

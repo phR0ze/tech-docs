@@ -1,10 +1,11 @@
-# Autostart
+# Autostart <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
 ### Quick links
-* [Login Items](#login-items)
-* [LaunchD](#launchd)
-  * [Launch Agents](#launch-agents)
-  * [Autostart Script](#autostart-script)
+- [.. up dir](..)
+- [Login Items](#login-items)
+- [LaunchD](#launchd)
+  - [Launch Agents](#launch-agents)
+  - [Autostart Script](#autostart-script)
 
 ## Login Items
 1. Navigate to `System Settings >General >Login Items`
