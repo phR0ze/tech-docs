@@ -11,28 +11,30 @@ were on the same network over an encrypted secure tunnel.
   * Not fully opensource
 
 ### Quick links
-* [.. up dir](../README.md)
-* [Overview](#overview)
-  * [Machines](#machines)
-  * [Magic DNS](#magic-dns)
-  * [User invites](#user-invites)
-  * [SSH](#tailscale-ssh)
-  * [Tags](#tags)
-  * [Serve](#serve)
-  * [Funnel](#funnel)
-  * [Exit Node](#exit-node)
-* [Configure tailnet](#configure-tailnet)
-  * [Registration](#registration)
-  * [Name your tailnet](#name-your-tailnet)
-  * [Manually approve new devices](#manually-approve-new-devices)
-  * [Create machine tags](#create-machine-tags)
-* [Add machines to tailnet](#add-machines-to-tailnet)
-  * [Add Linux device](#add-linux-device)
-  * [Add Android device](#add-android-device)
-  * [Add Synology device](#add-synology-device)
-* [Proper SSL certs](#proper-ssl-certs)
-* [Subnet router](#subnet-router)
-  * [Enable IP forwarding](#enable-ip-forwarding)
+- [.. up dir](../README.md)
+- [Overview](#overview)
+  - [Machines](#machines)
+  - [Magic DNS](#magic-dns)
+  - [User invites](#user-invites)
+  - [Tags](#tags)
+  - [Serve](#serve)
+  - [Funnel](#funnel)
+  - [Exit Node](#exit-node)
+- [Configure tailnet](#configure-tailnet)
+  - [Registration](#registration)
+  - [Name your tailnet](#name-your-tailnet)
+  - [Manually approve new devices](#manually-approve-new-devices)
+  - [Create machine tags](#create-machine-tags)
+- [Add machines to tailnet](#add-machines-to-tailnet)
+  - [Add Linux device](#add-linux-device)
+  - [Add Android device](#add-android-device)
+  - [Add OSX device](#add-osx-device)
+  - [Add Synology device](#add-synology-device)
+- [SSH](#ssh)
+  - [MacOS Keychain](#macos-keychain)
+- [Proper SSL certs](#proper-ssl-certs)
+- [Subnet router](#subnet-router)
+  - [Enable IP forwarding](#enable-ip-forwarding)
 
 ## Overview
 
@@ -53,13 +55,6 @@ You can invites users to join your tailnet. There are two different kinds of tai
 2. `External invites` are for those users who are not part of your custom domain, such as
    contractors, friends or family. To invite external users use the `Users` page and select `Invite
    external users` for options.
-
-### SSH
-Tailscale allows you to enable the SSH feature to any machine in the tailnet. What this means is that
-Tailscale will handle the ssh connection such that no passwords, certs or anything is needed.
-
-* Tailscale SSH can have additional ACLs configured to make it safer.
-* Ephemeral SSH node can be added to your tailnet so you can SSH into your system via the web portal
 
 ### Tags
 [Tailscale tags](https://tailscale.com/kb/1068/tags) allow you to authenticate and identify non-user
@@ -135,14 +130,15 @@ There are actually two methods for generating keys in the web portal. The first 
 device >Linux server` isn't useful for NixOS as it will generate a key and a install script.
 
 1. Generate a new authkey for the machine
-  1. Navigate to in the web portal to the `Settings` page
-  2. Click `Keys` section on the bottom left
-  3. In the first section under `Tags` choose from the `Add tags` drop down your tag `tag:homelab`
-  4. On the right click `Generate auth key...`
+  1. Precreate any tags you'll be using see [Create machine tags](#create-machine-tags)
+  2. Navigate to in the web portal to the `Settings` page
+  3. Click `Keys` section on the bottom left
+  4. In the `Auth keys` subsection click the `Generate auth key...`
   5. Add a description e.g. `homelab`
   6. Toggle the `Tags` option at the bottom
   7. Add the tag we pre-created e.g. `tag:homelab`
   8. Click `Generate key`
+  9. Copy the resulting key to some place safe and save it
 2. Install on NixOS
   1. [see NixOS example](https://github.com/phR0ze/nixos-config/blob/main/options/services/raw/tailscale.nix)
 3. Approve machine in web portal
@@ -163,8 +159,102 @@ Using a QR code for sign in is the easiest way to go for a device capable of rea
 6. Change the device name as desired
 7. Finally, back on the Android device, allow the tailscale notifications
 
+### Add OSX device
+1. Install the tailscale client on your device via brew
+   ```bash
+   $ brew install tailscale
+   ```
+2. Deploy the system service and validate it works
+   1. Deploy via brew
+      ```bash
+      $ sudo brew services start tailscale
+      ```
+   2. Verify that tailscaled is running
+      ```bash
+      $ sudo brew services list
+      ```
+3. Connect to the tailnet and approve access in web portal
+   1. Add a new `TS_AUTHKEY` env variable
+      ```bash
+      $ export TS_AUTHKEY=tskey-auth-kXXXXX-VXXXXXXXXXXXXXX
+      ```
+   2. Connect to the tailnet
+      ```bash
+      $ sudo tailscale up --ssh
+      ```
+   3. Approve access in the tailscale web portal
+      1. Navigate to the `Machines`  tab
+      2. To the right of the new machine entry click the `...` options menu
+      3. Click `Approve`
+4. Configure SSH access in the tailscale web portal
+   1. Navigate to the `Access controls` tab
+   2. Click the `JSON editor`
+   3. Scroll to the `ssh` section in the policy and change to
+      ```json
+      {
+        "ssh": [
+          {
+            "action": "accept",
+            "src":    ["tag:your-from-system-tag"],
+            "dst":    ["tag:your-mac-system-tag"],
+            "users":  ["autogroup:nonroot", "root"]
+          }
+        ]
+      }
+      ```
+
 ### Add Synology device
 see [../../../system/synology/tailscale](../../../system/synology/tailscale/README.md)
+
+## SSH
+Tailscale supports a built in SSH server that can be enable for the machine via Tailscale's
+connection. Once this is enabled you can SSH into the target system without any need for passwords or
+keys or a local SSH configuration. This is super convenient for systems where you don't want to
+install SSH and/or configure, hardent or maintain it.
+
+* Tailscale SSH can have additional ACLs configured to make it safer.
+* Ephemeral SSH node can be added to your tailnet so you can SSH into your system via the web portal
+
+### MacOS Keychain
+Having to login to services that you are already logged into e.g. Claude Code CLI via SSH is a
+classic macOS security behavior intersecting with how Tailscale's SSH works.
+
+#### The Root Cause: Tailscale SSH vs. macOS Keychain
+Claude Code CLI securely stores its authentication token in the macOS Keychain (specifically your
+login keychain).
+
+When you sit at your MacBook and log in, macOS uses your password to decrypt and unlock this keychain
+automatically. However, when you connect remotely using Tailscale SSH, Tailscale authenticates you
+using its control plane and cryptographic keys—not your macOS password.
+
+Because macOS never received your password during the SSH handshake, your login keychain remains
+locked for that specific terminal session. When Claude Code asks the system for your stored
+Anthropic/Okta token, macOS denies access (or throws a silent UI prompt on your MacBook's physical
+screen), causing the CLI to think you aren't logged in.
+
+#### The Solution: Manually Unlock the Keychain
+You simply need to unlock your keychain in your SSH session before running Claude.
+
+ 1. SSH into your MacBook via Tailscale as you normally do.
+ 2. Run the following command:
+    ```bash
+    $ security unlock-keychain ~/Library/Keychains/login.keychain-db
+    ```
+ 3. It will prompt you for your password. Enter the password you use to log into your MacBook's lock screen.
+ 4. Once unlocked, run claude. It should now instantly recognize your existing enterprise login.
+
+(Note: You will need to do this once per SSH session).
+
+#### Reducing friction with TMUX
+If you want to avoid typing your password every time you SSH in, you can piggyback off your MacBook's
+local session using a terminal multiplexer:
+
+ 1. On the MacBook locally: Open your terminal and start a new tmux session by typing tmux.
+ 2. On your secondary machine: SSH into the MacBook via Tailscale and type tmux attach.
+
+Because the tmux server was started within your local UI session, it inherits the permanently
+unlocked keychain state. You can disconnect and reconnect via SSH all day, and Claude will always
+remain authenticated inside that tmux session.
 
 ## Proper SSL certs
 Most homelab users are going to want to access their self-hosted services when they are away from

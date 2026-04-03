@@ -13,10 +13,8 @@ AI technology is moving fast.
 - [Prompt Engineering](#prompt-engineering)
 
 ### Linked pages
-- [Agents](agents/README.md)
-- [Context Engineering](context_engineering/README.md)
-- [Platforms](platforms/README.md)
-- [Skills](skills/README.md)
+- [Strategies](strategies/README.md)
+- [Harness](harness/README.md)
  
 ## Overview
 AI is predicted to be a golden age of innovation rivaling Cloud, Mobile possibly Internet:

@@ -31,6 +31,8 @@ Anthropic's AI line of tools e.g:
 - [Commands and Skills](#commands-and-skills)
   - [init](#init)
 - [Permissions](#permissions)
+- [Code Review](#code-review)
+  - [Github](#github)
 
 ## Overview
 You can setup a free account or use a paid plan. Enterprise plans will typically allow you to connect
@@ -468,4 +470,20 @@ by simply specifying `WebFetch` we can allow any read only operations by default
 }
 ```
 
+## Code Review
 
+### Github
+The `/review` requires that the Github CLI `gh` be installed and that the `GITHUB_TOKEN` if using
+that method for access be updated to include the following permissions:
+
+| Scope       | Required for                                                 |
+| ----------- | ------------------------------------------------------------ |
+| `repo`      | Accessing repo, PR details, and diff (already have this)     |
+| `read:org`  | Reviewer login, org team name and slug fields in gh pr view  |
+
+1. Navigate to `github.com/settings/profile`
+2. At the bottom of the menu click `Developer Settings`
+3. Expand the `Personal access tokens` drop down
+4. Click `Tokens (classic)`
+5. Click `Generate new token > Generate new token (classic)`
+6. Given the token a name and select the permissions

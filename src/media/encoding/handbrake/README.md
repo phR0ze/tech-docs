@@ -5,7 +5,9 @@
 * [Overview](#overview)
   * [Constant Quality](#constant-quality)
 * [Encode to AV1](#encode-to-av1)
-  * [Animated shows](#animated-shows)
+  * [Re-encode results](#re-encode-results)
+  * [Standard process](#standard-process)
+  * [Re-encode Animated shows](#re-encode-animated-shows)
 * [Encode Blu-ray to x265](#encode-blu-ray-to-x265)
 * [Encode DVD to x265](#encode-dvd-to-x265)
 * [Codecs](#codecs)
@@ -45,8 +47,64 @@ Handbrake's `Hardware >AV1 QSV 2160p60 4K` preset seems to be a great option:
   * Constant Quality RF to `30`
   * the AV1 Preset to `8`
 
-### Constant Quality and Preset
-SVT-AV1 recommendations are
+### Re-encode results
+Note: you'll want to include the `Deblock` filter
+
+**Source material 16GB**
+
+| Format  | RF | Effort | Size   | 
+| ------- | -- | ------ | ------ |
+| AV1     | 20 | p6     | 6 GB   |
+| AV1     | 22 | p4     | 4.4 GB |
+| AV1     | 26 | p8     | 3.6 GB |
+| AV1     | 28 | p6     | 2.8 GB |
+| H.264   | 22 | slow   | 5.5 GB |
+| H.264   | 24 | slow   | 3.6 GB |
+| H.264   | 26 | slow   | 2.4 GB |
+
+### Standard process
+
+#### Summary tab
+Under the `Summary` tab we'll need to change from left to right:
+
+1. `Format` to `Matroska (avformat)`
+
+#### Dimensions tab
+Under the `Dimensions` tab we'll need to change from left to right:
+
+1. `Orientation & Cropping >Cropping` to `Automatic`
+2. `Resolution & Scaling >Resolution Limit` to `1080p Full HD`
+
+#### Filters tab
+For older movies with grainy pictures you might want to enable a few filters:
+
+1. Turn on the "Deblock" Filter (The Pixelation Killer)
+   This filter is specifically designed to target and smooth out the chunky, square "blocks" found in
+   over-compressed or older digital video sources.
+   1. Find the `Deblock` row.
+   2. Change it from Off to `Light` or Medium.
+
+2. Turn on "Denoise" (NLMeans)
+   Older movies often have digital noise or harsh film grain that encoders struggle with, which
+   exacerbates that pixelated look. `NLMeans` is a high-quality smoothing filter.
+   1. Find the `Denoise` row.
+   2. Select `NLMeans` from the dropdown menu.
+   3. Set the `Preset` to `Light`. (Again, anything higher than Light or Medium will make people's faces look like plastic/wax figures).
+   4. Tune:
+      * If it’s a live-action movie, set Tune to Film.
+      * If it has very heavy, colorful blotches of noise in the dark areas, change Tune to `Grain`.
+      * If it's an older animated movie, set Tune to Animation.
+
+#### Video tab
+Under the `Video` tab we'll need to change from left to right:
+
+1. Ensure `Video Encoder`  is `AV1 (SVT)`
+2. Ensure `Framerate` is `Same as source`
+3. Choose `Constant Framerate`
+4. Set `Constant Quality: RF` to `22`
+5. Set the AV1 `Preset` to `6`
+
+**Constant Quality and Preset**
 
 | Use case        | RF    | Preset
 | --------------- | ----- | ------
@@ -54,7 +112,19 @@ SVT-AV1 recommendations are
 | `Streaming`     | 22-28 | 6-8
 | `Quick Encode`  | 20-24 | 10-13
 
-### Re-encode Animated show
+#### Audio tab
+Under the `Audio` tab we'll need to change from left to right:
+
+#### Subtitles tab
+Under the `Subtitles` tab we'll need to change from left to right:
+
+1. Click the `Tracks` drop down and select `Add All Tracks`
+
+#### Name the output file
+
+`Title (Year) [1080p.AV1.AC3.rf20.p6.deblock.denoise].mkv`
+
+### Re-encode Animated shows
 I tried a few different presets and video tweaks. The simplest that was still fast with decent 
 compression was just the out of the box hardware accelerated AV1 with a couple changes.
 

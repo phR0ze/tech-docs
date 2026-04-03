@@ -1,14 +1,14 @@
 # iodeOS <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
-Note: I gave up on this for now because as iodeOS is only on Android 15 and will require major 
-changes to my workflow that I'm not ready for yet i.e. switching off Google services.
+Note: I gave up on this for now because not only is iodeOS only on Android 15 but will also require
+major changes to my workflow that I'm not ready for yet i.e. switching off Google services.
 
 iodeOS is an Android operating system freed from Google trackers. iodeOS is powered by LineageOS, an 
 open source OS that expands the functionality and lifespan of mobile devices.
 
 iodeOS:
 * makes all internet connections visible and allows you to control them
-* permanently runs a built-in adblocker that automatically blocks based on blacklists
+* permanently runs a built-in adblocker that automatically blocks based on deny lists
 * provides built-in parental control 
 * uses F-Droid and Aurora Store for apps
 * replaces Google's DNS with Quad9's in all parts of the system
@@ -17,11 +17,19 @@ iodeOS:
 * NTP server change to `pool.ntp.org`
 
 ### Quick links
-* [.. up dir](..)
-* [Install iodeOS](#install-iodeos)
+- [.. up dir](..)
+- [Overview](#overview)
+- [Install iodeOS](#install-iodeos)
+  - [Versions](#versions)
 
 ## Overview
+There are a number of different identifiers that can be used to identify the user of a phone such as:
+Googgle Account login, IMEI, IMSI, Mac Address, Advertising ID, and the Titan M Chip UUID of Tensor
+based pixel phones. iodeOS removes the google system apps that would be used to capture these
+identifiers and only the google system apps can read these identifiers.
 
+Unfortunately newer Pixel chips starting with the 6 have a newer security chip called the Titan M
+Chip that is used to validate certificates with Google and leaks your identity.
 
 * [Degoogle how to guides](https://blog.iode.tech/category/how-to-guides/)
 * [Manual install steps](https://gitlab.iode.tech/ota/ota#how-to-flash-google-pixel-3-4-5-6-6a-6-pro-7-7a-7-pro-8-8-pro-9-9-pro-9-pro-xl)
@@ -60,14 +68,9 @@ iodeOS version
 1. On NixOS install `android-tools` to get `adb` and `fastboot`
 2. Upgrade or downgrade your vendor provided Android version to match the LineageOS version
 
-
-
 ### Install
 
 1. [Download the OTA zip](https://gitlab.iode.tech/ota/release/-/tree/master/husky)
-
-
-
 
 ## Google alternatives
 

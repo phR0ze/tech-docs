@@ -7,6 +7,7 @@ Documenting my experience with Office applications in the Linux world
 * [mdbook](#mdbook)
 
 ### Linked pages
+- [Emoji](emoji/README.md)
 - [PDFs](pdfs/README.md)
 
 # mdbook
