@@ -6,7 +6,11 @@ safer online. It provides tools for parents and children to create healthy, posi
 ### Quick links
 * [.. up dir](../README.md)
 * [Overview](#overview)
-* [Linking a child device](#linking-a-child-device)
+  * [Features](#features)
+  * [Not Supported](#not-supported)
+* [Getting started](#getting-started)
+  * [Linking a child device](#linking-a-child-device)
+  * [Play a sound](#play-a-sound)
 
 ## Overview
 Google's Family Link provides controls for helping keep your family safer online.
@@ -61,14 +65,15 @@ the same for the parent. Both account holders need to be present.
    4. Click on each device and choose `Sign out`
 
 2. Enroll child's device in Family Link
-   1. On child's device navigate to `Settings >Google >Parental controls`
-   2. Select `Let's do this` at the bottom
-   3. Choose the account you want to supervise and tap `Supervise account`
-   4. Only the account your supervising can be signed in which you confirm with `Sign out & continue`
-   5. Tap `Next` to add supervising parental account using username and password
-   6. Finish the wizard confirming 2FA on parent device
-   7. Enter the child's password to complete the process
-   8. Activate and `Allow` supervision
+   1. On child's device navigate to `Settings >Digital Wellbeing & parental controls`
+   2. Scroll to the bottom and tap `Set up parental controls`
+   3. Select `Let's do this` at the bottom
+   4. Choose the account you want to supervise and tap `Supervise account`
+   5. Only the account your supervising can be signed in which you confirm with `Sign out & continue`
+   6. Tap `Next` to add supervising parental account using username and password
+   7. Finish the wizard confirming 2FA on parent device
+   8. Enter the child's password to complete the process
+   9. Activate and `Allow` supervision
 2. On parent's device launch `Family Link`
    1. Configure settings as desired for the child account
 
