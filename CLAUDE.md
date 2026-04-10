@@ -86,6 +86,19 @@ Brief description of the topic.
 - Fenced code blocks with language hint (e.g. ` ```bash `) for multi-line commands
 - External links go in a `**References**` block or inline
 
+## Keeping Quick Links Current
+
+After any edit to a page's headings or structure, update the `### Quick links` block to mirror the
+current outline. The block must reflect the page as it exists after the edit — not before.
+
+Rules:
+- Every `##` heading gets a top-level entry
+- Every `###` heading gets an indented entry under its parent `##`
+- `[.. up dir](..)` stays as the first entry, always
+- Anchor format follows the [GitHub Flavored Markdown spec](https://github.github.com/gfm/#links): lowercase, spaces replaced with hyphens, punctuation stripped
+- Remove entries for headings that were deleted; add entries for headings that were added
+- Do not list `### Quick links` or `### Linked pages` themselves as entries
+
 ## Link Validation
 
 When editing any page, verify:
