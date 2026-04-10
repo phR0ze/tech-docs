@@ -6,16 +6,26 @@ navigation
 
 ### Quick links
 - [.. up dir](../README.md)
+- [Basic word processor settings](#basic-word-processor-settings)
+- [Lua Plugins](#lua-plugins)
 
 ## Basic word processor settings
+
+### Soft word wrapping
+To mimic a word processor we need soft word wrapping i.e. wrap the lines but don't insert newlines.
+
 ```
-setlocal wrap               " Turn on soft line wrapping
-setlocal textwidth=80       " Set maximum line length to 80 characters
 setlocal formatoptions=t1   " Auto-format text; `t` wraps, `1` avoids breaking words
+setlocal textwidth=0        " Disable hard word wrapping
+setlocal wrap               " Turn on soft line wrapping
+setlocal linebreak          " Wrap lines at word boundaries instead of mid-word
+```
+
+### Spelling
+```
 setlocal spell              " Enable Vim's built-in spell checker
 setlocal spelllang=en_us    " Set spell-check language
 setlocal nolist             " Don't show non-printable characters
-setlocal linebreak          " Wrap lines at word boundaries instead of mid-word
 ```
 
 ### Create a function to enable settings
@@ -37,3 +47,6 @@ function! WordProcessorMode()
 endfunction
 command! WP call WordProcessorMode()
 ```
+
+## Lua Plugins
+

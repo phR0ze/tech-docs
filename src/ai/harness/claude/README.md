@@ -208,6 +208,7 @@ Super easy install method that gives you the latest version, but not compatible 
    2. Run: `echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc`
 
 ### First run configuration in CLI
+
 1. Run with:
    ```bash
    $ cd your-project

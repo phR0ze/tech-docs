@@ -16,6 +16,7 @@ others have.
   - [State options](#state-options)
 - [Providers](#providers)
   - [Google Vertex](#google-vertex)
+  - [OpenRouter](#openrouter)
 
 ## Overview
 OpenCode being open source has some really neat options:
@@ -141,3 +142,16 @@ OpenCode has the ability to connect to Google's Vertex AI models.
 5. Start OpenCode and choose your Google Vertex model
    1. Run `/models`
    2. Choose any model under the `Vertex` sections
+
+### OpenRouter
+To configure OpenCode with OpenRouter, you're essentially replacing OpenCode's bac
+
+1. Create your API key in OpenRouter
+   1. Navigate to the [OpenRouter dashboard](https://openrouter.ai/settings/keys)
+   2. Click `Create API Key` and copy the key
+2. Configure OpenCode
+   1. Launch OpenCode and run `/connect`
+   2. Search for and select `OpenRouter` 
+   3. Enter the API key
+3. Choose your model
+   1. Search for `free`
