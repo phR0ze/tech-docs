@@ -33,6 +33,7 @@ Anthropic's AI line of tools e.g:
 - [Permissions](#permissions)
 - [Code Review](#code-review)
   - [Github](#github)
+- [Google Workspace Integration](#google-workspace-integration)
 
 ## Overview
 You can setup a free account or use a paid plan. Enterprise plans will typically allow you to connect
@@ -488,3 +489,13 @@ that method for access be updated to include the following permissions:
 4. Click `Tokens (classic)`
 5. Click `Generate new token > Generate new token (classic)`
 6. Given the token a name and select the permissions
+
+## Google Drive access
+If your working in a corporate environment with a company account. Chances are your already using
+`gcloud` which can give you indirect access to your drive via apis. Claude can then use this to
+access your drive.
+
+1. First authenticate with gdrive access
+   ```bash
+   gcloud auth login --enable-gdrive-access
+   ```
