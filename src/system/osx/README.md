@@ -28,7 +28,7 @@ My highly opionionated configuration for OSX
   - [Spectacle](#spectacle)
   - [Slack](#slack)
   - [Caffeine](#caffeine)
-  - [Barrier](#barrier)
+  - [Deskflow](#deskflow)
 - [Develop](#develop)
   - [Install NeoVim](#install-neovim)
   - [Install Git](#install-git)
@@ -307,39 +307,90 @@ To keep your laptop from constantly falling asleep when reading documents
 5. Uncheck `Show this message when starting Caffeine`
 6. Set `Default duration` to be `Indefinetely`
 
-## Barrier
-Although it will crash occasionally the Rosetta virtualization does an ok job of running this despite 
-not having an ARM version available see [issues on ARM](https://github.com/debauchee/barrier/issues/960)
-
-* [plist help](https://www.launchd.info/)
-* Reset barrier with `rm ~/Library/Preferences/com.github.Barrier.plist`
+## Deskflow
+Deskflow is the successor to projects like synorgy and barrier in the open source space.
 
 1. Install via brew
    ```bash
-   $ brew install barrier
+   $ brew tap deskflow/tap
+   $ brew install --cask deskflow
    ```
-2. Manually test:
-   1. Test in foreground: `barrierc -f -n client --disable-crypto 192.168.1.4`
+2. Create the config `~/Library/Deskflow/Deskflow.conf`
+   ```ini
+   [core]
+   coreMode=1
+   screenName=client
+
+   [security]
+   tlsEnabled=false
+
+   [client]
+   remoteHost=192.168.1.4
+   ```
+3. Manually test:
+   1. Test in foreground: `/Applications/Deskflow.app/Contents/MacOS/deskflow-core client`
    2. Cancel out when blocked from running
    3. Navigate to `System Settings >Privacy & Security`
    4. Scroll down to the `Security` section
    5. Note a section with your app and click `Open Anyway`
    6. Click `Open` on the popup
    7. Click the allow access button to navigate to settings
-   8. Once in `System Settings >Privacy & Security >Accessibility` toggle for `Barrier`
-2. Set your laptop to run barrier, create the file `~/bin/start_barrier`
-   ```bash
-   #!/opt/homebrew/bin/bash
-   barrierc -n client --disable-crypto 192.168.1.4
-   ```
-3. Start barrier
-   ```bash
-   start_barrier
-   ```
+   8. Once in `System Settings >Privacy & Security >Accessibility` toggle for `Deskflow`
+4. Create auto launcher
+   1. Create the launch file
+      ```bash
+      cat > ~/Library/LaunchAgents/deskflow.plist << 'EOF'
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+          <key>Label</key>
+          <string>com.user.deskflow</string>
+          <key>ProgramArguments</key>
+          <array>
+              <string>/Applications/Deskflow.app/Contents/MacOS/deskflow-core</string>
+              <string>client</string>
+          </array>
+          <key>RunAtLoad</key>
+          <true/>
+          <key>KeepAlive</key>
+          <dict>
+              <key>Crashed</key>
+              <true/>
+          </dict>
+          <key>ThrottleInterval</key>
+          <integer>10</integer>
+      </dict>
+      </plist>
+      EOF
 
-You might need to auth the app once for macOS to run it:
-1. Control click on the `Barrier.app` in the finder and then choose `Open`
-2. Click `Open System Preferences` and ensure `Barrier.app` is listed to control the computer
+      cat > ~/Library/LaunchAgents/start.plist << 'EOF'
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+          <key>Label</key>
+          <string>start</string>
+          <key>ProgramArguments</key>
+          <array>
+              <string>/bin/sh</string>
+              <string>-c</string>
+              <string>$HOME/bin/start</string>
+          </array>
+          <key>RunAtLoad</key>
+          <true/>
+      </dict>
+      </plist>
+      EOF
+      ```
+   2. Load it so that it takes effect on subsequant boots
+      ```bash
+      launchctl load ~/Library/LaunchAgents/start.plist
+      ```
+   3. Start now
+      ```bash
+      launchctl start start.plist
+      ```
 
 ## Develop
 First thing to do in OSX is install command line tools. Apparently you have to do this every time you
