@@ -1,11 +1,13 @@
 # Recovery <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
 
+How to recover from a failing boot process.
+
 ### Quick links
-* [.. up dir](..)
-* [Disable drive](#disable-drive)
-* [Disable display manager](#disable-display-manager)
-* [chroot into target disk](#chroot-into-target-disk)
-* [Troubleshooting Upgrades](#troubleshooting-upgrades)
+- [.. up dir](..)
+- [Disable drive](#disable-drive)
+- [Disable display manager](#disable-display-manager)
+- [chroot into target disk](#chroot-into-target-disk)
+- [Troubleshooting Upgrades](#troubleshooting-upgrades)
 
 ### Linked pages
 
@@ -13,12 +15,14 @@
 A failed drive can be disabled during the boot process by:
 
 1. Waiting until the system boots to recovery mode
+
 2. Entering the root user's password to login
+
 3. Disable the systemctl unit for the drive at runtime
    ```bash
    $ systemctl mask --runtime mnt-storage1.mount
    ```
-4. Boot into the full system command line
+4. Boot into the full system command line for full nix support
    ```bash
    $ systemctl isolate multi-user.target
    ```

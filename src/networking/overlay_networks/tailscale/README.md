@@ -25,6 +25,7 @@ were on the same network over an encrypted secure tunnel.
   - [Name your tailnet](#name-your-tailnet)
   - [Manually approve new devices](#manually-approve-new-devices)
   - [Create machine tags](#create-machine-tags)
+- [Access Controls](#access-controls)
 - [Add machines to tailnet](#add-machines-to-tailnet)
   - [Add Linux device](#add-linux-device)
   - [Add Android device](#add-android-device)
@@ -123,6 +124,31 @@ control polices.
 6. Click `Save tag`
    * this creates the tag `tag:homelab`
 
+## Access Controls
+Tailscale has a rich access control language for controlling what machines and/or users have access
+to what under what conditions.
+
+### Groups
+* `autogroup:member` refers to any logged in tailscale user
+* `autogroup:nonroot` refers any non root user of the local system
+* `autogroup:self` refers to any device owned by the individual members
+
+### SSH Access Controls
+
+#### Default SSH rule
+Allows any tailscale user to connect to any device they own as any non-root or root user.
+
+```json
+"ssh": [
+  {
+    "action": "accept",
+    "src": ["autogroup:member"],
+    "dst": ["autogroup:self"],
+    "users": ["autogroup:nonroot", "root"]
+  }
+]
+```
+
 ## Add machines to tailnet
 
 ### Add Linux device
@@ -186,20 +212,27 @@ Using a QR code for sign in is the easiest way to go for a device capable of rea
       1. Navigate to the `Machines`  tab
       2. To the right of the new machine entry click the `...` options menu
       3. Click `Approve`
-4. Configure SSH access in the tailscale web portal
+4. Restrict access on tailscale
    1. Navigate to the `Access controls` tab
    2. Click the `JSON editor`
-   3. Scroll to the `ssh` section in the policy and change to
+   3. Update the policy to:
       ```json
       {
+        "grants": [
+          {
+            "src":    ["tag:your-from-system-tag"],
+            "dst":    ["tag:your-to-system-tag"],
+            "ip":     ["tcp:22"]
+          }
+        ],
         "ssh": [
           {
             "action": "accept",
             "src":    ["tag:your-from-system-tag"],
-            "dst":    ["tag:your-mac-system-tag"],
-            "users":  ["autogroup:nonroot", "root"]
-          }
-        ]
+            "dst":    ["tag:your-to-system-tag"],
+            "users":  ["autogroup:nonroot", "root"],
+          },
+        ],
       }
       ```
 
@@ -292,4 +325,3 @@ outside world back into your home network to get access to your home devices.
 3. 
 
 ### Enable IP forwarding
-

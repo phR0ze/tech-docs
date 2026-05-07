@@ -10,11 +10,15 @@ Documenting my research on FreeCAD
   * [Crete new project](#create-new-project)
   * [Workbenches](#workbenches)
 * [General object manipulation](#general-object-manipulation)
+  * [Mouse Controls](#mouse-controls)
   * [Draw Rectangle](#draw-rectangle)
   * [Rotate object around axis](#rotate-object-around-axis)
+* [BIM Workbench](#bim-workbench)
+  * [Measure Area](#measure-area)
+  * [Move with host](#move-with-host)
+  * [Selection planes](#selection-planes)
 * [Parts Design Workbench](#parts-design-workbench)
   * [Create a truss](#create-a-truss)
-* [BIM Workbench](#bim-workbench)
 * [Techdraw Workbench](#techdraw-workbench)
 
 ## FreeCAD Overview
@@ -40,7 +44,6 @@ or Sketchup.
    ```
 2. Install addons, navigate to `Tools > Addon manager`
    * `A2plus` workbench for combining parts into assemblies
-   * `BIM` workbench for Building Information Modeling for architecture
    * `Render` allows you to use external renders to produce nice images
    * `FreeCAD-ArchTextures` provides ability to texture models in FreeCAD directly
    * `dxf-library` to export dxf file format
@@ -48,13 +51,13 @@ or Sketchup.
    * `parts_library` collection of pre-made objects
 3. Restart FreeCAD
 4. BIM Welcome screen you can revist it at `Help > BIM Welcome screen`
-   1. Navigate to the `BIM` workbench
+   1. Navigate to the `BIM` workbench from the workbench drop down widget
    2. Work through the BIM setup wizard
    3. Choose `Fill with default values` as `US/Imperial`
    4. Choose `Preferred working units` as `feet`
 5. Configure Settings, navigate to `Edit > Preferences > General > Units`
    1. Choose `Unit System` as `Building US (ft-in/sqft/cft)`
-6. Switch to Revit mouse controls
+6. Switch to `OpenbSCAD` mouse controls
    1. Bottom right where you see `CAD` change that to `OpenSCAD`
    2. Hover over your selection and it will show you how to use the mouse
    3. Also click the same menu and select `Settings >Orbin Style >Turntable`
@@ -79,6 +82,14 @@ of CAD work. You can customize workbenches and move tools from one to another.
 
 ## General object manipulation
 
+### Mouse Controls
+At the bottom right hand of the screen you can change the mouse controls to `OpenSCAD` which feels
+the most intuative to me.
+
+* Left mouse button to orbit
+* Right mous button to pan
+* Scroll to zoom
+
 ### Draw rectangle
 1. Select the rectangle tool
 
@@ -87,6 +98,55 @@ of CAD work. You can customize workbenches and move tools from one to another.
 2. Navigate to `Edit >Placement...`
 3. In the `Rotation` section at the bottom click drop down and select `Euler angles (zy'x")`
 4. Change `Pitch (around y-axis)` for roof angles
+
+## BIM Workbench
+The `BIM` workbench is essentially the Arch workbench with additional tooling and settings to help with 
+BIM. Select it from the workbench drop down widget.
+
+**References**
+* [BIM roof](https://www.youtube.com/watch?v=XCPUkXVqNQ8&list=PLU9HicgJ9hhJvYJso3a6w2TlSLfQvFhzW&index=1)
+
+### Configure BIM
+
+#### Setup snap tools
+Once in the BIM workbench you'll see a number of icon tools along the top. The `Teal` ones are the
+snap widgets. Drag this to the right hand side for easier navigation.
+
+### Measure Area
+The easiest way to do this is to draw a temporary retangle over the area and measure that.
+
+1. Choose the line tool and correct snap tools to draw a rectangle to measure
+2. Split and Join down to just the shape you want
+3. Set it to `Make Face`
+4. If the face doesn't fill then set `Closed` to `true`
+5. In the same property data window you can see the area now
+
+### Switch to Wireframe
+If you have a filled area already you can change it to a `Wireframe` by:
+1. Selecting it
+2. Switching to `View` in the `Model Properties` on the left
+3. Scrolling to `Display Options` section
+4. Changing `Display Mode` to `Wireframe`
+
+### Split line
+1. Select the intersection you want to split at
+2. Use the split tool from the left hand `Tasks` pane or the icon tool
+
+### Join lines
+Simpley select the contiguous lines in the model and click the `Join` tool
+
+### Move with host
+BIM components that are built off a base rectangle like walls and slabs have a property called `Move 
+With Host` that can be set to true to keep them together when you move the base rectangle
+
+### Selection planes
+Create selection planes for technical views that will show up in the `Techdraw Workbench`
+
+1. Select all the components you'd like in the View
+2. Hide any sub-components you don't want to show up
+3. Click the `Selection Plane` button
+4. Switch over to the `TechDraw` workbench
+
 
 ## Parts Design Workbench
 
@@ -148,25 +208,6 @@ This is how I added my truss part to my BIM structure
 2. Create a new FreeCAD document and switch to the `A2plus Workbench`
 3. Click the `Add a part from an external file` and choose your other file e.g. `truss.FCstd`
 4. Place the part then rotate and move as necessary
-
-
-## BIM Workbench
-The BIM workbench is essentially the Arch workbench with additional tooling and settings to help with 
-BIM.
-
-* [BIM roof](https://www.youtube.com/watch?v=XCPUkXVqNQ8&list=PLU9HicgJ9hhJvYJso3a6w2TlSLfQvFhzW&index=1)
-
-### Move with host
-BIM components that are built off a base rectangle like walls and slabs have a property called `Move 
-With Host` that can be set to true to keep them together when you move the base rectangle
-
-### Selection Planes
-Create selection planes for technical views that will show up in the `Techdraw Workbench`
-
-1. Select all the components you'd like in the View
-2. Hide any sub-components you don't want to show up
-3. Click the `Selection Plane` button
-4. Switch over to the `TechDraw` workbench
 
 ## TechDraw Workbench
 The TechDraw workbench is used to make a 2D technical drawing of your work based on the selection 

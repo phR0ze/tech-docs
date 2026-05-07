@@ -1,10 +1,10 @@
-# OAuth <img style="margin: 6px 13px 0px 0px" align="left" src="../data/images/logo_36x36.png" />
+# OAuth <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
 Fundamentally OAuth is an open standard for allowing applications to communicate with one another
 without the need for sharing the user's credentials. Users can delegate access to one system over to
-another system. Thus you are authorizing one system to act on behalf of you on that other system.
+another system. Thus you are authorizing one system to act on your behalf on that other system.
 
-OAuth assumes that everything occurs on secure channels i.e. over TLS.
+> OAuth assumes that everything occurs on secure channels i.e. over TLS.
 
 ### Quick links
 * [.. up dir](..)

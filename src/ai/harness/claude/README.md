@@ -33,7 +33,7 @@ Anthropic's AI line of tools e.g:
 - [Permissions](#permissions)
 - [Code Review](#code-review)
   - [Github](#github)
-- [Google Workspace Integration](#google-workspace-integration)
+- [Google Drive Access](#google-drive-access)
 
 ## Overview
 You can setup a free account or use a paid plan. Enterprise plans will typically allow you to connect
