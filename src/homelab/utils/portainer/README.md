@@ -28,18 +28,19 @@ solutions off the shelf super fast and simple. Really this means the best of bot
 Portainer to quickly test new software out in an isolated VM and then if I like it I can build out a 
 production version in NixOS directly without Portainer.
 
-[see portainer.nix](https://github.com/phR0ze/nixos-config/blob/main/options/services/cont/portainer.nix)
+[see portainer.nix](https://github.com/phR0ze/nixos-config/blob/main/options/apps/portainer.nix)
 
 ### First run
 
 1. Navigate to `localhost:9000`
 2. Create a new admin account e.g. `admin/superinsecure`
-3. Add additional `App Templates`
+3. Click the large `Get Started` tile
+4. Add additional `App Templates`
    1. Navigate to `Settings >General >Application Settings >App Templates`
    2. Paste in your template `URL` e.g. `https://raw.githubusercontent.com/phR0ze/portainer-templates/main/templates_v3.json`
    3. Click `Save application settings` and repeat as desired
-4. Navigate back to `Home` and select your `podman` local environment
-5. Under `Templates >Application` you should now see a wide variety of options to install 
+5. Navigate back to `Home` and select your `podman` local environment
+6. Under `Templates >Application` you should now see a wide variety of options to install 
 
 ### Templates
 Portainer provides what is calls `templates` which can be either a single Docker file a.k.a. `container` or a Docker 

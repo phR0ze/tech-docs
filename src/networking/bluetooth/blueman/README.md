@@ -10,9 +10,9 @@ Python using GTK.
 * [Overview](#overview)
   * [Install](#install)
 
-# Overview <a name="overview"/></a>
+# Overview <a name="overview"></a>
 
-## Install <a name="install"/></a>
+## Install <a name="install"></a>
 1. Install the packages
    ```bash
    $ sudo pacman -S blueman pulseaudio-blueman

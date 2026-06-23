@@ -4,4 +4,10 @@ Caddy is an extensible server platform that can be used as a web server or a rev
 
 ### Quick links
 * [.. up dir](..)
+* [Overview](#overview)
+
+## Overview
+
+### Caddy vs Nginx Proxy Manager
+* Caddy auto-provisions with Let's Encrypt for free
 

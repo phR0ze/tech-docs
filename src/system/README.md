@@ -221,7 +221,7 @@ upgrade has broken Powerline. Enough is enough. Rust always works.
    eval "$(starship init bash)"
    ```
 
-# System Update <a name="system-update"/></a>
+# System Update <a name="system-update"></a>
 1. Update keyring first
    ```bash
    $ sudo pacman -Sy archlinux-keyring

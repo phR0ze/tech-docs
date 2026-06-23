@@ -76,7 +76,7 @@ You can get started with their ***Hobby*** plan for free to test it out:
       ```
       Note: this will build, run tests then deploy your project on Shuttle's infra. It does cache for 
       faster rebuilds which is nice.
-   4. Navigate to your live project at https://<project-name>.shuttleapp.rs  
+   4. Navigate to your live project at `https://<project-name>.shuttleapp.rs`
       e.g.https://shuttle1-axum-test.shuttleapp.rs
    5. Find the projects status and endpoint with
       ```bash

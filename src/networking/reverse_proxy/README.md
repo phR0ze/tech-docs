@@ -16,6 +16,16 @@ being made.
   * makes management of SSL certs easier
   * handles SSL encryption for the server i.e. provides HTTPS
 
+* Pangolin - the closest approximation to Cloudflare Tunnels without the limitations. It has a
+polishsed dashboard, auto SSL, and access control built in. Being able to hand out a custom domain
+name instead of random IPs makes it easier for less technical family members - they just go to the
+URL, log in with Google SSO, and use the service. This is the strongest self-hosted option.
+ - requires VPS?
+
+* frp (Fast Reverse Proxy) - one of the most feature rich self-hosted options
+* Rathole - high performance, written in Rust, low resouce consumption, high security via Noise
+Protocol, and no third-party bandwidth caps. More technical to setup than Pangolin
+
 ### Quick links
 * [.. up dir](../README.md)
 * [Overview](#overview)
@@ -23,6 +33,7 @@ being made.
 
 ### Linked pages
 * [Caddy](caddy/README.md)
+* [Cloudflare Tunnel](cloudflare_tunnel/README.md)
 * [Traefik](traefik/README.md)
 * [Proxy Manager](proxy_manager/README.md)
 
