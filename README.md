@@ -1,5 +1,5 @@
 # tech docs
-Documenting general tech and Arch Linux flavored linuxes 
+Documenting my research in the computing world
 
 How to grep: `grep -riI --exclude-dir="book" "internet archive"`
 
