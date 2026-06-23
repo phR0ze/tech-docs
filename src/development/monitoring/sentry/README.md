@@ -121,7 +121,7 @@ Sentry has support for the Tokio Tracing crate in threee ways:
        &tracing::Level::ERROR => EventFilter::Event,
        _ => EventFilter::Ignore,
    });
-  sentry_tracing::layer::<Registry>().event_filter(|x| match x.level() {
+   sentry_tracing::layer::<Registry>().event_filter(|x| match x.level() {
                         &Level::ERROR => sentry_tracing::EventFilter::Event,
                         _ => sentry_tracing::EventFilter::Ignore,
                     }),

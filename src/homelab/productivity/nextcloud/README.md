@@ -4,24 +4,32 @@ Nextcloud is a open-source self-hosted private cloud solution. The project aims 
 on par with the public cloud conglomerates.
 
 ### Quick links
-* [.. up dir](../README.md)
-* [Overview](#overview)
-  * [Quick Portainer Deploy](#quick-portainer-deploy)
-  * [First run setup](#first-run-setup)
-  * [First impressions](#first-impressions)
-* [NextCloud Apps](#nextcloud-apps)
-  * [Dashboard](#dashboard)
-  * [Files](#files)
-  * [Nextcloud Office](#nextcloud-office)
-  * [Whiteboard](#whiteboard)
-  * [Cospend](#cospend)
-  * [Cookbook](#cookbook)
-  * [Memories](#memories)
-  * [Recognize](#recognize)
+- [.. up dir](../README.md)
+- [Overview](#overview)
+  - [Quick Portainer Deploy](#quick-portainer-deploy)
+  - [First run setup](#first-run-setup)
+  - [First impressions](#first-impressions)
+- [Install Nextcloud](#install-nextcloud)
+- [Upgrade Nextcloud](#upgrade-nextcloud)
+
+- [Nextcloud Apps](#nextcloud-apps)
+  - [Dashboard](#dashboard)
+  - [Files](#files)
+  - [Nextcloud Office](#nextcloud-office)
+  - [Whiteboard](#whiteboard)
+  - [Cospend](#cospend)
+  - [Cookbook](#cookbook)
+  - [Memories](#memories)
+  - [Recognize](#recognize)
+
+### Linked pages
+- [Nextcloud Office](nextcloud_office/README.md)
 
 ## Overview
-Nextcloud Hub is the core and provides multiple Nextcloud products: Files, Talk, Groupware, Office 
-and Assistant into a single platform, optimizing the flow for collaboration.
+Nextcloud Hub is the core product and provides multiple Nextcloud applications eg. Files, Talk,
+Groupware, Office and Assistant in a single platform, optimizing the flow for collaboration.
+
+Note: I'm testing with ***Nextcloud Hub 26***
 
 **References**
 * [linuxserver/nextcloud](https://docs.linuxserver.io/images/docker-nextcloud/)
@@ -36,21 +44,28 @@ and Assistant into a single platform, optimizing the flow for collaboration.
 6. Click `Deploy the stack`
 
 ### First run setup
-Navigate to your new Nextcloud instance e.g. `https://192.168.1.61:443`
+Navigate to your new Nextcloud instance e.g. `https://localhost:443`
 
 1. Set your admin credentials
-2. Setup the default DB connection
-   1. Set `Database account` to `nextcloud`
-   2. Set `Database password` to `insecure`
-   3. Set `Database name` to `nextcloud_db`
-   4. Set `Database host` to `localhost:3306` ???
-      * Failed, but then worked with vm ip `192.168.1.61:3306` maybe, not sure
-3. Had to skip default apps as didn't work
+2. Under `Storage & database`
+   1. Set `Data folder` to `/data`
+3. Under `Database configuration`
+   1. Choose `SQLite` only for testing
+3. Click `Install`
+4. Now choose `Recommended apps`
+   1. `Calendar`
+   2. `Contacts`
+   3. `Mail`
+   4. `Nextcloud Office`
+   5. `Notes`
+   6. `Talk`
+5. Click `Install`
+6. Click `Nextcloud on all your devices`
 
 ### First impressions
 * Has `Dashboard`, `Files`, `Photos` and `Activity` apps installed by default
 
-## Deploy Nextcloud
+## Install Nextcloud
 There are multiple ways of deploying Nextcloud. Deploying with Docker gives, I think, the most 
 ability to control where the persistent data goes and the specific version to use independent of OS 
 upgrades. Additionally it opens up newer versions that are not available in OS repos.
@@ -143,6 +158,11 @@ There are two separate volumes needed
 * Data
 * DB
 
+## Upgrade Nextcloud
+Instructions are for Nextcloud All In One (AIO)
+
+**References**
+- [TechHut upgrade guide to Hub 26](https://www.youtube.com/watch?v=6wMeL9xlzag)
 
 ## Nextcloud Apps
 Under the user options there is a `+ Apps` where you can add additional apps
@@ -160,8 +180,14 @@ the other applications.
 * Users can manage team folders directly not just administrators similar to Google
 * Sharing can be done easily on the same server
 * Sharing can be done easily between other Nextcloud servers as well via built in Federation
+* Supported file formats:
+  * Play MP4
+  * View PDF
+  * Edit Markdown
 
 ### Notes
+
+### Contacts
 
 ### Imaginary
 Provides previews for `heic`, `heif`, `illustrator`, `pdf`, `svg`, `tiff`, `webp` and more

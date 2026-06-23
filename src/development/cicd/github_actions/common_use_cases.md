@@ -102,7 +102,7 @@ References:
           token: ${{secrets.CODECOV_TOKEN}}
    ```
 
-### golang build and test<a name="golang-build-and-test"/></a>
+### golang build and test<a name="golang-build-and-test"></a>
 1. Create a new `.github/workflows` directory in your repository
 
 2. Create a new workflow file e.g. `.github/workflows/build.yaml`

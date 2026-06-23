@@ -62,7 +62,7 @@ server. Thus you can have both:
 Public users
    ↓
 Cloudflare (DNS / WAF)
-  foobar.example.com → <machine>.<tailnet>.ts.net
+  foobar.example.com → `<machine>.<tailnet>.ts.net`
    ↓
 Tailscale Funnel
    ↓

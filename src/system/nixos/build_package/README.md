@@ -246,7 +246,7 @@ Package overrides are used in 3 different places in the system:
    }
    ```
 
-2. ***services.<service>.package*** option overrides for `programs`
+2. ***services.`<service>`.package*** option overrides for `programs`
    ```nix
    {
      services.pipewire.package = pkgs.pipewire.override { x11Support = false; };

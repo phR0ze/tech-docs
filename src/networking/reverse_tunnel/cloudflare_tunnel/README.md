@@ -1,10 +1,15 @@
 # Cloudflare Tunnel <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
 Cloudflare tunnel provides the ability to securely expose anything on your home network to the 
-outside world. Using certificate based authentication to secure it.
+outside world using certificate based authentication to secure it. It works like a reverse proxy with
+some additional features.
+
+***WARNING*** Cloudflare tunnel has a 100mb tunnel limit
 
 ### Quick links
-
+- [.. up dir](../README.md)
+- [Overview](#overview)
+  - [Requirements](#requirements)
 
 ## Overview
 
