@@ -22,9 +22,12 @@ to feature parity.
   * [Add Shows Library](#add-shows-library)
   * [Manually update](#manually-update)
 * [User Management](#user-management)
+* [Hardware Acceleration](#hardware-acceleration)
 * [Plugins](#plugins)
 * [General Configuration](#general-configuration)
 * [Upgrade](#upgrade)
+* [Troubleshooting](#troubleshooting)
+  * [Stuttering playback after a server upgrade](#stuttering-playback-after-a-server-upgrade)
 
 ## Overview
 Jellyfin is a Free Software Media System that puts you in control of managing and streaming your 
@@ -287,7 +290,33 @@ By creating a separate child account we can:
 ## Hardware acceleration
 Really this would only be useful for stream to phones or TVs as all PCs can play most any formats.
 
-At a minimum this would be giving the `jellyfin` server user access to the `video` group.
+At a minimum this would be giving the `jellyfin` server user access to the `video` and `render` 
+groups so it can talk to the GPU device nodes.
+
+**References**
+* [Jellyfin hardware acceleration docs](https://jellyfin.org/docs/general/administration/hardware-acceleration/)
+
+### Nvidia NVENC
+For an Nvidia card (e.g. GTX 1050) the driver and device nodes are enough on their own to allow
+`ffmpeg` to use NVENC/NVDEC, but Jellyfin still needs to be told to use it - this is **not** a NixOS
+config setting, it lives in Jellyfin's own `encoding.xml` and is only set through the web UI.
+
+1. Navigate to `Dashboard >Playback >Transcoding`
+2. Set `Hardware acceleration` to `Nvidia NVENC`
+3. Check the `Hardware decoding` codecs you actually have content for (e.g. `H264`, `HEVC`, `VP9`)
+4. Leave `Enable enhanced NVDEC decoder` checked
+5. Save, then start a new stream and confirm the `ffmpeg` command in `Dashboard >Logs` shows
+   `h264_nvenc`/`hevc_nvenc` rather than `libx264`
+
+Sanity checks if it isn't working:
+```bash
+# Confirm the driver/card is visible
+$ nvidia-smi
+
+# Confirm the jellyfin user has GPU device access
+$ id jellyfin   # should list video and render groups
+$ ls -l /dev/nvidia* /dev/dri/renderD128
+```
 
 ## Plugins
 Jellyfin provides a plugin system has a decent list of plugins available. They also have support for 
@@ -340,3 +369,36 @@ I'm upgrading from `10.10.3` to `10.10.7`
    ```bash
    $ cp -a /var/lib/jellyfin/* /mnt/Backup/Apps/Jellyfin/2025.08.21_10.10.3
    ```
+
+## Troubleshooting
+
+### Stuttering playback after a server upgrade
+Symptom: clients start stuttering/buffering during playback right after upgrading the Jellyfin
+server package, with no changes to the network, clients, or media itself.
+
+Root cause: a Jellyfin server version bump can silently reset `HardwareAccelerationType` back to
+`none` in `/var/lib/jellyfin/config/encoding.xml` when it migrates the encoding profile schema. Once
+that happens every transcode falls back to software `libx264`/`libx265` encoding on the CPU instead
+of NVENC, which is far more expensive and stutters under any real load - even though the GPU itself
+is sitting idle.
+
+1. Confirm the GPU is idle while a transcode is running
+   ```bash
+   $ nvidia-smi
+   ```
+2. Confirm the active transcode's `ffmpeg` command line is using a software encoder
+   ```bash
+   $ journalctl -u jellyfin --since "1 hour ago" | rg -i "codec:v:0 lib"
+   ```
+   Seeing `-codec:v:0 libx264` (rather than `h264_nvenc`/`hevc_nvenc`) confirms it.
+3. Check the on-disk setting directly
+   ```bash
+   $ sudo rg "HardwareAccelerationType" /var/lib/jellyfin/config/encoding.xml
+   ```
+4. Fix it in `Dashboard >Playback >Transcoding` - see [Nvidia NVENC](#nvidia-nvenc) above. Re-set
+   `Hardware acceleration` even if it looks already configured, since the UI can show a stale value
+   until you touch and save it.
+5. Re-check step 2 on the next playback to confirm `h264_nvenc`/`hevc_nvenc` is now in use.
+
+Note: worth re-verifying this setting after every Jellyfin upgrade, not just the first time it
+happens.
