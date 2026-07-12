@@ -13,6 +13,7 @@ from untrusted networks without the use of VPNs. It is a zero-trust access model
   event need public IP addresses
 
 ### Quick links
+- [.. up dir](..)
 * [Overview](#overview)
 * [Programmatic authentication](#programmatic-authentication)
 * [Getting user identity](#getting-user-identity)
