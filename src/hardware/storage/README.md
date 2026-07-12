@@ -15,6 +15,7 @@
   * [Software RAID](#software-raid)
 
 ### Linked pages
+- [Backup](backup/README.md)
 - [Rescue](rescue/README.md)
 - [Truenas](truenas/README.md)
 - [USB](usb/README.md)

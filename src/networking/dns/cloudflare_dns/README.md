@@ -8,9 +8,10 @@ Unmetered DDoS Protection, Universal SSL Certificate, Free Managed Ruleset and S
 mitigation.
 
 ### Quick links
-* [.. up dir](../README.md)
-* [Overview](#overview)
-  * [Domain Name Registrar](#domain-name-registrar)
+- [.. up dir](../README.md)
+- [Overview](#overview)
+  - [Domain Name Registrar](#domain-name-registrar)
+- [Configure DSNS for your Domain Name](#configure-dns-for-your-domain-name)
 
 ## Overview
 
@@ -23,53 +24,5 @@ The first thing you need is to purchase a domain name to then use with Cloudflar
 numerous registrars but Cloudflare is reliable, keeps prices steady and integrates well with the 
 rest of their system.
 
-### DDNS with Cloudflare
-Since most home networks are fronted by an ISP that is reusing dynamic IPs your IP address will 
-likely change over time. To avoid getting locked out from remote access you'll need to have a client 
-running on your home network that connects out to Cloudflare to update Cloudflare with the latest IP 
-address.
+## Configure DNS for your Domain Name
 
-### Cloudflare vs Github free pages
-Both are essentially only for static web pages which leaves you with many limitations.
-
-## How to setup DNS
-1. Navigate to the `DNS` entry on the left
-
-
-## Cloudflare and Tailscale Funnel
-Tailscale Funnel publishes a specific service to the public internet that is still running over the 
-Tailscale infrastructure and thus removes the need for a firewall hole to be made for your web 
-server. Thus you can have both:
-
-1. Private home network access
-  * Access your home services via foobar.example.com
-  * No open ports on your router
-  * End-to-end encryption
-  * Access control (login required)
-  * Works from anywhere
-2. Public web server access
-  * Tailscale provides
-    * No open ports on your router
-    * Works from anywhere
-  * Cloudflare provides
-    * Domain name
-    * DDoS protection
-    * WAF
-    * Rate limiting
-    * Access rules
-
-
-Public users
-   ↓
-Cloudflare (DNS / WAF)
-  foobar.example.com → `<machine>.<tailnet>.ts.net`
-   ↓
-Tailscale Funnel
-   ↓
-Your home service
-
-
-
-### Web service
-* Keep the service isolated in a container or VM
-* Only expose HTTPS

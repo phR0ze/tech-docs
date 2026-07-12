@@ -98,6 +98,7 @@
     - [Gitlab](development/version_control/gitlab/README.md)
   - [Web](development/web/README.md)
     - [CSS](development/web/css/README.md)
+    - [BFF](development/web/bff/README.md)
     - [Blog software](development/web/blog_software/README.md)
   - [UI](development/ui/README.md)
     - [Dioxus](development/ui/dioxus/README.md)
@@ -126,6 +127,7 @@
     - [Cloud Run](cloud/google_cloud_platform/cloud_run/README.md)
     - [gcloud](cloud/google_cloud_platform/gcloud/README.md)
     - [IAP](cloud/google_cloud_platform/iap/README.md)
+  - [RackNerd](cloud/racknerd/README.md)
 
 - [Gaming](gaming/README.md)
   - [Minecraft](gaming/minecraft/README.md)
@@ -140,6 +142,7 @@
   - [Printers](hardware/printers/README.md)
   - [Storage](hardware/storage/README.md)
     - [USB](hardware/storage/usb/README.md)
+    - [Backup](hardware/storage/backup/README.md)
     - [Rescue](hardware/storage/rescue/README.md)
     - [TrueNAS](hardware/storage/truenas/README.md)
 

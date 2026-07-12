@@ -1,7 +1,16 @@
-# Cloud Run
+# Cloud Run <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
+
 Cloud Run is one of Google's serverless offerings. It is fully managed, meaning that Google handles 
 the infrastructure including scaling up and scaling down. You provide the container and Cloud Run 
 provides the rest.
+
+### Quick Links
+- [.. up dir](..)
+- [Overview](#overview)
+  - [Cloud Run Integrations](#cloud-run-integrations)
+- [Services](#services)
+- [Jobs](#jobs)
+- [Firebase](#firebase)
 
 ## Overview
 * Pay per use

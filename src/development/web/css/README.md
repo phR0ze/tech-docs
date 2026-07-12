@@ -1,4 +1,4 @@
-<img align="left" width="48" height="48" src="../../../data/images/logo_256x256.png"> CSS
+# CSS <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 Cascading Style Sheets
 
 ### Quick links
@@ -7,8 +7,9 @@ Cascading Style Sheets
   * [Bulma](#bulma)
   * [Responsive](#responsive)
   * [Tailwind](#tailwind)
+  * [ShadCN](#shadcn)
 
-# Overview
+## Overview
 CSS frameworks like Tailwind and Bulma are CSS only and built with 
 
 * Tachyons, 7.2kb
@@ -18,7 +19,7 @@ CSS frameworks like Tailwind and Bulma are CSS only and built with
   * Github
   * [Primer](https://primer.style/)
 
-## Bulma
+### Bulma
 Bulma is a free, open source CSS framework built primarily with Sass and a Flexbox system. It offers 
 modular colums for easy development and comes with an awesome predefined color palette to provide an 
 ample number of design options. These colors can be used with Bulma's rich classes for rapid UI 
@@ -38,19 +39,19 @@ necessary.
 Resources
 * [Learn Bulma](https://www.youtube.com/watch?v=LBzZLzu2GKo)
 
-## Foundation for sites
+### Foundation for sites
 
 * JS scripting libraries
 * Sass based animation library
 * Selectable download options for getting only what you want
 
-## Responsive
+### Responsive
 
 * Minimal
 * Sass based
 * Minimal JS scripts
 
-## Tailwind
+### Tailwind
 Tailwind is an increasingly popular, free, utility-first framework for user interface development. 
 From its 2017 intial release it is rapidly gaining popularity. It is the most widely used 
 utility-first CSS framework for rapid development. Tailwind may be used to create highly customized, 
@@ -62,3 +63,10 @@ additions made each year.
 * Allows the developer to make significant decisions on how the interface should look
 * No pre-built components but fundamental tools to do so
 * Better for developers with experience that want to create their own user interfaces
+
+### ShadCN
+ShadCN is built from Tailwind by using tailwind classes to create a design system.
+
+**References**
+* [ShadCN Create customization](https://ui.shadcn.com/create)
+* [ShadCN Customization - T3 - Youtube](https://www.youtube.com/watch?v=aKPaxQJs-30)

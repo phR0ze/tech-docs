@@ -99,6 +99,10 @@ Rules:
 - Remove entries for headings that were deleted; add entries for headings that were added
 - Do not list `### Quick links` or `### Linked pages` themselves as entries
 
+## Citing File References
+
+Whenever you read or reference a file in this repo to answer a question, print the file reference (path, or `path:line`) before giving the answer that relies on it. Do this for every file consulted, not just the first.
+
 ## Link Validation
 
 When editing any page, verify:

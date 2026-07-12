@@ -1,10 +1,9 @@
-Web
-====================================================================================================
-<img align="left" width="48" height="48" src="../../../art/logo_256x256.png">
+# Web <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
+
 Web development research
 
 ### Quick links
-* [.. up dir](..)
+- [.. up dir](../README.md)
 * [Hosting](#hosting)
   * [Free static project website hosting](#free-static-project-website-hosting)
     * [Bitbucket Static Pages](../git/README.md#bitbucket-static-pages)
@@ -28,6 +27,9 @@ Web development research
   * [Yew](#yew)
 * [Web Platform](#web-platform)
   * [Wordpress](#wordpress)
+
+### Linked pages
+* [BFF](bff/README.md)
 
 # Hosting
 
