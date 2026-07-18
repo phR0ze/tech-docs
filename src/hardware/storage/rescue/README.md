@@ -137,6 +137,12 @@ location to get a working filesystem.
    $ sudo mkdir -p /mnt/temp
    $ sudo mount -o loop,ro,offset=1048576 failed_drive.raw /mnt/temp
    ```
+   If this fails with `mount: cannot mount /dev/loopX read-only`, the filesystem likely has a
+   dirty journal that needs replaying - which conflicts with `ro`. Add `noload` to skip journal
+   replay entirely instead:
+   ```bash
+   $ sudo mount -o loop,ro,noload,offset=1048576 failed_drive.raw /mnt/temp
+   ```
 3. Copy the recovered files off
    ```bash
    $ sudo rsync -av /mnt/temp/ /mnt/storage1/recovered/

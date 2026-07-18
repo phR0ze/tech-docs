@@ -9,6 +9,7 @@ standard for safe VPN use i.e. regular no log audits, etc...
   * [Registration](#registration)
   * [Vouchers](#vouchers)
   * [Configuration](#configuration)
+  * [Excluding local networks](#excluding-local-networks)
 
 **References**
 * [Mullvad demo](https://www.youtube.com/watch?v=Z9y29Wxo060)
@@ -49,3 +50,25 @@ the voucher was applied to. The easiest way to get vouchers through Amazon.
    2. Launch the GUI interface `mullvad-gui`
 3. Login to your account through the app
    1. Paste in your account code and click forward
+
+### Excluding local networks
+Mullvad tunnels all traffic by default, which blocks access to devices on your LAN (routers, 
+NAS, printers, other homelab hosts) while connected. The `Local network sharing` setting punches 
+a hole in the tunnel for private/local address ranges (`10.0.0.0/8`, `172.16.0.0/12`, 
+`192.168.0.0/16`, link-local, etc.) so that traffic stays on the LAN instead of routing through 
+the VPN.
+
+**GUI**
+1. Open the Mullvad app and go to `Settings` -> `VPN settings`
+2. Enable `Local network sharing`
+
+**CLI**
+```bash
+mullvad lan set allow
+```
+* Check current state: `mullvad lan get`
+* Revert to blocking local network access: `mullvad lan set block`
+
+**Note:** this only exempts local/private address ranges from the tunnel — it does not exclude 
+specific apps or split individual routes. For per-app or per-route exclusions use `vopono` (see 
+[vopono](../vopono/README.md)) instead.
