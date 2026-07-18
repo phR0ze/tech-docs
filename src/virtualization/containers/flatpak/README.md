@@ -13,9 +13,10 @@ reduced user control.
 
 ### Quick links
 * [.. up dir](../README.md)
-* [Flatpak Overview](#flatpak-overview)
-  * [Install flatpak](#install-flatpak)
-* [Config flatpak](#config-flatpak)
+* [Overview](#overview)
+  * [Install on NixOS](#install-on-nixos)
+  * [Install on Arch linux](#install-on-arch-linux)
+* [Configure flatpak](#configure-flatpak)
   * [Update flatpak database](#update-flatpak-database)
   * [Search for flatpak package](#search-for-flatpak-package)
   * [List flatpak packages](#list-flatpak-packages)
@@ -23,7 +24,7 @@ reduced user control.
   * [Run flatpak package](#run-flatpak-package)
 * [Build flatpak packages](#build-flatpak-packages)
 
-# Flatpak Overview
+## Overview
 [Flatpak](https://flatpak.org/) provides the ability to have Linux apps that run anywhere by
 including the applications dependencies with the application. It also runs them in a sandboxed 
 isolated environment that makes them more secure.
@@ -33,22 +34,29 @@ isolated environment that makes them more secure.
 * [Arch Linux docs](https://wiki.archlinux.org/index.php/Flatpak)
 * [Comparision of Flatpak](https://github.com/AppImage/AppImageKit/wiki/Similar-projects#comparison)
 
-### Install flatpak
+### Install on NixOS
+1. Install Flatpak
+   ```nix
+   {
+     services.flatpak.enable = true;
+   
+     # Optional but recommended:
+     xdg.portal.enable = true;
+     xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+   }
+   ```
+2. Install flathub
+   ```bash
+   $ flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+   ```
+3. Reboot to add paths
 
-**NixOS**
-```nix
-environment.systemPackages = with pkgs; [
-  pkgs.flatpak
-];
-services.flatpak.enable = true;
-xdg.portal.enable = true;
-```
-
-**Arch linux**
+### Install on Arch linux
 ```bash
 $ sudo pacman -S flatpak flatpak-builder elfutils patch xdg-desktop-portal-gtk fakeroot fakechroot
 ```
-## Config flatpak
+
+## Configure flatpak
 Binaries are installed to `/var/lib/flatpak/exports/bin` which gets added to the path by
 `/etc/profile.d/flatpak-bindir.sh`. Configuration is stored at `~/.var/app/APP_NAME`
 

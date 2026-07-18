@@ -12,6 +12,9 @@ to buy them.
   - [Parental Controls](#parental-controls)
   - [Scams](#scams)
 - [Installation](#installation)
+  - [Waydroid](#waydroid)
+  - [Sober](#sober)
+  - [Wine](#wine)
 
 ### Linked pages
 - []()
@@ -36,15 +39,24 @@ installed for NixOS to provide third party support for Roblox with mixed success
 reporting some success
 
 ### Sober
-***Sober*** is another Android based solution which wraps Roblox 
+***Sober*** is an Android emulator that has been configured specifically to be able to run Roblox. It
+is a community effort because Roblox hasn't invested in the Linux space.
 
-### Wine approaches failed
-***Wine*** + ***Grapejuice*** or ***Vinegar*** are not reliable as Roblox has deliberately blocked 
-Wine-based solutions due to claims of anti-cheat concerns. Community feedback confirms that by early 
+1. Ensure flatpak is installed
+2. Install Sober
+   ```bash
+   $ flatpak install flathub org.vinegarhq.Sober
+   ```
+3. Run Roblox
+   ```bash
+   $ flatpak run org.vinegarhq.Sober
+   ```
+
+### Wine
+There are several Wine based approaches using vanilla ****Wine**** or with custom configuration via
+***Grapejuice*** or ***Vinegar*** but they are not reliable as Roblox has deliberately blocked
+Wine-based solutions due claiming anti-cheat concerns. Community feedback confirms that by early
 2024 Roblox stopped working via Wine based methods.
-
-* `sober` - runs the mobile Roblox client via APK bundles
-* `waydroid` - 
 
 ## Games
 Many different games are available on Roblox. Some you have to pay for access using currancy others 
