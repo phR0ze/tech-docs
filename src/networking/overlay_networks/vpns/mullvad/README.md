@@ -11,18 +11,18 @@ standard for safe VPN use i.e. regular no log audits, etc...
   * [Configuration](#configuration)
   * [Excluding local networks](#excluding-local-networks)
 
-**References**
-* [Mullvad demo](https://www.youtube.com/watch?v=Z9y29Wxo060)
-
 ## Overview
 
+**References**
+* [Mullvad demo](https://www.youtube.com/watch?v=Z9y29Wxo060)
+<RightMouse>
 ### Registration
 Mullvad offers anonymous registration. They don't require your personal information to create an 
 account. They generate an account number and that is it. You can then login and add time to your 
 account and setup your VPN configuration.
 
 1. Navigate to Mullvad's [account create page](https://mullvad.net/en/account/create)
-2. Click the `GENERATE ACCOUNT NUMBER`
+2. Under `MANUAL SETUP` click the `GENERATE ACCOUNT NUMBER`
 3. Save your account number
 
 ### Vouchers
