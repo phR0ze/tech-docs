@@ -2,7 +2,7 @@ MacroQuad
 ====================================================================================================
 <img align="left" width="48" height="48" src="../../../art/logo_256x256.png">
 Documenting my learning experience with Rust GUIs. Specifically I'm looking for cross-platform i.e. 
-Android, WASM and Linux support using Arch Linux as my devlopment environment. As I delved further 
+Android, WASM and Linux support using NixOS as my development environment. As I delved further 
 into this space I've realized that the kind of custom graphics manipulation that I'm interested is 
 more readily available in the Gaming community. However the immediate mode UI frameworks prevalent in 
 gaming are a battery drain.
@@ -17,12 +17,9 @@ gaming are a battery drain.
 * [Rust prerequisites](#rust-prerequisites)
   * [Install Rust](#install-rust)
   * [Install Rust Android targets](#install-rust-android-targets)
-* [Tauri](#tauri)
-* [Dioxus](#dioxus)
 * [Macroquad](#macroquad)
   * [Install OpenJDK](#install-openjdk)
-  * [Install Android SDK](#install-android-sdk)
-  * [Install Android NDK](#install-android-ndk)
+  * [Install Android SDK and NDK](#install-android-sdk-and-ndk)
   * [Adding Macroquad to your project](#adding-macroquad-to-your-project)
   * [Install Cargo plugin for building apks](#install-cargo-plugin-for-building-apks)
   * [Macroquad UI](#macroquad-ui)
@@ -119,8 +116,7 @@ re-written most of this in miniquad and doesn't use the standard components.
   * Simpler to use than GGEZ which is its top competitor
   * Context is stored in a static variable rather than being passed around
   * Contains its own [fully skinnable and configurable UI](https://docs.rs/macroquad/latest/macroquad/ui/index.html#)
-  * Arch Linux specific instructions
-    * `pacman -S pkg-config libx11 libxi mesa-libgl alsa-lib`
+  * NixOS dev shell: `nix-shell -p pkg-config libGL alsa-lib xorg.libX11 xorg.libXi`
   * Efficient 2D rendering with automatic geometry batching
   * Supported by [Embark Studios](https://www.embark-studios.com) who are building their own game 
 engine from the ground up in Rust
@@ -241,57 +237,23 @@ engine from the ground up in Rust
 * [Ray casting sandbox](https://github.com/nathanielfernandes/ray-casting-sandbox)
   * Neat Wolf 3D type playground
 
-## Install OpenJDK - Not compatible yet
-Android Studio 4.2 released in 2021 and onwards uses `OpenJDK 11`
-
-1. Install OpenJDK11
-   ```bash
-   $ sudo pacman -S jdk11-openjdk
-   ```
-2. Configure `~/.bashrc` for the correct `JAVA_HOME` path
-   ```
-   $ echo "JAVA_HOME=/usr/lib/jvm/java-11-openjdk" >> ~/.bashrc
-   $ source ~/.bashrc
-   ```
-
 ## Install OpenJDK
-Macroquad's `cargo-quad-apk` depends on OpenJDK8 for now
+Macroquad's `cargo-quad-apk` has historically depended on OpenJDK8; verify against the current
+`cargo-quad-apk`/NDK combination you're using before assuming this is still required.
 
-1. Install OpenJDK8
-   ```bash
-   $ sudo pacman -S jdk8-openjdk
-   ```
-2. Configure `~/.bashrc` for the correct `JAVA_HOME` path
-   ```
-   $ echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk" >> ~/.bashrc
-   $ source ~/.bashrc
-   ```
-
-## Install Android SDK
-Macroquad requires SDK r29 currently to run
-
+On NixOS, pull the JDK into your dev shell rather than installing it system-wide:
 ```bash
-$ wget -q https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip
-$ unzip -q sdk-tools-linux-4333796.zip
-$ rm sdk-tools-linux-4333796.zip
-$ yes | ./tools/bin/sdkmanager "platform-tools"
-$ yes | ./tools/bin/sdkmanager "platforms;android-29"
-$ yes | ./tools/bin/sdkmanager "build-tools;29.0.0"
+$ nix-shell -p jdk8  # or jdk17/jdk21 if your NDK/SDK combination supports it
 ```
+`JAVA_HOME` is set automatically inside the shell.
 
-## Install Android NDK
-Latest NDK as of writing this is `r25` and is supported by Macroquad tooling
-* [Android NDK Download site](https://developer.android.com/ndk/downloads/)
-
-1. Download and build
-   ```bash
-   $ yay -Ga android-ndk; cd android-ndk
-   $ makepkg -s
-   ```
-2. Install package
-   ```bash
-   $ sudo pacman -U android-ndk-r25-1-x86_64.pkg.tar.zst
-   ```
+## Install Android SDK and NDK
+Rather than hand-downloading versioned SDK/NDK zips or building Arch packages (both rot quickly), use
+the [android-nixpkgs](https://github.com/tadfisher/android-nixpkgs) flake to compose a reproducible
+SDK+NDK dev shell, or the NixOS/Nix guidance already recorded at
+[Android SDK/NDK Dependencies](../../../../../system/nixos/build_source/README.md#android-sdkndk-dependencies).
+Verify the exact SDK platform/build-tools and NDK version your `cargo-quad-apk`/Macroquad version
+expects, since these pins have historically been strict.
 
 ## Adding Macroquad to your project
 Warning: The Cargo plugin `quad-apk` needs to have Macroquad version `0.3.23` or newer to find the 

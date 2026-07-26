@@ -1418,17 +1418,15 @@ compiled to that target, which can be installed with `rustup`.
 
 Resources:
 * Ripgrep[](https://github.com/BurntSushi/ripgrep/tree/31adff6f3c4bfefc9e77df40871f2989443e6827#installation)
-* [Travis template](https://github.com/japaric/trust)
 * [Rust Packaging](https://rust-cli.github.io/book/tutorial/packaging.html)
 * [Rust Docs](https://doc.rust-lang.org/edition-guide/rust-2018/platform-and-target-support/musl-support-for-fully-static-binaries.html)
-* [Travis Example](https://github.com/rustwasm/wasm-pack/blob/51e6351c28fbd40745719e6d4a7bf26dadd30c85/.travis.yml#L74-L91)
 
 ```bash
 # Install the musl target
 $ rustup target add x86_64-unknown-linux-musl
 
-# Install arch linux musl compiler
-$ sudo pacman -S musl
+# On NixOS, get a musl gcc into your dev shell rather than installing a system package
+$ nix-shell -p pkgsCross.musl64.stdenv.cc
 
 # Use the musl target with cargo => target/x86_64-unknown-linux-musl/release/<app>
 $ cargo build --target x86_64-unknown-linux-musl

@@ -4,6 +4,10 @@
 * [Overview](#overview)
   * [System Dependencies](#system-dependencies)
 * [Rust](#rust)
+  * [Openssl Dependencies](#openssl-dependencies)
+  * [GTK4 Dependencies](#gtk4-dependencies)
+  * [Tauri/Webview Dependencies](#tauriwebview-dependencies)
+  * [Android SDK/NDK Dependencies](#android-sdkndk-dependencies)
 
 ## Overview
 Building a rust project that depends on system libraries takes some work.
@@ -28,4 +32,37 @@ Use dev shell: `nix-shell -p pkg-config openssl`
 
 ### GTK4 Dependencies
 Use dev shell: `nix-shell -p pkg-config openssl gtk4 libadwaita`
+
+### Tauri/Webview Dependencies
+Tauri (and anything built on `wry`/`tao`, e.g. Dioxus's webview-based desktop renderer) needs the
+system webview and its GTK/X11 dependencies present at build time. Use a dev shell:
+```bash
+$ nix-shell -p pkg-config openssl gtk3 webkitgtk_4_1 libappindicator libayatana-appindicator librsvg
+```
+Or as a flake dev shell (mirrors the pattern used on the [Dioxus page](../../../development/ui/dioxus/README.md)):
+```nix
+{ pkgs ? import <nixpkgs> { } }:
+pkgs.mkShell {
+  nativeBuildInputs = with pkgs; [ pkg-config openssl rustup ];
+  buildInputs = with pkgs; [
+    gtk3
+    webkitgtk_4_1
+    libappindicator
+    librsvg
+  ];
+}
+```
+
+### Android SDK/NDK Dependencies
+Rather than pinning specific Android Studio/NDK version numbers here (they rot quickly), use the
+[android-nixpkgs](https://github.com/tadfisher/android-nixpkgs) flake to pull a reproducible SDK/NDK
+into your dev shell, or install Android Studio via `nixpkgs.android-studio` and point `ANDROID_HOME`
+and `NDK_HOME` at the paths it manages. Always install the current Rust Android targets:
+```bash
+$ rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
+```
+
+**References**
+* [android-nixpkgs](https://github.com/tadfisher/android-nixpkgs)
+* [Tauri Linux prerequisites](https://v2.tauri.app/start/prerequisites/)
 

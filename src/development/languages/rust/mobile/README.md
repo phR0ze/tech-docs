@@ -15,6 +15,10 @@ lower level sharable lanugage is much more approachable with Rust than C/C++.
 
 The target is usually Headless apps or supporting libraries but hopefully that will be changing soon.
 
+For a current comparison of Rust GUI frameworks against these cross-platform goals (Dioxus, Tauri,
+Freya, and emerging options like Xilem and GPUI) and a recommendation, see
+[Rust GUI > Recommendation](../gui/README.md#recommendation).
+
 ### Headless Apps
 Notes on a talk from [Rust Nation in Feb 2023. from Stuart Harris](https://www.youtube.com/watch?v=cWCZms92-1g),
 founder of Red Badger.
