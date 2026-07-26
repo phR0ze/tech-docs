@@ -421,7 +421,9 @@ Data driven and data oriented game engine
 * Follows the Entity Comonent System (ECS) paradigm
 
 ## Bevy
-* No WASM or Android yet :(
+* WASM support is mature (asset loading and the rest work like any other platform)
+* Android is possible but not easy, and isn't a project priority yet due to low mobile-dev traffic —
+  see [bevyengine/bevy#20998](https://github.com/bevyengine/bevy/discussions/20998)
 * Successor to Amethyst it has a ECS data paradigm
 * Hot asset reloading to allow for runtime changes
 

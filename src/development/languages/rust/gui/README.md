@@ -24,6 +24,7 @@ Android, WASM and Linux support using NixOS as my development environment.
 * [Dioxus vs Flutter](#dioxus-vs-flutter)
   * [Real-world adoption](#real-world-adoption)
 * [Recommendation](#recommendation)
+* [Media & Gaming Angle](#media--gaming-angle)
 * [Tailwind CSS](#tailwind-css)
 * [Daisy UI](#daisy-ui)
 * [BULMA CSS](#bulma-css)
@@ -219,6 +220,40 @@ Given the requirements above (pure Rust, low power, media processing, Linux + An
     it a lower-risk pure-Rust option than waiting on Dioxus's native renderer to stabilize; just don't
     expect turnkey Android packaging.
 * **Not yet viable:** Xilem, GPUI-mobile — keep watching, don't build production apps on them yet.
+
+## Media & Gaming Angle
+The `## Recommendation` above is tuned for general-purpose app UI (forms, navigation, CRUD-style
+layouts). If the priority shifts to **displaying media/images well, with gaming as an optional
+stretch goal**, the ranking changes — this is a re-weighting, not a reversal.
+
+Dioxus, Flutter, Freya and Tauri are all fundamentally widget-tree/DOM UI frameworks (HTML/CSS-like
+layout, or a Skia-retained widget tree). Basic image display (an `<img>`-equivalent) is fine on all of
+them, but none has sprites, a render-texture pipeline, or a natural game loop — "optional gaming" on
+top of them means bolting on custom `wgpu`/canvas code against the grain of the framework, not using a
+supported path.
+
+* **Primary pick for this angle: Macroquad.** Already cross-platform Linux/Android/WASM, purpose-built
+  for 2D image/sprite manipulation and render textures, lightweight, with a large catalogue of working
+  examples already recorded on the [Macroquad](../gaming/macroquad/README.md) page. It's the closest
+  single framework to all four original requirements (pure Rust, low power, cross-platform, media
+  processing) plus a natural fit for optional gaming.
+* **Strong alternative: Flutter + [Flame](https://flame-engine.org/).** Inherits Flutter's mature
+  image-handling ecosystem (`extended_image`, `photo_view`, `flutter_cache_manager` — already
+  documented as personal favorites in [Flutter](../../../ui/flutter/README.md)) and adds a real,
+  actively developed 2D game layer (game loop, sprites, collision detection) across
+  Android/iOS/Web/desktop from one codebase. The pragmatic choice if "as much pure Rust as possible"
+  can flex for a media/gaming-heavy app.
+* **If gaming becomes central, not just optional**: see the "Gaming Ecosystem" survey (Bevy, Fyrox,
+  GGEZ, Nannou) already on the [Macroquad](../gaming/macroquad/README.md) page rather than duplicating
+  it here. Bevy specifically has mature WASM support but Android is "possible but not easy" and a low
+  project priority — the same shape as Dioxus's and egui's Android stories.
+* **egui** is viable for custom canvas drawing and simple 2D games via its `Painter`/texture APIs (see
+  [egui](#egui) above), but lacks Macroquad's sprite/asset/render-texture conveniences — reasonable
+  only as an add-on if the project is already committed to egui for its UI, not a from-scratch pick for
+  this axis.
+
+**Verdict**: for "media/image display first, gaming optional," Macroquad is the closest match to the
+stated requirements; Flutter+Flame is the lower-risk, more mature alternative if pure Rust can flex.
 
 ## Tailwind CSS
 A utility-first CSS framework packed with utility type classes that can be composed to build any 
