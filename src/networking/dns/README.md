@@ -11,6 +11,7 @@ Documentation for `systemd-resolved` and other DNS utils.
   * [Default Route](#default-route)
   * [Split DNS](#split-dns)
   * [Add domain route](#add-domain-route)
+  * [Wildcard domain override](#wildcard-domain-override)
 * [Nameservers](#nameservers)
   * [Quad9 DNS](#quad9-dns)
   * [Cloudflare DNS](#cloudflare-dns)
@@ -197,6 +198,45 @@ $ sudo resolvectl domain tun0 '~foo1.company.com' '~foo2.company.com'
 # Set the nameserver to use excplicitly
 $ sudo resolvectl dns tun0 192.0.2.1
 ```
+
+### Wildcard domain override
+`~.` is the wildcard routing domain - it means "route everything through this link", i.e. it makes 
+this link's DNS server the default route for all lookups regardless of what other links or global 
+`DNS=`/`networking.nameservers` settings claim. This is the fix for the classic **captive portal DNS 
+problem**: you've joined some public wifi (hotel, airline, coffee shop), got an IP via DHCP, but a 
+global nameserver (a pinned home resolver, `1.1.1.1`, etc.) is still marked as the default route, so 
+the portal's own internal hostname (e.g. `hotelwifi.com`) can't be resolved - `wget`/browser requests 
+just fail with `Name or service not known`, even though general internet queries somehow still work.
+
+**Diagnose**
+```bash
+# See which server is actually being used, and which link has DefaultRoute
+$ resolvectl status
+
+# Confirm the portal domain resolves fine via the link's own DHCP-provided DNS
+$ resolvectl query portal.example.com --interface wlan0 --type=A
+```
+
+**Fix (temporary, until reboot/reconnect)**
+```bash
+# Force all lookups to prefer this link's DNS server
+$ sudo resolvectl domain wlan0 "~."
+```
+After this, `resolvectl query portal.example.com` resolves without any special flags and the portal 
+page loads. Undo it once off the network:
+```bash
+$ sudo resolvectl domain wlan0 ""
+```
+
+**Permanent fix**  
+The manual override is only needed because something is forcing a global nameserver in the first 
+place. The durable fix is to not do that on roaming devices (laptops):
+- Leave `networking.nameservers` (NixOS) / `DNS=` (`resolved.conf`) unset so no link is forced to be 
+  the default route - then whichever link DHCP assigns naturally wins, including captive portals.
+- Set `FallbackDNS=` to your preferred resolvers instead of `DNS=` - `resolved` only falls back to 
+  those if a link provides no DNS at all, so it never overrides a captive portal's local resolver.
+- If you want a *specific* trusted network (e.g. home) to always use a specific resolver regardless 
+  of DHCP, pin it at the network-manager-profile level for that connection only, not globally.
 
 ## Nameservers
 
