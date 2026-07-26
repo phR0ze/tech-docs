@@ -17,9 +17,12 @@ Android, WASM and Linux support using NixOS as my development environment.
 * [Tauri](#tauri)
 * [Dioxus](#dioxus)
 * [Freya](#freya)
+* [egui](#egui)
 * [Emerging / Watch List](#emerging--watch-list)
   * [Xilem](#xilem)
   * [GPUI](#gpui)
+* [Dioxus vs Flutter](#dioxus-vs-flutter)
+  * [Real-world adoption](#real-world-adoption)
 * [Recommendation](#recommendation)
 * [Tailwind CSS](#tailwind-css)
 * [Daisy UI](#daisy-ui)
@@ -102,6 +105,35 @@ tailor the engine to Freya's own needs. It renders directly to native windows wi
 WASM/web-target maturity is unclear as of this writing — treat that as an open question to verify
 before committing to Freya if a web target is required.
 
+## egui
+[egui](https://github.com/emilk/egui) (via `eframe`) is one of the oldest and most widely used pure-Rust
+immediate-mode GUI toolkits — mature and stable on Linux desktop and Web/WASM, which are `eframe`'s
+original and strongest target platforms.
+
+Android is the weak point, and a weaker one than Dioxus's: native Android support in `eframe` landed
+via a comparatively recent PR using `winit`'s `AndroidApp`
+([emilk/egui#5318](https://github.com/emilk/egui/pull/5318)), and is explicitly still maturing.
+Multiple users report the Android dev-environment setup itself is rough unless you're already a
+full-time Android developer with a pre-configured build host
+([egui#5848](https://github.com/emilk/egui/issues/5848),
+[egui#2066](https://github.com/emilk/egui/issues/2066)). Unlike Dioxus's `dx serve --platform android`,
+egui has no first-party CLI for mobile packaging — expect something closer to the hand-rolled
+`cargo-quad-apk` experience already documented on the [Macroquad](../gaming/macroquad/README.md) page.
+
+On power consumption: the common assumption that immediate-mode GUIs are inherently a battery drain
+(a claim this repo already makes in the gaming/Macroquad context) doesn't fully hold for egui — it
+supports a reactive/on-demand repaint mode that only redraws on input events or explicit invalidation
+rather than every frame. Only its continuous/always-redraw mode costs meaningfully more CPU; that's a
+mode choice, not an inherent property of the toolkit.
+
+Media processing is fine via the Rust `image` crate plus `egui_extras`'s image-loading helpers — no
+worse than Dioxus or Freya here.
+
+**Takeaway**: egui is a legitimate, currently more battle-tested than Dioxus contender for **Linux +
+Web**, but its Android story is rougher and less turnkey than Dioxus 0.7's (which at least ships
+official first-party mobile tooling, bugs and all). For the full three-platform requirement it sits at
+the same fallback tier as Tauri/Freya rather than displacing Dioxus as the primary recommendation.
+
 ## Emerging / Watch List
 Frameworks that are technically interesting for this requirement set but not yet production-ready —
 worth tracking, not building on top of yet.
@@ -120,16 +152,72 @@ early-stage third-party crate, [`gpui-mobile`](https://github.com/itsbalamurali/
 itself depends on upstream Zed crates (`gpui`, `gpui_wgpu`) not yet published to crates.io. Not viable
 for this requirement set yet.
 
+## Dioxus vs Flutter
+Flutter isn't a Rust framework, but it's the other realistic answer to "one codebase, Linux + Android
++ Web" and it's worth a direct comparison against Dioxus rather than dismissing it on language grounds
+alone. See [Flutter](../../../ui/flutter/README.md) for the detailed personal reference.
+
+| Dimension | Dioxus 0.7+ (native renderer) | Flutter |
+|---|---|---|
+| Architecture/Rendering | Pure Rust; Blitz (HTML/CSS layout) + Vello (WGPU) | Dart UI logic; Skia/Impeller rendering engine in C/C++ |
+| Linux desktop | Native, GPU-accelerated, self-contained <6MB builds | Mature overall, but no supported way to get the Wayland `xdg_toplevel` handle, blocking native seamless window-drag ([flutter/flutter#187837](https://github.com/flutter/flutter/issues/187837)); otherwise efficient (~50MB disk/~25MB memory for a simple app) |
+| Android | Experimental: app crash on portrait/landscape rotation ([#3470](https://github.com/DioxusLabs/dioxus/issues/3470)), `dx build --android --release` emits stale Java 8 Gradle config incompatible with modern AGP/Gradle ([#5251](https://github.com/DioxusLabs/dioxus/issues/5251)), out-of-date docs, assets outside `.rs` sources reportedly not read, no native widgets/animations (CSS-based only) | Mature, primary target platform since 2018, huge tooling investment |
+| Web/WASM | Small hello-world (~100KB-2.36MB) but real multi-component apps can balloon toward 100MB+ without careful tree-shaking (whole app ships as one WASM blob today) | CanvasKit/skwasm renderer, heavier per-load but 2–3x faster than JS builds, mature size/perf tooling |
+| Media processing | Rust `image`/`wgpu` ecosystem directly, no FFI | Native Dart/platform channels, or Rust via `flutter_rust_bridge` |
+| Ecosystem & backing | Small, venture-backed (Dioxus Labs, YC); rendering stack still stabilizing through 2026 | Google-backed since 2015/GA 2018; huge `pub.dev` package ecosystem, large job market |
+| Dev experience | Hot-patching across all platforms; single language (Rust) throughout | Hot reload; requires Dart, plus Rust+FFI if a hybrid core is used |
+
+### Real-world adoption
+The user specifically asked what popular apps prove one way or the other — the picture is more nuanced
+than a single example suggests:
+
+* **RustDesk** is the concrete case worth knowing precisely: it did **not** migrate from a Rust GUI
+  toolkit to Flutter. It migrated from **Sciter** (a lightweight, closed-source webview-like rendering
+  engine) to Flutter, keeping its **Rust backend unchanged**
+  ([migration wiki](https://github.com/rustdesk/rustdesk/wiki/RustDesk-Desktop-Flutter-Migration),
+  [migration writeup](https://dev.to/rustdesk/rustdesk-is-migrated-from-sciter-to-flutter-279m)).
+  Flutter now covers iOS, Android, Windows, Linux, Mac and Web for RustDesk in production at real
+  scale — with one carve-out: Flutter doesn't support 32-bit Windows, so Sciter is kept alive just for
+  that target. This is strong, large-scale, real-world validation of the **Rust core + Flutter UI**
+  hybrid pattern specifically, not evidence against pure-Rust UI toolkits (RustDesk never shipped on
+  one to begin with).
+* **Counter-signal on the hybrid pattern**: at least one solo developer went the *opposite* direction —
+  from Flutter+Rust (via `flutter_rust_bridge`) back to pure Rust+egui — citing the FFI-bridge
+  generated code as unreadable/brittle ("I don't understand this generated code, it's not readable")
+  and the two-language maintenance burden as not worth it for a smaller project
+  ([writeup](https://jdiaz97.github.io/greenblog/posts/flutter_to_egui/),
+  [HN discussion](https://news.ycombinator.com/item?id=44361288)). Worth weighing before assuming the
+  hybrid path is free.
+* **Dioxus production users**: Dioxus Labs' own marketing states Huawei is shipping production apps
+  with Dioxus, and Airbus/the European Space Agency are building a collision-avoidance system with it.
+  These are vendor-reported, not independently verified case studies — no public write-ups were found
+  corroborating scale or which platform targets are actually in use. Treat as a signal of some
+  enterprise interest, not proof of Android/Web production maturity.
+* **Broader market trend**: searches for "companies switching from Flutter" mostly surface moves
+  toward React Native, Kotlin Multiplatform, or fully native — not toward Rust GUI toolkits. There's no
+  evidence of a wave of companies replacing Flutter with Dioxus/Tauri/etc.; where movement exists, it's
+  individual developers on smaller projects (like the egui case above), not enterprises.
+
 ## Recommendation
 Given the requirements above (pure Rust, low power, media processing, Linux + Android + WASM):
 
-* **Primary path: Dioxus 0.7+ using the native renderer.** It's the only framework here with a
-  simultaneous, production-track story for native GPU rendering, mobile, and WASM from one Rust
-  codebase — the closest match to all four requirements today.
-* **Fallback if the native renderer proves too immature for a given app:**
+* **If Android is a near-term must-ship target** (or the Wayland window-chrome gap above isn't a
+  blocker): **Flutter, optionally with `flutter_rust_bridge`** for Rust-side logic/media processing,
+  is the lower-risk choice today. It's the only option here with a proven, large-scale, real-world
+  cross-platform deployment (RustDesk). "As much pure Rust as possible" is still achievable at the
+  logic/core layer via the bridge — but weigh the bridge-maintenance complaint from the egui
+  counter-example above if this is a smaller/solo project.
+* **If architectural purity (Rust through the UI) is the priority** and rough Android edges are
+  tolerable — e.g. desktop+web ship first, Android later, or the plan includes upstreaming fixes —
+  **Dioxus 0.7+ native renderer** remains the better long-term fit and the smaller footprint. A few
+  enterprises are reportedly already betting on it, though unconfirmed at RustDesk's proven scale.
+* **Fallback if neither native-renderer path fits a given app:**
   * Tauri 2.x — accept a webview/JS frontend in exchange for maturity and mobile-plugin breadth.
   * Freya — accept giving up the WASM/web target in exchange for a fully native, pure-Rust,
     Skia-rendered UI on desktop + Android.
+  * egui — if Android is a later/lower-priority target, egui's Linux+Web maturity and simplicity make
+    it a lower-risk pure-Rust option than waiting on Dioxus's native renderer to stabilize; just don't
+    expect turnkey Android packaging.
 * **Not yet viable:** Xilem, GPUI-mobile — keep watching, don't build production apps on them yet.
 
 ## Tailwind CSS
