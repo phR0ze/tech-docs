@@ -1,10 +1,13 @@
 # Dioxus <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
 Dioxus is a React inspired portable, performant and ergonomic framework for building cross-platform 
-user interfaces in Rust. It is built on top of Tauri which provides the cross-platform aspects. Tauri 
-could be used directly but then you loose Dioxus's convenient works out of the box paradigm. Dioxus 
-layers on top making it just work and adding the React capablities. In `v0.6` Dioxus now supports 
-Mobile out of the box finally making it a viable option as compared to Flutter.
+user interfaces in Rust. In `v0.6` Dioxus supported Mobile out of the box (via a webview renderer
+built on Tauri's `wry`/`tao`), finally making it a viable option as compared to Flutter. As of `v0.7`
+Dioxus also ships a **native renderer** — no webview, no JS engine — built on `Blitz` for HTML/CSS
+layout and `Vello` for GPU-accelerated (WGPU) vector rendering. The webview renderer and the native
+renderer are now two selectable backends for the same Dioxus app: webview trades some binary size and
+purity for maturity/JS-ecosystem access, native trades a still-alpha-toward-beta renderer for a
+smaller, fully pure-Rust, GPU-accelerated app. See [Blitz](#blitz) below for current status.
 
 ### Quick links
 - [.. up dir](../README.md)
@@ -44,6 +47,12 @@ Mobile out of the box finally making it a viable option as compared to Flutter.
 * [Material Icons browser](https://mui.com/material-ui/material-icons/)
 
 ## Getting Started
+
+> **Version note**: the steps below are pinned to `v0.6.3` and describe the webview-renderer
+> workflow. They remain valid as history/reference for that renderer, but 0.7's native-rendering
+> workflow differs materially — notably `dx serve --platform android` for native mobile rendering
+> and hot-patching across all platforms. Re-verify these steps against the current
+> [Dioxus 0.7 guide](https://dioxuslabs.com/learn/0.7/) before relying on them for a new project.
 
 **References**
 * [Dioxus 0.6 guide](https://dioxuslabs.com/learn/0.6/guide/new_app/)
@@ -344,12 +353,22 @@ easily combine to build responsive web interfaces.
   partial load and speeds up by 75%.
 
 ### Blitz
-Blitz is a new WGPU based renderer to render natively.
-* Similar to Electron (130mb), Tauri, Sciter (34mb), Ultralight (22mb), Litehtml. 
-* Blitz is only 12mb, it is most similar to Flutter
-* Drops out Javascript support for efficiency
-* Built on Servo, but more modular
-* Blitz DOM: built on Stylo, Taffy, Parley, AccessKit, Image, USVG
-* Blitz Vello vs: WebRender or Skia
-* Vello is a lib that uses WGPU
+Blitz is the WGPU-based renderer that powers Dioxus 0.7's native rendering mode (`dioxus-native`).
+
+* Similar in spirit to Electron (130mb), Sciter (34mb), Ultralight (22mb), Litehtml, but purely Rust.
+* Drops JavaScript support for efficiency — a native Rust API replaces it, so Dioxus's own
+  reactivity/state management talks to the renderer directly instead of through a JS bridge.
+* Built on Servo components, but more modular: Blitz DOM is built on Stylo (CSS), Taffy (layout),
+  Parley (text), AccessKit (accessibility), `image`, USVG.
+* Rendering uses Vello (a WGPU-based 2D renderer) rather than WebRender or Skia.
+* Current status: supports hot-reloading, accessibility, and mobile platforms already; self-contained
+  macOS builds are under 6MB. It's on a beta-during-2025-toward-production-in-2026 timeline — treat it
+  as alpha/early-beta rather than a settled default until verified against your own app's needs.
+* Invoke with `dx serve --platform android` (or `ios`/`desktop`/`web`) to target native rendering on
+  a given platform from the same codebase used for the webview renderer.
+
+**References**
+* [Dioxus 0.7 release notes](https://dioxuslabs.com/blog/release-070/)
+* [dioxus-native on docs.rs](https://docs.rs/dioxus-native)
+* [Blitz on GitHub](https://github.com/DioxusLabs/blitz)
 
