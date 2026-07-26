@@ -898,6 +898,11 @@ class Test {
 
 # Rust Integration
 
+See [Rust GUI > Dioxus vs Flutter](../../languages/rust/gui/README.md#dioxus-vs-flutter) for a direct
+comparison against Dioxus for this same Linux/Android/Web target set, including real-world adoption
+signals (RustDesk's Rust-core + Flutter-UI migration, and a counter-example of a project moving away
+from `flutter_rust_bridge`).
+
 **References**
 * [Cargo flutter](https://github.com/flutter-rs/cargo-flutter)
 * [Flutter app demo desktop](https://github.com/flutter-rs/flutter-app-demo)
