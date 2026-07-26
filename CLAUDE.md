@@ -1,23 +1,10 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## What This Repo Is
 
-A personal technical reference built with [mdBook](https://rust-lang.github.io/mdBook/). Content lives under `src/` as Markdown files. The table of contents is manually maintained in `src/SUMMARY.md`. The built static site goes to `book/`.
-
-## Common Commands
-
-```bash
-# Build the book
-mdbook build
-
-# Serve locally with live reload (default: http://localhost:3000)
-mdbook serve
-
-# Check for broken links and other issues
-mdbook test
-```
+A personal technical reference built with [mdBook](https://rust-lang.github.io/mdBook/). Content
+lives under `src/` as Markdown files. The table of contents is manually maintained in
+`src/SUMMARY.md`. The built static site goes to `book/`.
 
 ## Structure
 
@@ -25,8 +12,6 @@ mdbook test
 - `src/SUMMARY.md` — master table of contents; every page must be listed here to appear in the built book
 - `src/<topic>/README.md` — each section is a directory with a `README.md` as its landing page
 - `book/` — build output, not committed
-
-Top-level topic sections: `ai`, `cloud`, `data`, `databases`, `development`, `gaming`, `hardware`, `homelab`, `media`, `networking`, `productivity`, `security`, `system`, `virtualization`
 
 ## Adding Content
 
