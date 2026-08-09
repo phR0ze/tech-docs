@@ -249,6 +249,7 @@
     - [Solutions](security/iam/solutions/README.md)
       - [Auth0](security/iam/solutions/auth0/README.md)
   - [Password Managers](security/password_managers/README.md)
+    - [Vaultwarden](security/password_managers/vaultwarden/README.md)
 
 - [System](system/README.md)
   - [Android](system/android/README.md)

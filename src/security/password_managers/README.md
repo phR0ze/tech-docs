@@ -2,18 +2,12 @@
 
 ### Quick links
 * [.. up dir](..)
-# [Bitwarden](#bitwarden)
 # [Buttercup](#buttercup)
 # [KeepassXC](#keepassxc)
   # [TOTP Support](#totp-support)
 
-## Bitwarden
-
-**Pros**
-* Free for personal use
-* Cross-platform including Linux
-* Command-line tools
-* Ability to host is on your own servers
+### Linked pages
+* [Vaultwarden](vaultwarden/README.md)
 
 ## Buttercup
 
