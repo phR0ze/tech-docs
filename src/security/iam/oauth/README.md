@@ -12,10 +12,11 @@ another system. Thus you are authorizing one system to act on your behalf on tha
   * [Terms](#terms)
   * [Four OAuth Roles](#four-oauth-roles)
   * [Client Registration](#client-registration)
-  * [Why auth code](#why-auth-code)
+  * [Access Tokens](#access-tokens)
   * [OAuth Scopes](#oauth-scopes)
 * [OAuth Core](#oauth-core)
   * [Authorization Code](#authorization-code)
+    * [Why auth code](#why-auth-code)
   * [Client Credentials](#client-credentials)
   * [Refresh Token](#refresh-token)
   * [Deprecated grants](#deprecated-grants)
@@ -36,8 +37,8 @@ another system. Thus you are authorizing one system to act on your behalf on tha
 
 ## Overview
 OAuth solves the problem of allowing 3rd party applications access to your data in other
-applications. There are a few different flows a.k.a. grant types but the only ones that should really
-be used at this point are:
+applications. It has also be adapted to allow 1st party access. There are a few different flows
+a.k.a. grant types but the only ones that should really be used at this point are:
 * ***Authorization Code w/PKCE*** for human interaction
 * ***Client Credentials*** for machine to machine with no human interaction
 
@@ -49,7 +50,9 @@ be used at this point are:
 * [JWT Introspection](https://jwt.io)
 * [OAuth and OIDC examples](https://github.com/caseysoftware/oauth-and-openid-connect)
 * [Okta API Access Manager](https://developer.okta.com)
-* [OAuth Playground](https://developers.google.com/oauthplayground)
+* [OAuth Playground from Okta](https://www.oauth.com/playground)
+* [OAuth Playground from Google](https://developers.google.com/oauthplayground)
+* [Securing Your APIs with OAuth 2.0 - OktaDev](https://www.youtube.com/watch?v=PfvSD6MmEmQ)
 
 ### Terms
 * `Access Token` - how the application gets that access
@@ -75,14 +78,6 @@ be used at this point are:
 | Client               | The app requesting access | LinkedIn             |
 | Authorization Server | Issues tokens             | Gmail's auth server  |
 
-### Authorization request params
-* `response_type=id_token` — I want an ID token
-* `response_mode=form_post` — deliver it via HTML form POST (not URL fragment — avoids browser history leaks; avoids size limits)
-* `redirect_uri` — exact address to receive the token (must be strict match — loose matching enables token hijacking)
-* `scope=openid` profile email — what to include in the token
-* `nonce` — a random value saved in a cookie on the client side; the server includes it in the token,
-  proving the token is for this request and not injected from a hijacker
-
 ### Client Registration
 Before an application can use OAuth 2, it must be registered with the Authorization Server as a one
 time configuration to get the app's `Client ID` and `Client Secret` which are used to prove the
@@ -93,63 +88,37 @@ management interface. During this process the app owner needs to provide:
 * `Redirect URI (Callback URL)`: the exact URL where the authorization server will send users after
 they authorize or deny your application.
 
-### Why auth code
-The OAuth 2 Authorization code flow returns a code from the Authorization server instead of the
-access token directly and requires another step to then get the access token. The reason for this is
-that we need to securely deal with front channel (i.e. mobile and web apps). All of the OAuth flow
-steps could happen on the front channel and are potentially just page redirects with information
-passed along as query parameters of your request. Thus if someone was looking over your shoulder or
-you had a malicious toolbar or something they could see the auth code as it is also trasmitted back
-to the app via the front channel. However the final exchange mechanism of the auth code for the
-access token happens on the back channel over HTTPS and includes a secret key that only the client
-and server have via pre-registration.
+### Access Tokens
+There are two different families of access tokens. Only the API should ever try to understand the
+access token. The caller would only ever add it to the header as a `Authorization: Bearer
+ACCESS_TOKEN` and not care what it was.
 
-**Auth code request**
-```
-https://accounts.google.com/o/oauth2/v2/auth?
-  client_id=absc123&
-  redirect_uri=https://yelp.com/callback&
-  scope=profile&
-  response_type=code&
-  state=foobar
-```
+#### Reference access token
+Reference to an object in the DB where the actual values are stored as columns in a table. This means
+your storing all access tokens and requiring active lookups every time they are used. This mechanism
+only really works for smaller applications that are not using OIDC.
 
-**Auth code response**
-```
-https://yelp.com/callback?
-  code=sdlfkjsdfliujsdlfkjsdl&
-  state=foobar
-```
+#### JWT access token
+Data lives in the token itself. see [JSON Web Token](#json-web-token)
 
-**Exchange access token request**
-```
-POST www.googleapis.com/oauth2/v4/token
-Content-Type: application/x-www-form-urlencoded
-
-code=sdlfkjsdfliujsdlfkjsdl&
-client_id=absc123&
-client_secret=secret123&
-grant_type=authorization_code
-```
-
-**Exchange access token response**
-```json
-{
-  "access_token": "secret-access-token",
-  "expires_in": 3920,
-  "token_type": "Bearer"
-}
-```
-
-**Access request**
-```
-GET api.google.com/some/endpoint
-Authorization: Bearer secret-access-token
-```
+* Requires no storage
+* Better separation of concerns
+* Can be validated at the API without a DB/HTTP lookup
+* Can't be revoked without checking the server
+  * Commonly solved by having a fast local validation on the edge i.e. Gateway that filters garbage
+  * API requests then check for revokation with server
+    * Make this call per API
+      * User profile image ok
+      * User credit card charge not ok
 
 ### OAuth Scopes
-As simple or complex as you want.  Better to stay simple and increase it later. There is no unified 
-approach and the scope strings are free form and can be any format. Best to unify your own.
+Scopes limit what an app can do on your behalf. It is not how you would build a permissioning
+system though. Think of it as further locking down beyond the user's own permissions according to
+what the user wants to allow a 3rd party app to be able to do with their account.
+
+Scopes can be as simple or complex as you want.  Better to stay simple and increase it later. There
+is no unified approach and the scope strings are free form and can be any format. Best to unify your
+own.
 
 * github example: `repo`, `public_repo`, `repo:invite`, `write:repo_hook`
 * google example: `Analytics API: https://www.googleapois.com/auth/analytics`
@@ -178,6 +147,101 @@ common OAuth flow and involves the front and back channels both:
 7. The app will then be able to present the access token to Google APIs for access
 8. You can revoke the app's access at any point
 
+#### Why auth code
+The OAuth 2 Authorization code flow returns a code from the Authorization server instead of the
+access token directly and requires another step to then get the access token. The reason for this is
+that we need to securely deal with front channel (i.e. mobile and web apps). All of the OAuth flow
+steps could happen on the front channel and are potentially just page redirects with information
+passed along as query parameters of your request. Thus if someone was looking over your shoulder or
+you had a malicious toolbar or something they could see the auth code as it is also trasmitted back
+to the app via the front channel. However the final exchange mechanism of the auth code for the
+access token happens on the back channel over HTTPS and includes a secret key that only the client
+and server have via pre-registration.
+
+#### Authorization request params
+* `response_type=id_token` — I want an ID token
+* `response_mode=form_post` — deliver it via HTML form POST (not URL fragment — avoids browser history leaks; avoids size limits)
+* `redirect_uri` — exact address to receive the token (must be strict match — loose matching enables token hijacking)
+  * Allowed Redirect URIs are registered in advance in the `oauth2_clients` table
+  * e.g. `https://example-app.com/callback`
+* `scope=openid` profile email — what to include in the token
+* `state` - a random string that's generated by your app which you verify later
+* `nonce` — a random value saved in a cookie on the client side; the server includes it in the token,
+  proving the token is for this request and not injected from a hijacker
+
+#### Confidential Client flow
+Hinges on the app's `client_secret` shared on the back channel to ensure security.
+
+##### Front Channel portion
+User initiates and the browser receives the Authorization Code that is then passes to the App
+
+**OAuth Code Request Example**
+```
+https://accounts.google.com/o/oauth2/v2/auth?
+  response_type=code&
+  client_id=CLIENT_ID&
+  redirect_uri=REDIRECT_URI&
+  scope=SCOPES&
+  state=1234xyz
+```
+
+**OAuth Code Response Example**
+User is redirected to the application using the registered redirect URI
+```
+https://example-app.com/callback?
+  code=AUTH_CODE_HERE&
+  state=1234xyz
+```
+
+##### Back Channel portion
+App makes a back channel call with its `client_id` and `client_secret` and `code` to then get the
+`access token``
+
+**OAuth Exchange access token request**
+```
+POST www.googleapis.com/oauth2/v4/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id=CLIENT_ID
+client_secret=CLIENT_SECRET
+grant_type=authorization_code
+code=AUTHORIZATION_CODE
+redirect_uri=REDIRECT_URI
+```
+
+**OAuth Exchange access token response**
+```json
+{
+  "access_token": "secret-access-token",
+  "expires_in": 3920,
+  "token_type": "Bearer",
+  "refresh_token": "239487293487239458723984729348729387"
+}
+```
+
+**API Access request**
+```
+GET api.google.com/some/endpoint
+Authorization: Bearer SECRET_ACCESS_TOKEN
+```
+
+#### Public Client flow
+Where a `client_secret` can't be safely shared e.g. a JavaScript client can't embed the secret in the
+code to be used later. Same thing is true of mobile apps. You don't control the app so it can be
+decompiled and your secret stolen.
+
+Solution is to use PKCE (Proof Key For Code Exchange).
+
+1. Generates a new secret dynamically
+2. Stores and hashes the secret
+3. Presents hashed secret to auth server
+   * Note: because the hash is one way an attacker doesn't have the original value
+4. Auth server stores the hash value and returns the auth code
+5. App then calls server with auth code and plain text secret
+   * Note: only the app has the plain text because it created it dynamically
+6. Auth server looks up by given authorization code the hashed secret
+  * Note: server hashes the given plain text and compairs it to the stored hash
+
 ### Client Credentials
 The Client Credentials grant is a back channel only flow that use the client credentials to exchange
 for an access token directly with no need for user consent or the auth code step. This is useful for
@@ -190,6 +254,16 @@ but does use a grant type value `grant_type=refresh_token`
 1. Client sends the `refresh_token` to the token endpoint
 2. AS issues a new access token (and optionall a new refresh token)
 3. Old refresh token is invalidated (rotation is recommended, required in OAuth 2.1)
+
+Examples of dealing with refresh windows
+
+| User              | Token   | Expiration  |
+| ----------------- | ------- | ----------- |
+| Admin             | Access  | 1hr         |
+| Admin             | Refresh | 24hrs       |
+| Regular           | Access  | 24hrs       |
+| Regular           | Refresh | Unlimited   |
+| Privileged Scopes | Access  | 3 hrs       |
 
 ### Deprecated grants
 * `Implicit` - originally for SPAs this is now deprecated
