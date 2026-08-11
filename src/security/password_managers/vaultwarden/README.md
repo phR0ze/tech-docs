@@ -7,12 +7,13 @@ desktop, mobile, CLI) — self-hosting the `Bitwarden` option from the parent pa
 ### Quick links
 * [.. up dir](..)
 * [Overview](#overview)
-* [Configuration](#configuration)
+* [Configure Server](#configure-server)
   * [First Run](#first-run)
   * [Adding More Users](#adding-more-users)
   * [Connect Bitwarden Clients](#connect-bitwarden-clients)
   * [Organizations](#organizations)
   * [External Access / WebAuthn](#external-access--webauthn)
+* [Configure Browser](#configure-browser)
 * [Admin Panel](#admin-panel)
   * [What It Provides](#what-it-provides)
   * [Exposing Over Pangolin](#exposing-over-pangolin)
@@ -29,7 +30,7 @@ desktop, mobile, CLI) — self-hosting the `Bitwarden` option from the parent pa
 * Unofficial reimplementation — trails official server feature parity slightly
 * You own patching/updates and the security posture of the instance
 
-## Configuration
+## Configure Server
 
 ### First Run
 1. Browse to `http://<host>:<port>` (default port `8222` when deployed via this repo's
@@ -60,6 +61,15 @@ Shared vaults between multiple accounts require an Organization:
 WebAuthn/U2F and correct icon/link generation. Plain HTTP works fine for LAN-only access without it.
 HTTPS requires a reverse proxy such as [Caddy](../../../networking/reverse_proxy/caddy/README.md) or
 [Traefik](../../../networking/reverse_proxy/traefik/README.md) in front of it.
+
+## Configure Browser
+
+### Install Extension
+1. Navigate to extension market
+2. Choose `Bitwarden Password Manager`
+3. Click the `Log in` option
+4. At the bottom of the screen switch from `bitwarden.com` to `self-hosted` 
+5. Enter your Vaultwarden URL e.g. `https://<homelab-ip>:9222` and click `Save`
 
 ## Admin Panel
 
