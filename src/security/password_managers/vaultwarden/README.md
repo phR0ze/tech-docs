@@ -9,11 +9,11 @@ desktop, mobile, CLI) — self-hosting the `Bitwarden` option from the parent pa
 * [Overview](#overview)
 * [Configure Server](#configure-server)
   * [First Run](#first-run)
-  * [Adding More Users](#adding-more-users)
-  * [Connect Bitwarden Clients](#connect-bitwarden-clients)
-  * [Organizations](#organizations)
-  * [External Access / WebAuthn](#external-access--webauthn)
-* [Configure Browser](#configure-browser)
+* [Configure Android](#configure-android)
+  * [Configure Bitwarden app](#configure-bitwarden-app)
+* [Configure Firefox](#configure-firefox)
+  * [Trust Vaultwarden CA on Firefox](#trust-vaultwarden-ca-on-firefox)
+  * [Configure Bitwarden extension](#configure-bitwarden-extension)
 * [Admin Panel](#admin-panel)
   * [What It Provides](#what-it-provides)
   * [Exposing Over Pangolin](#exposing-over-pangolin)
@@ -46,30 +46,34 @@ member:
 * Temporarily flip `signupsAllowed = true`, have them register, then flip it back off, or
 * Invite/manage them via the [Admin Panel](#admin-panel) if it's enabled
 
-### Connect Bitwarden Clients
-1. In the browser extension / desktop / mobile app, before logging in, open Settings and set the
-   **Self-hosted server URL** to the instance's `http://<host>:<port>` or `domain`
-2. Log in normally with the account created above
+## Configure Android
 
-### Organizations
-Shared vaults between multiple accounts require an Organization:
-1. In the web vault: `Settings -> Organizations -> New organization`
-2. Invite other registered accounts by email to share vault items/collections
+### Configure Bitwarden app
+1. Search for `Bitwarden Password Manager` and install
+2. Launch the app and switch to `Self-hosted`
+3. Enter the server `https://<ip-address>:9222`
+4. At the bottom hit `Import certificate`
 
-### External Access / WebAuthn
-`DOMAIN` (`domain` in this repo's option) must be set to a real HTTPS URL reachable by clients for
-WebAuthn/U2F and correct icon/link generation. Plain HTTP works fine for LAN-only access without it.
-HTTPS requires a reverse proxy such as [Caddy](../../../networking/reverse_proxy/caddy/README.md) or
-[Traefik](../../../networking/reverse_proxy/traefik/README.md) in front of it.
+## Configure Firefox
 
-## Configure Browser
+### Trust Vaultwarden CA
+1. Shell into your NixOS server running caddy
+2. Grab the generated CA and copy it to your target machine
+   ```bash
+   sudo cp /var/lib/caddy/.local/share/caddy/pki/authorities/local/root.crt ~/Downloads/
+   ```
+3. Launch Firefox and navigate to `Settings >Privacy and security`
+4. At the bottom under `Connection and software security` click `Advanced settings`
+5. Scroll to the bottom to the `Certficates` section and click `Manage certificates`
+6. Click `Import` and then check the boxes and click `OK` then `OK`
 
-### Install Extension
-1. Navigate to extension market
-2. Choose `Bitwarden Password Manager`
-3. Click the `Log in` option
+### Configure Bitwarden extension
+1. Navigate to Firefox's Extension and Themes
+2. Search for `Bitwarden Password Manager` and click `Add to Firefox`
+3. Click through loading the extension then click `Log in`
 4. At the bottom of the screen switch from `bitwarden.com` to `self-hosted` 
 5. Enter your Vaultwarden URL e.g. `https://<homelab-ip>:9222` and click `Save`
+6. Then enter your credentials
 
 ## Admin Panel
 

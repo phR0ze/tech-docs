@@ -18,14 +18,7 @@ configs below.
 - [Upgrade Neovim](#upgrade-neovim)
 
 ## Install Nix
-The easiest way to get started is by using the ***Determinate Systems Installer***
-
-1. Navigate to [Determinate Systems](https://determinate.systems/nix-installer/)
-
-2. Copy the curl bash line and execute
-   ```
-   curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
-   ```
+See [Nix](../nix/README.md) for installing Nix and setting up nix-darwin + home-manager.
 
 ## Deploy Neovim
 
