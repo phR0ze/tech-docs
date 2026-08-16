@@ -18,6 +18,7 @@ components. Development specific technologies are in the top level
 - [Starship](#starship)
   - [Installing Starship](#installing-starship)
 - [System Update](#system-update)
+- [Ubuntu](ubuntu)
 - [Systemd](#systemd)
   - [Systemd Status](#systemd-status)
   - [Systemd Boot Performance](#systemd-boot-performance)
@@ -35,6 +36,7 @@ components. Development specific technologies are in the top level
 - [Android](android/README.md)
 - [Systemd](systemd/README.md)
 - [Synology](synology/README.md)
+- [Ubuntu](ubuntu/README.md)
 
 ## Desktop components
 

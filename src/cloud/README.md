@@ -55,6 +55,12 @@ Note this table could be wildly inaccurate. Check the latest for yourself.
 | [DigitalOcean](https://www.digitalocean.com/pricing/droplets) | Basic 2 GB | $12/mo | 1 | 2 GB | 50 GB SSD | 2 TB/mo | 1 Gbps | Only 1 vCPU; transfer barely meets 2 TB floor |
 | [DigitalOcean](https://www.digitalocean.com/pricing/droplets) | Basic 2 GB Dual | $18/mo | 2 | 2 GB | 60 GB SSD | 3 TB/mo | 1 Gbps | Meets all requirements; month-to-month billing |
 | [DigitalOcean](https://www.digitalocean.com/pricing/droplets) | Basic 4 GB | $24/mo | 2 | 4 GB | 80 GB SSD | 4 TB/mo | 1 Gbps | Comfortable headroom; good if adding more services |
+| [Kamatera](https://www.kamatera.com/pricing/) | Standard | $25/mo | 2 | 2 GB | 20 GB NVMe | 5 TB/mo | Shared | Custom config pricing; overage $0.01/GB; month-to-month + free 30-day trial; meets requirements but priciest option surveyed |
+
+### RackNerd
+Seem to be the best price for the value.
+
+
 
 ### Oracle Cloud
 Oracle Cloud's ***Always Free*** option is awesome if you can get it; however its next to impossible
