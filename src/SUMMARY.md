@@ -282,6 +282,7 @@
     - [Patch binary](system/nixos/patch_binary/README.md)
     - [Repl](system/nixos/repl/README.md)
     - [Secrets](system/nixos/secrets/README.md)
+      - [sops-nix](system/nixos/secrets/sops_nix/README.md)
   - [Systemd](system/systemd/README.md)
   - [Synology](system/synology/README.md)
     - [Adguard](system/synology/adguard/README.md)
