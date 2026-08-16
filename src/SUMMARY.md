@@ -309,6 +309,8 @@
     - [Terminal Emulators](system/terminal/terminal_emulators/README.md)
     - [Terminal Window Manager](system/terminal/terminal_window_manager/README.md)
     - [TMUX](system/terminal/tmux/README.md)
+  - [Ubuntu](system/ubuntu/README.md)
+    - [Hardening](system/ubuntu/hardening/README.md)
   - [Window Managers](system/window_managers/README.md)
     - [i3](system/window_managers/i3/README.md)
 
