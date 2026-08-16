@@ -11,6 +11,7 @@ documenting my research and choices here.
 - [Media](media/README.md)
 - [Photo](photo/README.md)
 - [Productivity](productivity/README.md)
+- [Security](security/README.md)
 - [Utils](utils/README.md)
 
 ## Notes
