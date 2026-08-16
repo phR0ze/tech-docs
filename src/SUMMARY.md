@@ -157,6 +157,7 @@
       - [Nextcloud Office](homelab/productivity/nextcloud/nextcloud_office/README.md)
     - [OpenCloud](homelab/productivity/opencloud/README.md)
     - [Web Server](homelab/productivity/web_server/README.md)
+  - [Security](homelab/security/README.md)
   - [Utils](homelab/utils/README.md)
     - [AdGuard Home](homelab/utils/adguard/README.md)
     - [Cloudflare DDNS](homelab/utils/cloudflare_ddns/README.md)
