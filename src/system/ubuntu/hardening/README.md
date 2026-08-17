@@ -19,6 +19,7 @@ Traefik, Newt) changes or adds to the generic advice.
 * [GeoIP Blocking](#geoip-blocking)
 * [Fail2ban](#fail2ban)
 * [Crowdsec](#crowdsec)
+  * [Diagnosing and clearing a ban](#diagnosing-and-clearing-a-ban)
 * [Automatic Updates](#automatic-updates)
 * [Service Minimization](#service-minimization)
   * [Remove services](#remove-services)
@@ -363,8 +364,44 @@ own chains — same caveat as the `ufw`/Docker note above. To have it also cover
 publishes, point the bouncer at the `DOCKER-USER` chain (see the bouncer's config) rather than
 relying on the default `INPUT` chain alone.
 
+### Diagnosing and clearing a ban
+Repeated pre-auth connections from one IP in a short window — even with zero failed
+*authentications* — can trip Crowdsec's `ssh-bf` scenario on its own. Recon tooling is a common,
+entirely legitimate trigger: `ssh-keyscan` opens one connection per host-key algorithm and
+disconnects before ever authenticating, and running it more than once or twice in quick succession
+looks identical to a scan from Crowdsec's point of view. `fail2ban`'s default `sshd` filter, by
+contrast, only keys off actual `Failed password` log lines, so it won't fire from this pattern
+alone — don't assume it's the culprit without checking both.
+
 ***References***
 * [Crowdsec Hub](https://hub.crowdsec.net) for available collections, parsers and bouncers.
+
+**Check what's actually blocking a given IP** — each mechanism keeps an independent blocklist, so
+check all three rather than assuming which one fired:
+```bash
+$ sudo cscli decisions list
+$ sudo fail2ban-client status sshd
+$ sudo ipset list admin-allow
+```
+`cscli decisions list` shows the scenario that matched, event count, and time remaining until the
+ban auto-expires. `fail2ban-client status sshd` shows currently banned IPs for the `sshd` jail
+specifically. `ipset list admin-allow` confirms which IP(s) are actually trusted right now — verify
+this directly rather than relying on memory of what you added and when, especially if you're
+troubleshooting on the assumption "my IP should already be allowed."
+
+#### Clear a Crowdsec ban
+You can clear a crowdsec ban manually if you so choose
+
+```bash
+$ sudo cscli decisions delete --ip <ip>
+```
+
+#### Clear a fail2ban ban
+You can clear a fail2ban ban manually if you so choose
+
+```bash
+$ sudo fail2ban-client set sshd unbanip <ip>
+```
 
 ## Automatic Updates
 Enable unattended security updates so patches keep applying without manual intervention.
@@ -401,16 +438,6 @@ $ sudo apt autoremove
 
 ### Disable services
 ```bash
-$ sudo systemctl disable --now ModemManager.service
-```
-
-**List enabled services**
-```bash
-$ systemctl list-unit-files --state=enabled --no-pager
-```
-
-### To think about later?
-```bash
 $ sudo systemctl disable --now gpu-manager.service ModemManager.service \
   open-vm-tools.service vgauth.service \
   multipathd.service multipathd.socket \
@@ -423,6 +450,11 @@ $ sudo systemctl disable --now gpu-manager.service ModemManager.service \
   ua-reboot-cmds.service ubuntu-advantage.service ua-timer.timer
 ```
 
+**List enabled services**
+```bash
+$ systemctl list-unit-files --state=enabled --no-pager
+```
+
 **Verify before touching LVM-related units** — disabling these could break boot if your root
 filesystem actually depends on them:
 ```bash
@@ -431,6 +463,17 @@ $ mount | grep -i lvm
 ```
 If nothing is LVM-backed, `lvm2-monitor.service`, `lvm2-lvmpolld.socket`, `dm-event.socket`, and
 `blk-availability.service` are also safe to disable. If it is, leave all four alone.
+```bash
+$ sudo systemctl disable --now \
+  lvm2-monitor.service lvm2-lvmpolld.socket \
+  dm-event.socket blk-availability.service
+```
+
+**Verify nothing broke** after any batch of service disables — an empty result confirms no unit
+failed to stop or is stuck in a bad state:
+```bash
+$ systemctl --failed
+```
 
 ### Never disable
 **Never disable**, on any VPS, regardless of role: `ssh.socket`, `cron.service`, `rsyslog.service`
@@ -678,7 +721,8 @@ rather than relying on catching it during a manual check.
 mobile apps for push notifications; pick a private, hard-to-guess topic name (it's the only
 "auth" a public topic has):
 ```bash
-$ curl -d "test" ntfy.sh/<your-private-topic-name>
+$ topic=$(openssl rand -hex 16)
+$ curl -d "test" ntfy.sh/$topic
 ```
 Subscribe to that topic in the ntfy mobile app to confirm the test message arrives. Self-host it
 later if you want the alerting channel itself off a third party.
@@ -731,11 +775,19 @@ $ sudo systemctl daemon-reload
 $ sudo systemctl enable --now check-failed-units.timer
 ```
 
-**Test it** by intentionally breaking a disposable unit and confirming the push notification
-arrives, then restore it:
+**Test it** by intentionally failing a disposable unit and confirming the push notification
+arrives. `systemctl start` on a unit name that doesn't exist errors client-side before systemd ever
+loads it — it never reaches a `failed` state, so it won't show up in `systemctl --failed` and won't
+trigger the alert. Use `systemd-run` instead to create a real transient unit that actually runs and
+fails:
 ```bash
-$ sudo systemctl start nonexistent-unit-for-testing 2>&1 || true
+$ sudo systemd-run --unit=test-failure --no-block /bin/false
 $ sudo systemctl start check-failed-units.service
+```
+Confirm the `ntfy` push arrives, then clean up so the test unit doesn't linger in `--failed` output
+indefinitely:
+```bash
+$ sudo systemctl reset-failed test-failure.service
 ```
 
 ### Security Review Digest
