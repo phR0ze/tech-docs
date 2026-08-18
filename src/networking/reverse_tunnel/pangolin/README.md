@@ -48,6 +48,7 @@ the use of Jellyfin.
     - [Retrieve the Initial Setup Token](#retrieve-the-initial-setup-token)
     - [CrowdSec Is Included, Matching Quick Install](#crowdsec-is-included-matching-quick-install)
   - [Switch to DNS-01 and Close Port 80](#switch-to-dns-01-and-close-port-80)
+  - [Enable Wildcard Certificates](#enable-wildcard-certificates)
   - [CrowdSec: Two Separate Engines by Design](#crowdsec-two-separate-engines-by-design)
   - [Log Rotation for Traefik's Access Log](#log-rotation-for-traefiks-access-log)
   - [Extend Monitoring & Alerts for Pangolin](#extend-monitoring--alerts-for-pangolin)
@@ -1225,7 +1226,7 @@ on its own, it doesn't actually close anything.
 
 **Create a scoped Cloudflare API token** — see
 [Cloudflare API token](../../dns/cloudflare_dns/README.md#cloudflare-api-token) (`Zone:DNS:Edit` +
-`Zone:Zone:Read`, not the Global API Key), naming it something like `Pangolin farspire.io` so it's
+`Zone:Zone:Read`, not the Global API Key), naming it something like `Pangolin example.com` so it's
 identifiable and revocable independently of any other token (e.g. Caddy's, if your homelab also
 runs the [internal Caddy setup](../../reverse_proxy/caddy/README.md#lets-encrypt-cert-generation)).
 
@@ -1337,18 +1338,80 @@ $ sudo ufw delete allow 80/tcp
 
 **Verify port 80 is actually closed**, from outside the VPS (a second terminal, not the VPS itself):
 ```bash
-$ curl -v --connect-timeout 5 http://pangolin.farspire.io
+$ curl -v --connect-timeout 5 http://pangolin.example.com
 ```
 Should time out or refuse the connection rather than returning Traefik's redirect response. Also
 confirm `443` still works and serves the DNS-01-issued cert:
 ```bash
-$ curl -vI https://pangolin.farspire.io 2>&1 | grep -E 'issuer|subject|HTTP/'
+$ curl -vI https://pangolin.example.com 2>&1 | grep -E 'issuer|subject|HTTP/'
 ```
 
 **Clean up the backup** once satisfied:
 ```bash
 $ sudo rm config/letsencrypt/acme.json.bak
 ```
+
+### Enable Wildcard Certificates
+DNS-01 (above) is a prerequisite for a wildcard cert, but doesn't request one by itself — without
+the config below, Traefik still requests a separate, single-host cert for every hostname it sees
+(`pangolin.example.com`, then another automatically the moment you expose `jellyfin.example.com`,
+etc.), just via DNS-01 instead of HTTP-01. Checked against
+[Pangolin's own Wildcard Domains docs](https://docs.pangolin.net/self-host/advanced/wild-card-domains):
+getting one `*.<base_domain>` cert reused for every subdomain needs two more pieces on top of the
+DNS-01 switch.
+
+**1. Tell Pangolin to prefer a wildcard cert**, in `config/config.yml`'s `domains.domain1` block:
+```yaml
+domains:
+    domain1:
+        base_domain: "example.com"
+        prefer_wildcard_cert: true
+        cert_resolver: "letsencrypt"
+```
+
+**2. Put the dashboard itself under the wildcard** — without this, Pangolin's own dashboard router
+(`next-router` in `dynamic_config.yml`) still requests its own single-host cert for
+`pangolin.example.com` even once `prefer_wildcard_cert` is set for resources. Add an explicit
+`tls.domains` override:
+```yaml
+next-router:
+  tls:
+    certResolver: letsencrypt
+    domains:
+      - main: "example.com"
+        sans:
+          - "*.example.com"
+```
+
+**Apply and re-issue**, same pattern as the DNS-01 switch above — back up `acme.json` first so
+port 80 (already closed) isn't the fallback if something's wrong with the request:
+```bash
+$ sudo cp config/letsencrypt/acme.json config/letsencrypt/acme.json.bak
+$ sudo sh -c 'echo "{}" > config/letsencrypt/acme.json'
+$ sudo docker compose up -d traefik
+$ sudo docker compose logs -f traefik
+```
+Look for the DNS-01 challenge succeeding for `*.example.com` specifically (the `sans` entry), not
+just the bare `pangolin.example.com` host.
+
+**Verify the served cert actually covers the wildcard**, from outside the VPS:
+```bash
+$ curl -vI https://pangolin.example.com 2>&1 | grep -E 'subject|issuer|Subject Alternative'
+$ openssl s_client -connect pangolin.example.com:443 -servername pangolin.example.com </dev/null 2>/dev/null \
+    | openssl x509 -noout -text | grep -A1 'Subject Alternative Name'
+```
+The `Subject Alternative Name` line should list `DNS:example.com, DNS:*.example.com` — if it only
+shows `DNS:pangolin.example.com`, `next-router`'s `tls.domains` override didn't take, or the old
+single-host cert is still cached in `acme.json` from before this change.
+
+**No change needed to `docker-compose.yml`** — this doc's DNS-01 switch already wires the
+Cloudflare token in via `traefik`'s `env_file: [.env]`, and `CF_DNS_API_TOKEN` (the variable name
+that `.env` already sets) is what Traefik's `lego`-based Cloudflare provider actually reads for a
+scoped API token. Nothing further to add there.
+
+**Once one resource is confirmed under the wildcard**, every other resource you add under
+`*.example.com` reuses the same cert automatically — no more per-subdomain Let's Encrypt requests,
+and no more waiting on individual DNS-01 challenges each time you expose something new.
 
 ### CrowdSec: Two Separate Engines by Design
 Pangolin's installer has a `--crowdsec` flag that sets up its **own**, Docker-based CrowdSec
