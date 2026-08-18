@@ -17,6 +17,7 @@ Traefik, Newt) changes or adds to the generic advice.
 * [Harden sshd](#harden-sshd)
 * [Firewall](#firewall)
 * [GeoIP Blocking](#geoip-blocking)
+* [Manual IP Blocklist](#manual-ip-blocklist)
 * [Fail2ban](#fail2ban)
 * [Crowdsec](#crowdsec)
   * [Diagnosing and clearing a ban](#diagnosing-and-clearing-a-ban)
@@ -286,6 +287,78 @@ affects every resource the same way, including ones you might want reachable fro
 risk-free; applying it to 80/443 is a real trade-off, not just a stronger version of the same
 control.
 
+## Manual IP Blocklist
+Fail2ban and Crowdsec bans below are both tied to that mechanism's own lifecycle — a fail2ban ban
+clears on service restart unless persistent DB storage is configured, and a Crowdsec decision always
+carries an expiry. For a small set of confirmed-malicious IPs you want blocked permanently, an
+`ipset`-based blocklist is the right tool: independent of either mechanism, persists across reboots,
+and — critically at scale — keeps `sudo ufw status numbered` down to a single rule no matter how many
+IPs accumulate, instead of one `ufw` rule per IP. Same swap-based pattern as `admin-allow`/`geo-allow`
+above, just a plain deny list instead of a country allow-list.
+
+**1. Create the source-of-truth file** — one IP per line, `#` for comments. This file is never read
+directly by `ipset` or `ufw` — it only takes effect once the rebuild script below loads it:
+```bash
+$ sudo mkdir -p /etc/ipset
+$ sudo tee /etc/ipset/manual-block-list.txt > /dev/null <<'EOF'
+# known malicious IPs — one per line
+91.92.42.126
+91.92.40.36
+EOF
+```
+
+**2. Create a rebuild script** — same swap-based pattern as `update-geoipset.sh`, so a bad edit never
+leaves the set half-populated. This is what actually parses `manual-block-list.txt` and loads it into
+the live `manual-block` set — it also writes `/etc/ipset/manual-block.conf`, a separate,
+machine-generated file in `ipset save` format used only for boot persistence (step 4), not something
+you edit by hand:
+```bash
+$ sudo tee /usr/local/sbin/update-manual-block.sh > /dev/null <<'EOF'
+#!/bin/bash
+set -euo pipefail
+ipset destroy manual-block-tmp 2>/dev/null || true
+{
+  echo "create manual-block-tmp hash:ip maxelem 65536"
+  grep -vE '^\s*(#|$)' /etc/ipset/manual-block-list.txt | sed 's/^/add manual-block-tmp /'
+} | ipset restore
+ipset create manual-block hash:ip -exist
+ipset swap manual-block-tmp manual-block
+ipset destroy manual-block-tmp
+ipset save manual-block > /etc/ipset/manual-block.conf
+EOF
+$ sudo chmod +x /usr/local/sbin/update-manual-block.sh
+$ sudo /usr/local/sbin/update-manual-block.sh
+```
+
+**3. Add one `ufw` rule matching the whole set**, in `/etc/ufw/before.rules` right before `COMMIT`
+(same spot as `admin-allow`/`geo-allow`):
+```
+-A ufw-before-input -m set --match-set manual-block src -j DROP
+```
+```bash
+$ sudo ufw reload
+```
+
+**4. Persist across reboots** by adding a third restore line to the `geoipset.service` unit set up
+above, alongside its existing `admin-allow`/`geo-allow` restores:
+```bash
+$ sudo systemctl edit geoipset.service
+```
+Add:
+```
+[Service]
+ExecStart=/bin/sh -c '/sbin/ipset restore -exist < /etc/ipset/manual-block.conf'
+```
+
+**If this VPS runs Pangolin**, mirror the same rule into the `DOCKER-USER` chain — same
+Docker-bypasses-`ufw` caveat as `geo-allow` above, needed to also cover 80/443/etc.:
+```
+-A DOCKER-USER -m set --match-set manual-block src -j DROP
+```
+
+See [Alert Recon's Manually Banning IPs](../../../security/alert_recon/README.md#manually-banning-ips)
+for the day-to-day workflow of adding a newly discovered malicious IP once this is set up.
+
 ## Fail2ban
 `fail2ban` bans IPs that show malicious signs such as repeated failed SSH login attempts.
 
@@ -295,34 +368,72 @@ $ sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
 ```
 
 Edit `/etc/fail2ban/jail.local` to tune `bantime`, `findtime` and `maxretry`, then enable the `sshd`
-jail.
-
-**If you changed the SSH port above**, set it explicitly in the `[sshd]` jail — `fail2ban` doesn't
-read `Port` from `sshd_config`, it resolves the jail's default from `/etc/services`, which still
-says `22`. `jail.local` already has an `[sshd]` section (copied from `jail.conf`) — find and edit
-that *existing* section, don't paste a new one:
+jail. `jail.local` has an `[sshd]` section (copied from `jail.conf`) — find and edit that *existing*
+section, don't paste a new one:
 ```bash
 $ grep -n '^\[sshd\]' /etc/fail2ban/jail.local
 ```
-Within it, set `enabled = true`, and change the existing `port = ssh` line (that default resolves
-to `22` via `/etc/services`, not your `sshd_config`) to your actual port:
+Within it, set `enabled = true`, and change the existing `port = ssh` line (resolves to 22) to `port
+= 2222`. Also set `bantime = 1h` as the default `10m` is too short for an internet-facing SSH port
+(scanners will just wait and resume).
 ```
 enabled = true
 port = 2222
+bantime = 1h
 ```
-`fail2ban`'s config parser rejects duplicate `[sshd]` sections outright — appending a second one
-instead of editing the original fails config validation and the service won't start. Validate
-before restarting:
+Confirm syntax of configuration file
 ```bash
 $ sudo fail2ban-client -t
 ```
 Without the `port` line, the jail's ban action targets the wrong port and won't actually block
 anything useful.
 
+***WARNING: `enable = true` is not a real directive — the key is `enabled`.*** This is an easy typo to make
+and `fail2ban-client -t` won't catch it: `-t` only validates syntax, not whether a directive *name*
+is one fail2ban actually recognizes. A misspelled key is silently dropped, and the jail falls back
+to `jail.conf`'s shipped default for `[sshd]`, which is `enabled = false` — so the jail never
+watches anything, `Total failed`/`Total banned` sit at `0` indefinitely, and repeated brute-force
+attempts in `auth.log` go completely unactioned even though the config "looks" fine and passes
+validation. Double-check the spelling, restart, and confirm the jail is actually live before
+trusting it:
+```bash
+$ sudo systemctl restart fail2ban
+$ sudo fail2ban-client status sshd
+```
+A genuinely active jail shows `Currently failed`/`Total failed` counters that climb as `auth.log`
+grows. If they stay at `0` while you know failed attempts are happening, re-check this exact typo
+before assuming something else is wrong — see [Alert Recon](../../../security/alert_recon/README.md)
+for the fuller diagnostic sequence.
+
 **Check status**
 ```bash
 $ sudo fail2ban-client status sshd
 ```
+
+**Test a ban safely** — from a *different* network than your active session (phone hotspot, not the
+machine you're SSH'd in from). A ban is a firewall `DROP`/`REJECT` rule against the source IP, which
+blocks *all* traffic from that IP — established sessions included, not just new login attempts — so
+testing from your own session's IP will disconnect you:
+```bash
+$ ssh -p 2222 someuser@<vps-ip>   # from the OTHER network, wrong password 5x
+```
+Then back on the VPS:
+```bash
+$ sudo fail2ban-client status sshd
+```
+Should show `Currently banned: 1` with the test IP listed. Unban it once confirmed:
+```bash
+$ sudo fail2ban-client set sshd unbanip <test-ip>
+```
+**Add your own IP(s) to `ignoreip`** in `[DEFAULT]` so fail2ban never bans your own management
+access, even by accident during testing:
+```
+[DEFAULT]
+ignoreip = 127.0.0.1/8 ::1 <your-ip>
+```
+
+See [Fail2ban](../../../security/fail2ban/README.md) for a deeper reference on configuration layers,
+common gotchas, and tuning beyond this VPS-specific walkthrough.
 
 ## Crowdsec
 `Crowdsec` is a behavior-based IPS that parses logs to detect attack patterns and shares threat
@@ -378,6 +489,10 @@ disconnects before ever authenticating, and running it more than once or twice i
 looks identical to a scan from Crowdsec's point of view. `fail2ban`'s default `sshd` filter, by
 contrast, only keys off actual `Failed password` log lines, so it won't fire from this pattern
 alone — don't assume it's the culprit without checking both.
+
+See [Crowdsec](../../../security/crowdsec/README.md) for a deeper reference on scenarios, the
+agent/bouncer split, and running two separate engines (host-level and Pangolin's own Dockerized
+instance) side by side.
 
 ***References***
 * [Crowdsec Hub](https://hub.crowdsec.net) for available collections, parsers and bouncers.
@@ -824,6 +939,11 @@ $ (sudo crontab -l 2>/dev/null; echo "0 7 * * * /usr/local/sbin/security-digest.
 Auth log rotation means `grep`-ing `/var/log/auth.log` only ever covers roughly the last day or
 two by default (see `/etc/logrotate.d/rsyslog`) — that's a feature here, not a bug, since it keeps
 each digest scoped to recent activity rather than re-counting old attempts every run.
+
+**When a digest reports failed attempts**, don't stop at the count — confirm your defenses actually
+acted on them rather than assuming a nonzero number means something is wrong. See
+[Alert Recon](../../../security/alert_recon/README.md) for the full triage sequence (raw log review,
+per-mechanism ban status, port/config sanity checks, safe ban testing).
 
 ## AIDE
 `AIDE` (Advanced Intrusion Detection Environment) baselines file checksums and alerts when
