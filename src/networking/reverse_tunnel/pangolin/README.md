@@ -49,6 +49,7 @@ the use of Jellyfin.
   - [CrowdSec: Two Separate Engines by Design](#crowdsec-two-separate-engines-by-design)
   - [Log Rotation for Traefik's Access Log](#log-rotation-for-traefiks-access-log)
   - [Extend Monitoring & Alerts for Pangolin](#extend-monitoring--alerts-for-pangolin)
+  - [Harden Beyond the Quick Install Defaults](#harden-beyond-the-quick-install-defaults)
 - [Access Control](#access-control)
   - [How Access Control Works](#how-access-control-works)
   - [Google as OAuth2 provider](#google-as-oauth2-provider)
@@ -1156,6 +1157,75 @@ engine — confirm this matches your actual `docker ps` output before relying on
 custom compose override could rename it. Verify the edit landed correctly with
 `sudo cat /usr/local/sbin/security-digest.sh` before the next scheduled run, and re-run the digest
 manually once to confirm both counts appear in the `ntfy` push.
+
+### Harden Beyond the Quick Install Defaults
+Everything above reproduces what quick install gives you out of the box — a working instance, not
+a hardened one. Pangolin's own [config file reference](https://docs.pangolin.net/self-host/advanced/config-file)
+documents several settings the default `config.yml` (quick install or manual) simply omits, relying
+on the app's built-in defaults instead of anything explicit. Add these to `config/config.yml` and
+restart:
+
+```yaml
+server:
+    # ...existing keys above (secret, maxmind_db_path, cors, etc.) stay as-is...
+    trust_proxy: 1
+    dashboard_session_length_hours: 24
+    resource_session_length_hours: 168
+
+rate_limits:
+    global:
+        window_minutes: 1
+        max_requests: 100
+    auth:
+        window_minutes: 1
+        max_requests: 10
+
+app:
+    # ...existing keys above (dashboard_url, log_level, telemetry) stay as-is...
+    save_logs: true
+    log_failed_attempts: true
+```
+```bash
+$ sudo docker compose restart pangolin
+```
+
+* **`trust_proxy: 1`** — how many proxy hops Pangolin trusts when reading the client IP from
+  forwarded headers. `1` is correct for this deployment specifically because Traefik is the *only*
+  proxy hop in front of Pangolin (Cloudflare's own proxying is disabled per
+  [Configure DNS](#configure-dns) above, so DNS resolves straight to the VPS). Leaving this unset
+  relies on the app's own default rather than a value this doc has verified matches the actual
+  topology — set it explicitly so a future change (e.g. turning Cloudflare proxying back on) is a
+  deliberate bump to `2`, not a silent mismatch. Getting this wrong doesn't just log the wrong IP —
+  every IP-based [Resource Rule](#how-access-control-works) (CIDR/geo/ASN) and the `rate_limits`
+  below would evaluate against the wrong address if `trust_proxy` doesn't match the real hop count.
+* **`rate_limits`** — absent entirely from quick install's `config.yml`. The `auth` block matters
+  more than `global`: it throttles login attempts against Pangolin's own dashboard/resource auth,
+  a layer CrowdSec and `fail2ban` don't reach since they're watching Traefik/SSH logs, not Pangolin's
+  internal auth endpoint specifically. `10` requests/minute is the value from Pangolin's own docs
+  example — tune to your actual usage (a household with several users hitting a shared resource in
+  the same minute is a false-positive risk at very low values).
+* **`save_logs`/`log_failed_attempts`** — this is what the mystery `config/logs` directory (created
+  during [Create the Install Directory](#create-the-install-directory), mounted nowhere by the
+  compose file) is actually for: Pangolin's app-level log file, auto-rotated at 20MB/7 days.
+  `log_failed_attempts` specifically surfaces failed logins against Pangolin's *own* auth, distinct
+  from CrowdSec's Traefik-log view and the hardening doc's host-level
+  [Security Review Digest](../../../system/ubuntu/hardening/README.md#security-review-digest) —
+  worth wiring into that same digest later once you've confirmed the log format.
+* **`dashboard_session_length_hours`/`resource_session_length_hours`** — both default to `720`
+  (30 days) if left unset. That's a long-lived session for an admin-facing dashboard specifically;
+  `24` hours here is a reasonable tightening for the dashboard while `168` (one week) stays generous
+  for end users hitting resources day to day — adjust either to taste. Pangolin's dashboard also has
+  per-org session/password-rotation policy pages
+  ([Session Length](https://docs.pangolin.net/manage/access-control/session-length),
+  [Password Rotation](https://docs.pangolin.net/manage/access-control/password-rotation)) that layer
+  on top of this install-wide default — set the install-wide value first, then tune per-org policy
+  once you have real users.
+
+**Enable org-wide MFA enforcement** once your admin account exists — the
+[Vaultwarden case study](#case-study-locking-down-vaultwarden) already covers per-user TOTP for one
+resource, but Pangolin also supports requiring
+[MFA](https://docs.pangolin.net/manage/access-control/mfa) at the organization level so it isn't an
+opt-in per resource. Worth turning on for the org before adding more users than just yourself.
 
 ## Access Control
 Pangolin enforces access control at the edge, before traffic ever reaches a resource. Identity
