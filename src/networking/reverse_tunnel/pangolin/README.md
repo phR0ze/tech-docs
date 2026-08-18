@@ -25,9 +25,27 @@ the use of Jellyfin.
   - [Subnet Conflict Check](#subnet-conflict-check)
   - [Port Requirements](#port-requirements)
   - [sysctl flags](#sysctl-flags)
+  - [Install Docker](#install-docker)
+    - [Install the Engine](#install-the-engine)
+    - [Harden the Daemon](#harden-the-daemon)
+    - [Docker and ufw](#docker-and-ufw)
+    - [Traefik's Insecure API Isn't Actually Exposed](#traefiks-insecure-api-isnt-actually-exposed)
+    - [Leave the Right Services Enabled](#leave-the-right-services-enabled)
+    - [Audit with Docker Bench for Security](#audit-with-docker-bench-for-security)
 - [Deploy Pangolin](#deploy-pangolin)
   - [Pre-Flight Check](#pre-flight-check)
-  - [Run the Installer](#run-the-installer)
+  - [Manual Install (Docker Compose)](#manual-install-docker-compose)
+    - [Create the Install Directory](#create-the-install-directory)
+    - [Write docker-compose.yml](#write-docker-composeyml)
+    - [Write config/traefik/traefik_config.yml](#write-configtraefiktraefik_configyml)
+    - [Write config/traefik/dynamic_config.yml](#write-configtraefikdynamic_configyml)
+    - [Write config/config.yml](#write-configconfigyml)
+    - [Download MaxMind GeoLite2 Databases](#download-maxmind-geolite2-databases)
+    - [Generate the Server Secret](#generate-the-server-secret)
+    - [Start the Stack](#start-the-stack)
+    - [Apply the CrowdSec Bouncer Key](#apply-the-crowdsec-bouncer-key)
+    - [Complete Initial Setup](#complete-initial-setup)
+    - [CrowdSec Is Included, Matching Quick Install](#crowdsec-is-included-matching-quick-install)
   - [CrowdSec: Two Separate Engines by Design](#crowdsec-two-separate-engines-by-design)
   - [Log Rotation for Traefik's Access Log](#log-rotation-for-traefiks-access-log)
   - [Extend Monitoring & Alerts for Pangolin](#extend-monitoring--alerts-for-pangolin)
@@ -149,7 +167,7 @@ Should return the LAN IP, not the VPS IP.
 
 Once these check out, HTTP-level testing (`curl -v https://randomtest123.example.com`) isn't
 meaningful yet — that has to wait until Traefik is actually running and listening on 80/443 after
-[Run the Installer](#run-the-installer) below.
+[Manual Install (Docker Compose)](#manual-install-docker-compose) below.
 
 ## Configure VPS
 The first thing we need is a Cloud VPS to host Pangolin on. After some cursory research I landed on
@@ -211,6 +229,7 @@ are unconditionally required — two are, two depend on how you use Pangolin:
 | `51820` | UDP      | Site tunnels — Newt → Gerbil            | Always                  | Open             |
 | `80`    | TCP      | Let's Encrypt HTTP-01 validation        | Conditional — see below | Close use DNS-01 |
 | `21820` | UDP      | Pangolin Client Olm → Gerbil (tunnels)  | Conditional — see below | Open             |
+| `443`   | UDP      | HTTP/3 (QUIC) — on by default in Pangolin's own template | Conditional — see below | Open (matches quick install) |
 
 **`80/tcp` can be closed if you switch to DNS-01 certificate validation.** By default, Traefik's
 ACME resolver uses HTTP-01, which needs port 80 reachable for the challenge. Since this doc already
@@ -230,6 +249,19 @@ Client (Olm) app uses to reach Gerbil. The [Vaultwarden case study](#case-study-
 below relies on it (Alice's phone uses the Pangolin Client to reach a Private resource), so it stays
 open for *this* deployment. For a Pangolin instance that only ever exposes Public resources
 (browser-based, no client app), this port isn't needed and can stay closed.
+
+**`443/udp` is only needed if HTTP/3 stays enabled.** Pangolin's own installer ships
+`http3.advertisedPort: 443` uncommented in `traefik_config.yml` and `443:443/udp` uncommented in
+`docker-compose.yml` unconditionally — on for a plain install, CrowdSec or not. (The manual install
+docs page shows both commented out; that page is stale relative to the actual
+[`install/config/*`](https://github.com/fosrl/pangolin/tree/main/install/config) source this doc
+was checked against.) Since [Manual Install](#manual-install-docker-compose) below matches that
+source for a like-for-like starting point, this doc opens `443/udp` too. If you'd rather not run
+HTTP/3, comment the `http3` block back out in `traefik_config.yml` and the matching `443:443/udp`
+line in `docker-compose.yml`, then:
+```bash
+$ sudo ufw delete allow 443/udp
+```
 
 ### sysctl flags
 Gerbil (Pangolin's WireGuard tunnel manager) needs two kernel network settings that aren't part of
@@ -278,6 +310,128 @@ If a flag you expect doesn't reflect the value you set, see the
 doc — a later-processed file (`99-sysctl.conf`, `/etc/sysctl.conf`) can silently override an
 earlier one for the same key.
 
+### Install Docker
+Pangolin's [Manual Install](#manual-install-docker-compose) step below runs `docker compose`
+directly, so Docker Engine needs to be present first — a stock Ubuntu image doesn't ship it.
+
+#### Install the Engine
+**Install via Docker's official `apt` repo** (not the `docker.io` Ubuntu-archive package, which
+lags upstream releases):
+```bash
+$ sudo apt update
+$ sudo apt install -y ca-certificates curl gnupg
+$ sudo install -m 0755 -d /etc/apt/keyrings
+$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+$ sudo chmod a+r /etc/apt/keyrings/docker.gpg
+$ echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+$ sudo apt update
+$ sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+
+**Verify**
+```bash
+$ sudo docker run --rm hello-world
+$ docker compose version
+```
+
+#### Harden the Daemon
+`dockerd`'s defaults are tuned for a dev laptop, not an internet-facing host. Add a `daemon.json`
+before the Pangolin stack goes live:
+```bash
+$ sudo tee /etc/docker/daemon.json > /dev/null <<'EOF'
+{
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  },
+  "live-restore": true,
+  "no-new-privileges": true,
+  "icc": false,
+  "userland-proxy": false
+}
+EOF
+$ sudo systemctl restart docker
+```
+* **`log-opts`** — the default `json-file` driver has no size cap, so container stdout/stderr
+  (`docker logs`) grows unbounded. This is separate from
+  [Traefik's own access log](#log-rotation-for-traefiks-access-log) below, which writes to a file
+  on disk rather than through `docker logs` and needs its own `logrotate` config regardless.
+* **`live-restore`** — keeps containers running if `dockerd` itself restarts (e.g. a Docker
+  package upgrade via [Automatic Updates](../../../system/ubuntu/hardening/README.md#automatic-updates)),
+  instead of stopping them and waiting for the daemon to come back before `restart: unless-stopped`
+  can kick in. This is distinct from surviving a full host reboot, which `restart: unless-stopped`
+  already handles on its own.
+* **`no-new-privileges`** — blocks any process inside a container from gaining privileges it
+  didn't start with (e.g. via a setuid binary), the container-runtime counterpart to the
+  privilege-escalation-limiting sysctls (`yama.ptrace_scope`, `apparmor_restrict_unprivileged_userns`)
+  the [hardening doc](../../../system/ubuntu/hardening/README.md#already-hardened-by-racknerds-image)
+  already noted RackNerd ships at the host level — different mechanism, same goal. This is a
+  default, not a hard block — it doesn't strip the capabilities Gerbil is explicitly granted below,
+  it only stops it from acquiring more at runtime than what `cap_add` already gave it.
+* **`icc`** — disables inter-container communication on Docker's default `bridge` network. Doesn't
+  affect Pangolin at all: the compose file below defines its own user-defined network (`name:
+  pangolin`), and containers on a user-defined network can always reach each other by name
+  regardless of this setting — `icc` only ever governed the legacy default bridge. This closes that
+  legacy network off in case any *other* container ever lands on it unintentionally.
+* **`userland-proxy`** — turns off `docker-proxy`, the per-published-port userland process Docker
+  otherwise runs to forward traffic; with it disabled, `iptables`/`nftables` handles the forwarding
+  directly. One less unprivileged process per published port for an attacker to target, and one
+  less thing to intersect with the `DOCKER-USER` chain rules from the
+  [hardening doc's Firewall section](../../../system/ubuntu/hardening/README.md#firewall).
+
+#### Docker and ufw
+Docker still bypasses `ufw` the same way noted in the
+[hardening doc's Firewall section](../../../system/ubuntu/hardening/README.md#firewall) — nothing
+to do differently for Pangolin's own ports specifically, since 80/443/51820/21820 are meant to be
+public anyway, but keep it in mind for any *other* container you add to this host later that
+shouldn't be internet-reachable; that one needs `ufw-docker` or an explicit `DOCKER-USER` rule, not
+a plain `ufw deny`.
+
+#### Traefik's Insecure API Isn't Actually Exposed
+The manual compose's `traefik_config.yml` sets `api.insecure: true` (no auth in front of Traefik's
+own dashboard/API, normally bound to `:8080`). This is safe here specifically because `gerbil` —
+the only container in the stack that publishes ports to the host — only publishes
+`51820/udp`, `21820/udp`, `443`, and `80`; `8080` is never in that list, so the insecure API has no
+path to the internet. ***Don't add `8080` to `gerbil`'s `ports:` in `docker-compose.yml`*** without
+also locking the API down (`api.insecure: false` plus its own auth), or this becomes an
+unauthenticated view into Traefik's routing config and, depending on Traefik version/config, more.
+
+#### Leave the Right Services Enabled
+`docker.service` and `containerd.service` are already called out in the hardening doc's
+[Never disable](../../../system/ubuntu/hardening/README.md#never-disable) list — repeated here
+since this is the point in the setup where they actually start being load-bearing.
+
+#### Audit with Docker Bench for Security
+Same idea as [Lynis](../../../system/ubuntu/hardening/README.md#auditing-with-lynis) for the host,
+scoped to Docker specifically — checks daemon config, container runtime settings, and image/build
+practices against the CIS Docker Benchmark. Run it after the daemon hardening above and again once
+the Pangolin stack is up, since some checks (e.g. per-container `no-new-privileges`,
+capability grants) only evaluate running containers.
+
+***Run it natively, not via the `docker/docker-bench-security` image*** — that image bundles its
+own Docker CLI, and it hasn't been rebuilt in years (`18.06.1-ce`, API `1.38`). A current Docker
+Engine (this doc was validated against `29.7.2`) refuses clients below API `1.40`, so the
+containerized form fails outright with `client version ... is too old` before it ever reaches a
+daemon connection — no amount of mount/flag tweaking fixes a stale CLI baked into the image itself.
+The maintained path is the same script run directly against the host's own (current) `docker`
+binary:
+```bash
+$ git clone https://github.com/docker/docker-bench-security.git
+$ cd docker-bench-security
+$ sudo ./docker-bench-security.sh
+```
+Expect some findings that don't apply here (e.g. warnings about Swarm, which this deployment
+doesn't use, or a separate partition for containers, unusual on a small VPS) — treat it as a
+checklist to review, not a score to blindly chase to 100%. The `daemon.json` settings above should
+already show as `PASS`: *"Ensure containers are restricted from acquiring new privileges"*,
+*"Ensure live restore is enabled"*, *"Ensure Userland Proxy is Disabled"*, and *"Ensure network
+traffic is restricted between containers on the default bridge"* — if any of those come back `WARN`
+instead, re-check `daemon.json` landed and `docker` was restarted.
+
 ## Deploy Pangolin
 
 * [Thomas Wilde - Pangolin guide](https://www.youtube.com/watch?v=ISEP6SIrEVE)
@@ -291,42 +445,568 @@ $ sudo ss -tulpn | grep -E ':80|:443'
 ```
 Empty output means you're clear to install.
 
-### Run the Installer
-The installer places its files in whatever directory you run it from — `cd` into the default
-install location used elsewhere in this doc (`/opt/pangolin`, referenced by the log rotation and
-container-health sections below) before downloading it, rather than letting it land somewhere else:
+### Manual Install (Docker Compose)
+Per [Pangolin's Manual Installation docs](https://docs.pangolin.net/self-host/manual/docker-compose),
+this is the same file layout the bash installer script generates from `install/config/*`, just
+written by hand instead of prompted for interactively. Chosen over the [Quick Install
+script](https://docs.pangolin.net/self-host/quick-install) for full visibility into every config
+value before any container starts, the ability to pin image tags instead of trusting `latest`, and
+straightforward toggling of optional features (e.g. CrowdSec, see the caveat below) without fighting
+installer flags.
+
+#### Create the Install Directory
+`/opt/pangolin` is the location referenced elsewhere in this doc (log rotation, container-health
+checks). Matches every directory [`main.go`'s `createConfigFiles`](https://github.com/fosrl/pangolin/blob/main/install/main.go)
+and [`crowdsec.go`](https://github.com/fosrl/pangolin/blob/main/install/crowdsec.go) create between
+them — including `config/logs`, which the installer creates but nothing in this doc's compose file
+actually mounts (Pangolin's own general log path, distinct from `config/traefik/logs`) — plus
+`config/crowdsec/db` and `config/crowdsec/acquis.d` for the CrowdSec merge documented below (see
+[Port Requirements](#port-requirements) and
+[CrowdSec Is Included](#crowdsec-is-included-matching-quick-install)):
 ```bash
-$ sudo mkdir -p /opt/pangolin
+$ sudo mkdir -p /opt/pangolin/config/db /opt/pangolin/config/letsencrypt \
+  /opt/pangolin/config/logs /opt/pangolin/config/traefik/logs \
+  /opt/pangolin/config/crowdsec/db /opt/pangolin/config/crowdsec/acquis.d
 $ cd /opt/pangolin
-$ curl -fsSL https://static.pangolin.net/get-installer.sh | bash
-$ sudo ./installer
 ```
 
-The installer prompts for, in order:
-1. **Edition** — Community or Enterprise (Community for this setup).
-2. **Base Domain** — your root domain, e.g. `example.com`.
-3. **Dashboard Domain** — defaults to `pangolin.example.com`, or enter your own.
-4. **Let's Encrypt Email** — used for SSL certs and as the initial admin account's contact.
-5. **Install Gerbil?** — yes, this is what gives Pangolin its tunneling capability; without it
-   you'd just have a reverse proxy with no way to reach the homelab.
-6. **SMTP email** (optional) — skip unless you already have a mail sender configured.
-
-If you've decided to also run Pangolin's own CrowdSec engine (see below), enable it now rather
-than adding it after the fact — check `sudo ./installer --help` for the exact current flag syntax,
-since it isn't consistently documented across Pangolin's own docs pages.
-
-Once confirmed, the installer pulls and starts three containers — `pangolin`, `gerbil`, `traefik`
-(plus `crowdsec` if enabled) — which takes a couple of minutes.
-
-**Retrieve the initial setup token** from the pangolin container's logs:
+#### Write docker-compose.yml
+Defines four containers (`pangolin`, `gerbil`, `traefik`, `crowdsec`) — the same set the installer's
+`--crowdsec` flag produces, sourced directly from
+[`install/config/docker-compose.yml`](https://github.com/fosrl/pangolin/blob/main/install/config/docker-compose.yml)
+and [`install/config/crowdsec/docker-compose.yml`](https://github.com/fosrl/pangolin/blob/main/install/config/crowdsec/docker-compose.yml)
+in Pangolin's own repo, not the (stale in places — see the `v3.6`/network-name/HTTP-3 notes below)
+[manual install docs page](https://docs.pangolin.net/self-host/manual/docker-compose). `gerbil`
+opens the tunnel/HTTP(S) ports on the host on `traefik`'s behalf via `network_mode:
+service:gerbil`, so `traefik` itself publishes no ports of its own; `crowdsec` publishes nothing to
+the host except its Prometheus metrics port, since Traefik reaches it over the compose network by
+container name:
 ```bash
-$ sudo docker compose logs pangolin | grep -i token
+$ sudo tee docker-compose.yml > /dev/null <<'EOF'
+name: pangolin
+services:
+  pangolin:
+    image: docker.io/fosrl/pangolin:1.21.1
+    container_name: pangolin
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+        reservations:
+          memory: 512m
+    volumes:
+      - ./config:/app/config
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/v1/"]
+      interval: "10s"
+      timeout: "10s"
+      retries: 15
+
+  gerbil:
+    image: docker.io/fosrl/gerbil:1.4.3
+    container_name: gerbil
+    restart: unless-stopped
+    depends_on:
+      pangolin:
+        condition: service_healthy
+    command:
+      - --reachableAt=http://gerbil:3004
+      - --generateAndSaveKeyTo=/var/config/key
+      - --remoteConfig=http://pangolin:3001/api/v1/
+    volumes:
+      - ./config/:/var/config
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    ports:
+      - 51820:51820/udp
+      - 21820:21820/udp
+      - 443:443
+      - 443:443/udp # For HTTP/3 (QUIC) — on by default in Pangolin's own template, unrelated to CrowdSec.
+      - 80:80
+
+  traefik:
+    image: docker.io/traefik:v3.7
+    container_name: traefik
+    restart: unless-stopped
+    network_mode: service:gerbil
+    depends_on:
+      pangolin:
+        condition: service_healthy
+      crowdsec:
+        condition: service_healthy
+    command:
+      - --configFile=/etc/traefik/traefik_config.yml
+    volumes:
+      - ./config/traefik:/etc/traefik:ro
+      - ./config/letsencrypt:/letsencrypt
+      - ./config/traefik/logs:/var/log/traefik
+
+  crowdsec:
+    image: docker.io/crowdsecurity/crowdsec:latest
+    container_name: crowdsec
+    restart: unless-stopped
+    environment:
+      GID: "1000"
+      COLLECTIONS: crowdsecurity/traefik crowdsecurity/appsec-virtual-patching crowdsecurity/appsec-generic-rules
+      ENROLL_INSTANCE_NAME: "pangolin-crowdsec"
+      PARSERS: crowdsecurity/whitelists
+      ENROLL_TAGS: docker
+    healthcheck:
+      test: ["CMD", "cscli", "lapi", "status"]
+      interval: "10s"
+      timeout: "5s"
+      retries: 3
+      start_period: "30s"
+    labels:
+      - "traefik.enable=false"
+    volumes:
+      - ./config/crowdsec:/etc/crowdsec
+      - ./config/crowdsec/db:/var/lib/crowdsec/data
+      - ./config/traefik/logs:/var/log/traefik
+    ports:
+      - 6060:6060 # Prometheus metrics endpoint — not required, drop if unused.
+
+networks:
+  default:
+    driver: bridge
+    name: pangolin_frontend
+    # enable_ipv6: true
+EOF
+```
+**All four images are pinned, matching how the real installer behaves** — its
+`docker-compose.yml` template renders `fosrl/pangolin:{{.PangolinVersion}}` and
+`fosrl/gerbil:{{.GerbilVersion}}`, with those version strings baked into the installer binary at
+build time (whatever Pangolin release the installer itself shipped with); it never floats
+`latest`. `1.21.1`/`1.4.3`/`v3.7` are the current releases as of this doc's last check against
+[Pangolin's](https://github.com/fosrl/pangolin/releases),
+[Gerbil's](https://github.com/fosrl/gerbil/releases), and Traefik's release pages — they *will* go
+stale as new versions ship, since nothing here re-checks them automatically. Update the tags by
+hand when you next touch this file, the same way you'd re-run the installer to pick up a new
+release. The `pangolin` service's `deploy.resources` block is a soft memory cap/reservation the
+installer sets by default, not something this doc invented.
+
+***One installer prompt this doc's default intentionally doesn't match*** — `Is your server IPv6
+capable?` defaults to `Yes` in the interactive installer and controls the commented-out
+`enable_ipv6: true` line above, but this doc leaves it off. Docker's own IPv6 support has had
+version-dependent quirks (daemon-level config, address pools), and an accepted-but-wrong "yes" here
+can keep `docker compose up` from bringing the network up at all. Confirm your VPS actually has
+IPv6 (`ip -6 addr`, `curl -6 ifconfig.me`) before uncommenting it — don't just match the installer's
+default because it's the default. (The other default-`Yes` prompt, MaxMind GeoLite2, *is* matched —
+see [Download MaxMind GeoLite2 Databases](#download-maxmind-geolite2-databases) below.)
+
+***`command: -t` on the upstream `crowdsec` service is a validate-and-exit flag, not left in
+here*** — the installer's own template
+([`install/config/crowdsec/docker-compose.yml`](https://github.com/fosrl/pangolin/blob/main/install/config/crowdsec/docker-compose.yml))
+sets `command: -t`, which is `crowdsec`'s "test config, then exit" flag. Since the service also has
+`restart: unless-stopped`, that combination would just restart-loop the container rather than run
+it as a daemon — almost certainly a copy-paste bug in the upstream template rather than intentional,
+so it's left off here. If you diff against the installer output and see it, that's expected — don't
+add it back without first confirming `crowdsec` actually stays `Up` in `docker compose ps` with it
+present.
+
+#### Write config/traefik/traefik_config.yml
+Traefik's static config: entry points, ACME/Let's Encrypt, HTTP/3 (on by default in Pangolin's own
+base template — nothing to do with CrowdSec), the `badger` plugin Pangolin uses for forward-auth,
+and (this part *is* specifically from the `--crowdsec` installer template) the `crowdsec` bouncer
+plugin plus a JSON `accessLog` — CrowdSec needs that access log to have anything to parse, which is
+also why the [Log Rotation for Traefik's Access Log](#log-rotation-for-traefiks-access-log) section
+below exists. Sourced from
+[`install/config/traefik/traefik_config.yml`](https://github.com/fosrl/pangolin/blob/main/install/config/traefik/traefik_config.yml)
+merged with [`install/config/crowdsec/traefik_config.yml`](https://github.com/fosrl/pangolin/blob/main/install/config/crowdsec/traefik_config.yml) —
+not the manual install docs page, which shows the HTTP/3 block commented out; that's stale relative
+to the actual installer source. Replace the `email` placeholder with your own before applying:
+```bash
+$ sudo tee config/traefik/traefik_config.yml > /dev/null <<'EOF'
+api:
+  insecure: true
+  dashboard: true
+
+providers:
+  http:
+    endpoint: "http://pangolin:3001/api/v1/traefik-config"
+    pollInterval: "5s"
+  file:
+    filename: "/etc/traefik/dynamic_config.yml"
+
+experimental:
+  plugins:
+    badger:
+      moduleName: "github.com/fosrl/badger"
+      version: "v1.5.0" # Check github.com/fosrl/badger for the latest release.
+    crowdsec:
+      moduleName: "github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
+      version: "v1.4.4"
+
+log:
+  level: "INFO"
+  format: "json"
+  maxSize: 100
+  maxBackups: 3
+  maxAge: 3
+  compress: true
+
+accessLog:
+  filePath: "/var/log/traefik/access.log"
+  format: json
+  filters:
+    statusCodes:
+      - "200-299"
+      - "400-499"
+      - "500-599"
+    retryAttempts: true
+    minDuration: "100ms"
+  bufferingSize: 100
+  fields:
+    defaultMode: drop
+    names:
+      ClientAddr: keep
+      ClientHost: keep
+      RequestMethod: keep
+      RequestPath: keep
+      RequestProtocol: keep
+      DownstreamStatus: keep
+      DownstreamContentSize: keep
+      Duration: keep
+      ServiceName: keep
+      StartUTC: keep
+      TLSVersion: keep
+      TLSCipher: keep
+      RetryAttempts: keep
+    headers:
+      defaultMode: drop
+      names:
+        User-Agent: keep
+        X-Real-Ip: keep
+        X-Forwarded-For: keep
+        X-Forwarded-Proto: keep
+        Content-Type: keep
+        Authorization: redact
+        Cookie: redact
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      httpChallenge:
+        entryPoint: web
+      email: "admin@example.com" # REPLACE
+      storage: "/letsencrypt/acme.json"
+      caServer: "https://acme-v02.api.letsencrypt.org/directory"
+
+entryPoints:
+  web:
+    address: ":80"
+  websecure:
+    address: ":443"
+    transport:
+      respondingTimeouts:
+        readTimeout: "30m"
+    http3:
+      advertisedPort: 443
+    http:
+      tls:
+        certResolver: "letsencrypt"
+      middlewares:
+        - crowdsec@file
+      encodedCharacters:
+        allowEncodedSlash: true
+        allowEncodedQuestionMark: true
+
+serversTransport:
+  insecureSkipVerify: true
+
+ping:
+  entryPoint: "web"
+EOF
+```
+The `certificatesResolvers.letsencrypt` block is HTTP-01 by default — this is what needs `80/tcp`
+open per [Port Requirements](#port-requirements) above. Switch to DNS-01 here (per that section's
+Cloudflare note) if you want `80/tcp` closed or a wildcard cert instead. The `http3` block is what
+needs `443/udp` open, per the same section — comment it out (and drop the matching port line in
+`docker-compose.yml`) if you'd rather not run HTTP/3 yet.
+
+#### Write config/traefik/dynamic_config.yml
+Routers/services wiring the dashboard hostname to Pangolin's internal ports. Replace every
+`pangolin.example.com` with your actual dashboard domain. Also matching the `--crowdsec` installer
+template: a `default-whitelist`/`security-headers` middleware pair, and the `crowdsec` middleware
+itself with a placeholder LAPI key — [Apply the CrowdSec Bouncer Key](#apply-the-crowdsec-bouncer-key)
+below replaces that placeholder once the stack is running and a real key can be generated:
+```bash
+$ sudo tee config/traefik/dynamic_config.yml > /dev/null <<'EOF'
+http:
+  middlewares:
+    badger:
+      plugin:
+        badger:
+          disableForwardAuth: true
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+    default-whitelist: # Whitelist middleware for internal IPs — not applied to any router below by default
+      ipWhiteList:
+        sourceRange:
+          - "10.0.0.0/8"
+          - "192.168.0.0/16"
+          - "172.16.0.0/12"
+    security-headers:
+      headers:
+        customResponseHeaders:
+          Server: ""
+          X-Powered-By: ""
+          X-Forwarded-Proto: "https"
+        sslProxyHeaders:
+          X-Forwarded-Proto: "https"
+        hostsProxyHeaders:
+          - "X-Forwarded-Host"
+        contentTypeNosniff: true
+        customFrameOptionsValue: "SAMEORIGIN"
+        referrerPolicy: "strict-origin-when-cross-origin"
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsSeconds: 63072000
+        stsPreload: true
+    crowdsec:
+      plugin:
+        crowdsec:
+          enabled: true
+          logLevel: INFO
+          updateIntervalSeconds: 15
+          updateMaxFailure: 0
+          defaultDecisionSeconds: 15
+          httpTimeoutSeconds: 10
+          crowdsecMode: live
+          crowdsecAppsecEnabled: true
+          crowdsecAppsecHost: crowdsec:7422
+          crowdsecAppsecFailureBlock: true
+          crowdsecAppsecUnreachableBlock: true
+          crowdsecAppsecBodyLimit: 10485760
+          crowdsecLapiKey: "PUT_YOUR_BOUNCER_KEY_HERE_OR_IT_WILL_NOT_WORK"
+          crowdsecLapiHost: crowdsec:8080
+          crowdsecLapiScheme: http
+          forwardedHeadersTrustedIPs:
+            - "0.0.0.0/0"
+          clientTrustedIPs:
+            - "10.0.0.0/8"
+            - "172.16.0.0/12"
+            - "192.168.0.0/16"
+            - "100.89.137.0/20" # Gerbil's default site-tunnel CGNAT range, see Subnet Conflict Check above
+
+  routers:
+    main-app-router-redirect:
+      rule: "Host(`pangolin.example.com`)"
+      service: next-service
+      entryPoints:
+        - web
+      middlewares:
+        - redirect-to-https
+        - badger
+
+    next-router:
+      rule: "Host(`pangolin.example.com`) && !PathPrefix(`/api/v1`)"
+      service: next-service
+      entryPoints:
+        - websecure
+      middlewares:
+        - security-headers
+        - badger
+      tls:
+        certResolver: letsencrypt
+
+    api-router:
+      rule: "Host(`pangolin.example.com`) && PathPrefix(`/api/v1`)"
+      service: api-service
+      entryPoints:
+        - websecure
+      middlewares:
+        - security-headers
+        - badger
+      tls:
+        certResolver: letsencrypt
+
+    ws-router:
+      rule: "Host(`pangolin.example.com`)"
+      service: api-service
+      entryPoints:
+        - websecure
+      middlewares:
+        - security-headers
+        - badger
+      tls:
+        certResolver: letsencrypt
+
+  services:
+    next-service:
+      loadBalancer:
+        servers:
+          - url: "http://pangolin:3002"
+
+    api-service:
+      loadBalancer:
+        servers:
+          - url: "http://pangolin:3000"
+
+tcp:
+  serversTransports:
+    pp-transport-v1:
+      proxyProtocol:
+        version: 1
+    pp-transport-v2:
+      proxyProtocol:
+        version: 2
+EOF
+```
+`crowdsec` here is applied per-entry-point (`websecure`'s `middlewares: [crowdsec@file]` in
+`traefik_config.yml` above) rather than per-router, so it isn't listed again in any router's own
+`middlewares` list — adding it there too would just evaluate it twice.
+
+#### Write config/config.yml
+Pangolin's own app config. Replace the four marked placeholders: dashboard domain (two spots),
+base domain, and the server secret (generated next). Includes `maxmind_db_path`/`maxmind_asn_path`
+under `server:`, matching the installer's default-`Yes` answer to its MaxMind prompt — see
+[Download MaxMind GeoLite2 Databases](#download-maxmind-geolite2-databases) right after this step,
+which is what actually puts those two files in place:
+```bash
+$ sudo tee config/config.yml > /dev/null <<'EOF'
+# To see all available options, please visit the docs:
+# https://docs.pangolin.net/
+
+gerbil:
+    start_port: 51820
+    base_endpoint: "pangolin.example.com" # REPLACE WITH YOUR DASHBOARD DOMAIN
+
+app:
+    dashboard_url: "https://pangolin.example.com" # REPLACE WITH YOUR DASHBOARD DOMAIN
+    log_level: "info"
+    telemetry:
+        anonymous_usage: true
+
+domains:
+    domain1:
+        base_domain: "example.com" # REPLACE WITH YOUR BASE DOMAIN
+
+server:
+    secret: "replace-with-a-long-random-secret" # REPLACE WITH SECURE SECRET
+    maxmind_db_path: "./config/GeoLite2-Country.mmdb"
+    maxmind_asn_path: "./config/GeoLite2-ASN.mmdb"
+    cors:
+        origins: ["https://pangolin.example.com"] # REPLACE WITH YOUR DASHBOARD DOMAIN
+        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+        allowed_headers: ["X-CSRF-Token", "Content-Type"]
+        credentials: false
+
+flags:
+    require_email_verification: false
+    disable_signup_without_invite: true
+    disable_user_create_org: false
+    allow_raw_resources: true
+EOF
+```
+
+#### Download MaxMind GeoLite2 Databases
+Matches the installer's default-`Yes` answer to *"Do you want to download the MaxMind GeoLite2
+Country and ASN databases for blocking functionality?"* — powers the geography/ASN filter types in
+Pangolin's own per-resource [Resource Rules](#how-access-control-works), independent of the
+host-level `ipset`-based [GeoIP Blocking](../../../system/ubuntu/hardening/README.md#geoip-blocking)
+already in the hardening doc. Same GitHub mirror the installer itself pulls from (no MaxMind
+account/license key needed):
+```bash
+$ curl -L -o GeoLite2-Country.tar.gz https://github.com/GitSquared/node-geolite2-redist/raw/refs/heads/master/redist/GeoLite2-Country.tar.gz
+$ curl -L -o GeoLite2-ASN.tar.gz https://github.com/GitSquared/node-geolite2-redist/raw/refs/heads/master/redist/GeoLite2-ASN.tar.gz
+$ tar -xzf GeoLite2-Country.tar.gz
+$ tar -xzf GeoLite2-ASN.tar.gz
+$ sudo mv GeoLite2-Country_*/GeoLite2-Country.mmdb config/
+$ sudo mv GeoLite2-ASN_*/GeoLite2-ASN.mmdb config/
+$ rm -rf GeoLite2-Country.tar.gz GeoLite2-Country_* GeoLite2-ASN.tar.gz GeoLite2-ASN_*
+```
+**Verify both files landed**:
+```bash
+$ ls -la config/GeoLite2-Country.mmdb config/GeoLite2-ASN.mmdb
+```
+These are point-in-time snapshots, not a live lookup service — IP-to-country/ASN mappings drift as
+address blocks get reallocated, so re-run this same block periodically to refresh them (there's no
+cron job wired up here; the installer doesn't set one up either, so this is a manual, occasional
+task either way).
+
+#### Generate the Server Secret
+Paste the output into `config/config.yml`'s `server.secret` in place of the placeholder — this
+signs sessions/tokens, so it needs real entropy, not a memorable string. `-base64` rather than
+`-hex` to match `generateRandomSecretKey()` in the installer's own
+[`main.go`](https://github.com/fosrl/pangolin/blob/main/install/main.go), which base64-encodes 32
+random bytes rather than hex-encoding them — both are 256 bits of entropy either way, this is a
+format match, not a security difference:
+```bash
+$ openssl rand -base64 32
+```
+
+#### Start the Stack
+```bash
+$ sudo docker compose up -d
+```
+
+**Watch startup** — the same couple of minutes the installer script would take, just without its
+progress output:
+```bash
+$ sudo docker compose logs -f pangolin traefik gerbil crowdsec
+```
+
+**Verify all four containers are healthy**:
+```bash
+$ sudo docker compose ps
+```
+`traefik` won't report itself as unhealthy from an invalid CrowdSec key at this point — the
+`crowdsecLapiKey` placeholder just makes the bouncer plugin fail its calls to `crowdsec`, which
+Traefik logs but doesn't crash on. Expect noisy `crowdsec`-related lines in `docker compose logs
+traefik` until the next step replaces the placeholder.
+
+#### Apply the CrowdSec Bouncer Key
+`dynamic_config.yml` above still has `crowdsecLapiKey` set to the literal placeholder
+`PUT_YOUR_BOUNCER_KEY_HERE_OR_IT_WILL_NOT_WORK` — this is what the installer's own
+[`crowdsec.go`](https://github.com/fosrl/pangolin/blob/main/install/crowdsec.go) does too, since
+the real key can only be generated once the `crowdsec` container is actually running. Register the
+`traefik-bouncer` and capture its key:
+```bash
+$ sudo docker compose exec crowdsec cscli bouncers add traefik-bouncer -o raw
+```
+**Paste that value into `config/traefik/dynamic_config.yml`**, replacing the placeholder in the
+`crowdsecLapiKey` line, then restart only `traefik` to pick it up — the other three containers
+don't need to move:
+```bash
+$ sudo docker compose restart traefik
+```
+**Confirm the bouncer registered and the key took**:
+```bash
+$ sudo docker compose exec crowdsec cscli bouncers list
+$ sudo docker compose logs traefik | grep -i crowdsec
+```
+`cscli bouncers list` should show `traefik-bouncer` with a recent "last pull" time — if it stays
+blank, the key in `dynamic_config.yml` doesn't match what `crowdsec` issued, or `traefik` hasn't
+picked up the restart yet.
+
+#### Complete Initial Setup
+**Retrieve the initial setup token** from the pangolin container's logs — this is the exact grep
+the installer's own `showSetupTokenInstructions()` in
+[`main.go`](https://github.com/fosrl/pangolin/blob/main/install/main.go) tells you to run manually;
+a plain `grep -i token` also works but is looser and can pick up unrelated log lines (e.g. CORS
+header names) that happen to contain "token":
+```bash
+$ sudo docker compose logs pangolin | grep -A 2 -B 2 'SETUP TOKEN'
 ```
 
 **Complete setup** by visiting `https://<your-dashboard-domain>/auth/initial-setup`, entering the
 token, and creating your admin account with a strong password. This is also where you'll create
 your first organization — see [Configure Pangolin](#configure-pangolin) below for adding a site
 and exposing your first resource.
+
+#### CrowdSec Is Included, Matching Quick Install
+The `docker-compose.yml`, `traefik_config.yml`, and `dynamic_config.yml` above already fold in what
+the installer's `--crowdsec` flag would add — this is [Pangolin's own CrowdSec
+engine](#crowdsec-two-separate-engines-by-design), scoped to Traefik/HTTP traffic, distinct from the
+host-level CrowdSec already configured in the
+[hardening doc](../../../system/ubuntu/hardening/README.md#crowdsec). If you'd rather not run it at
+all, drop the `crowdsec` service from `docker-compose.yml`, the `crowdsec` plugin/`accessLog` block
+from `traefik_config.yml`, and the `crowdsec` middleware from `dynamic_config.yml` — none of the
+other services depend on it existing except `traefik`'s `depends_on`, which you'd also remove.
 
 ### CrowdSec: Two Separate Engines by Design
 Pangolin's installer has a `--crowdsec` flag that sets up its **own**, Docker-based CrowdSec
