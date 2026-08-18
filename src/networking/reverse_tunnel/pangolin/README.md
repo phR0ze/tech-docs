@@ -45,7 +45,7 @@ the use of Jellyfin.
     - [Download MaxMind GeoLite2 Databases](#download-maxmind-geolite2-databases)
     - [Start the Stack](#start-the-stack)
     - [Apply the CrowdSec Bouncer Key](#apply-the-crowdsec-bouncer-key)
-    - [Complete Initial Setup](#complete-initial-setup)
+    - [Retrieve the Initial Setup Token](#retrieve-the-initial-setup-token)
     - [CrowdSec Is Included, Matching Quick Install](#crowdsec-is-included-matching-quick-install)
   - [Switch to DNS-01 and Close Port 80](#switch-to-dns-01-and-close-port-80)
   - [CrowdSec: Two Separate Engines by Design](#crowdsec-two-separate-engines-by-design)
@@ -56,14 +56,15 @@ the use of Jellyfin.
   - [Troubleshooting](#troubleshooting)
   - [Harden Beyond the Quick Install Defaults](#harden-beyond-the-quick-install-defaults)
   - [Back Up Pangolin's State](#back-up-pangolins-state)
-- [Access Control](#access-control)
-  - [How Access Control Works](#how-access-control-works)
-  - [Google as OAuth2 provider](#google-as-oauth2-provider)
-  - [Case Study: Locking Down Vaultwarden](#case-study-locking-down-vaultwarden)
 - [Configure Pangolin](#configure-pangolin)
+  - [Create Admin Account](#create-admin-account)
   - [Add Site](#add-site)
   - [Install Newt](#install-newt)
   - [Create Resource](#create-resource)
+  - [Access Control](#access-control)
+    - [How Access Control Works](#how-access-control-works)
+    - [Google as OAuth2 provider](#google-as-oauth2-provider)
+    - [Case Study: Locking Down Vaultwarden](#case-study-locking-down-vaultwarden)
 
 ## Overview
 Pangolin uses `Traefik` as its reverse proxy and `Gerbil` for `WireGuard tunnel management`. It can
@@ -1105,7 +1106,7 @@ $ rm -rf GeoLite2-Country.tar.gz GeoLite2-Country_* GeoLite2-ASN.tar.gz GeoLite2
 ```
 **Verify both files landed**:
 ```bash
-$ sudo ls -la /opt/pangolin/config/GeoLite2-Country.mmdb /opt/pangolin/config/GeoLite2-ASN.mmdb
+$ sudo ls -lah /opt/pangolin/config/GeoLite2-Country.mmdb /opt/pangolin/config/GeoLite2-ASN.mmdb
 ```
 These are point-in-time snapshots, not a live lookup service — IP-to-country/ASN mappings drift as
 address blocks get reallocated, so re-run this same block periodically to refresh them (there's no
@@ -1177,7 +1178,7 @@ picked up the restart yet. As a final check, confirm ordinary requests no longer
 $ curl -vI https://<your-dashboard-domain> 2>&1 | grep 'HTTP/'
 ```
 
-#### Complete Initial Setup
+#### Retrieve the Initial Setup Token
 **Retrieve the initial setup token** from the pangolin container's logs — this is the exact grep
 the installer's own `showSetupTokenInstructions()` in
 [`main.go`](https://github.com/fosrl/pangolin/blob/main/install/main.go) tells you to run manually;
@@ -1186,11 +1187,7 @@ header names) that happen to contain "token":
 ```bash
 $ sudo docker compose logs pangolin | grep -A 2 -B 2 'SETUP TOKEN'
 ```
-
-**Complete setup** by visiting `https://<your-dashboard-domain>/auth/initial-setup`, entering the
-token, and creating your admin account with a strong password. This is also where you'll create
-your first organization — see [Configure Pangolin](#configure-pangolin) below for adding a site
-and exposing your first resource.
+Continue in [Create Admin Account](#create-admin-account) below to finish setup with this token.
 
 #### CrowdSec Is Included, Matching Quick Install
 The `docker-compose.yml`, `traefik_config.yml`, `dynamic_config.yml`, and
@@ -1583,12 +1580,6 @@ $ sudo docker compose restart pangolin
   on top of this install-wide default — set the install-wide value first, then tune per-org policy
   once you have real users.
 
-**Enable org-wide MFA enforcement** once your admin account exists — the
-[Vaultwarden case study](#case-study-locking-down-vaultwarden) already covers per-user TOTP for one
-resource, but Pangolin also supports requiring
-[MFA](https://docs.pangolin.net/manage/access-control/mfa) at the organization level so it isn't an
-opt-in per resource. Worth turning on for the org before adding more users than just yourself.
-
 ### Back Up Pangolin's State
 No official Pangolin backup/restore guide exists — checked the docs index directly, nothing under
 self-host or operations covers it. What actually needs preserving, traced through
@@ -1641,12 +1632,91 @@ Untested against an actual disaster on this specific deployment — worth doing 
 (to a scratch directory, `docker compose -p pangolin-restore-test up -d` with different host ports)
 before trusting this procedure blind in a real outage.
 
-## Access Control
+## Configure Pangolin
+
+### Create Admin Account
+Before anything else in this section — sites, resources — Pangolin needs an admin account and a
+first organization. If you haven't already grabbed the setup token, see
+[Retrieve the Initial Setup Token](#retrieve-the-initial-setup-token) above.
+
+1. Visit `https://pangolin.<your-domain>`
+2. Enter the setup token pulled from the pangolin docker container logs
+3. Create your admin account with a strong password
+4. Complete the account creation
+
+### First Run Experience
+
+#### Create the initial organization
+1. Login using your new credentials
+2. Set `Organization Name`` e.g. `your-domain-name`
+3. Click `Create Organization`
+
+#### Enable MFA enforcement
+Considering this is a public facing portal you'll want extra protection on your account. TOTP is the
+only supported method out of the box.
+
+**References**
+* [Configure MFA - Pangolin docs](https://docs.pangolin.net/manage/access-control/mfa)
+
+1. Click on your profile image in the top right
+2. Choose the `Enable Two-factor` menu option
+
+
+### Add Site
+Create a new site for your homelab subnet
+
+1. Set the `Name` e.g. `redfish`
+2. Set the `Method` to `Newt`
+3. Copy the newt configuration line 
+4. Check `I have copied the config`
+5. Click `Create Site`
+
+Note: the new site will be offline until you install the `Newt` agent on your homelab host using the
+supplied configuration.
+
+### Install Newt
+In order for your site to be active you need to complete the tunnel configuration with `Newt`
+
+1. Browse to the [Pangoline newt instructions](https://docs.pangolin.net/manage/sites/install-site#docker-compose)
+2. Grab the docker compose configuration
+```yaml
+services:
+  newt:
+    image: fosrl/newt
+    container_name: newt
+    restart: unless-stopped
+    environment:
+      - PANGOLIN_ENDPOINT=https://app.pangolin.net
+      - NEWT_ID=2ix2t8xk22ubpfy
+      - NEWT_SECRET=nnisrfsdfc7prqsp9ewo1dvtvci50j5uiqotez00dgap0ii2
+```
+3. Update the environment variables with the configuration copied in the [Add Site](#add-site) section
+   1. Set `PANGOLIN_ENDPOINT`
+   2. Set `NEWT_ID`
+   3. Set `NEWT_SECRET`
+
+4. Once newt is up and running you should see your site go `active`
+
+### Create Resource
+Creating a resource is essentially configuring your homelab application to be accessible over the
+tunnel that the site configuration and newt created.
+
+1. Set the `Name` e.g. `Jellyfin`
+2. Set the `Subdomain` e.g. `jellyfin.example.com`
+3. Select the correct site e.g. `redfish`
+4. Click `Create Resource`
+5. Flip the toggle to `Enable SSL (https)`
+6. Enter the IP address e.g. `192.168.0.3` of Jellyfin
+7. Enter the Port e.g. `8096` of Jellyfin
+8. Click `Add Target` then `Save Target`
+
+
+### Access Control
 Pangolin enforces access control at the edge, before traffic ever reaches a resource. Identity
 providers, sites, and resources can each be scoped so that only authorized users reach a given
 service.
 
-### How Access Control Works
+#### How Access Control Works
 Resources in Pangolin are ***deny-by-default*** — nothing is reachable until you explicitly define
 a policy for who can reach it. Two layers work together:
 
@@ -1655,7 +1725,7 @@ a policy for who can reach it. Two layers work together:
 2. **RBAC + Authentication** — identity-level control. You attach a policy to the resource
    specifying exactly which users/roles may authenticate, and by which method.
 
-### Google as OAuth2 provider
+#### Google as OAuth2 provider
 * [Setup GCP OAuth2](https://youtu.be/Bu8WFh1ns4c?t=655)
 
 **Auto-provisioning itself is available on Community**, and it's the actual mechanism for
@@ -1675,7 +1745,7 @@ accurate.) To use it:
 4. The user visits the resource and authenticates with Google. On first successful login, Pangolin
    auto-creates their account and applies the mapped role/org — no manual pre-provisioning needed.
 
-### Case Study: Locking Down Vaultwarden
+#### Case Study: Locking Down Vaultwarden
 **Goal:** expose Vaultwarden through Pangolin so that only two named individuals — e.g. Bob and
 his daughter Alice — can reach it, with independent auditing and revocation.
 
@@ -1826,55 +1896,4 @@ both revocable independently:
 - Pangolin server hardening (admin panel exposure, rate limiting)
 - Vaultwarden hardening
 - Network segmentation / isolation design
-
-
-## Configure Pangolin
-
-### Add Site
-Create a new site for your homelab subnet
-
-1. Set the `Name` e.g. `redfish`
-2. Set the `Method` to `Newt`
-3. Copy the newt configuration line 
-4. Check `I have copied the config`
-5. Click `Create Site`
-
-Note: the new site will be offline until you install the `Newt` agent on your homelab host using the
-supplied configuration.
-
-### Install Newt
-In order for your site to be active you need to complete the tunnel configuration with `Newt`
-
-1. Browse to the [Pangoline newt instructions](https://docs.pangolin.net/manage/sites/install-site#docker-compose)
-2. Grab the docker compose configuration
-```yaml
-services:
-  newt:
-    image: fosrl/newt
-    container_name: newt
-    restart: unless-stopped
-    environment:
-      - PANGOLIN_ENDPOINT=https://app.pangolin.net
-      - NEWT_ID=2ix2t8xk22ubpfy
-      - NEWT_SECRET=nnisrfsdfc7prqsp9ewo1dvtvci50j5uiqotez00dgap0ii2
-```
-3. Update the environment variables with the configuration copied in the [Add Site](#add-site) section
-   1. Set `PANGOLIN_ENDPOINT`
-   2. Set `NEWT_ID`
-   3. Set `NEWT_SECRET`
-
-4. Once newt is up and running you should see your site go `active`
-
-### Create Resource
-Creating a resource is essentially configuring your homelab application to be accessible over the
-tunnel that the site configuration and newt created.
-
-1. Set the `Name` e.g. `Jellyfin`
-2. Set the `Subdomain` e.g. `jellyfin.example.com`
-3. Select the correct site e.g. `redfish`
-4. Click `Create Resource`
-5. Flip the toggle to `Enable SSL (https)`
-6. Enter the IP address e.g. `192.168.0.3` of Jellyfin
-7. Enter the Port e.g. `8096` of Jellyfin
-8. Click `Add Target` then `Save Target`
 
