@@ -1887,8 +1887,11 @@ only supported method out of the box.
 3. Enter your password for confirmation
 4. User your favorite authenticator app to complete the standard process
 
-### Add Site
-Create a new site for your homelab subnet
+### Create Pangolin Tunnel
+This will cover the steps required to get a homelab service exposed through Pangolin
+
+#### Add a Site
+A site describes the service that you're trying to expose through Pangolin
 
 1. Set the `Name` e.g. `redfish`
 2. Set the `Method` to `Newt`
@@ -1898,6 +1901,62 @@ Create a new site for your homelab subnet
 
 Note: the new site will be offline until you install the `Newt` agent on your homelab host using the
 supplied configuration.
+
+#### Add a Resource
+How were routing
+
+#### Test the Tunnel with a Throwaway Service
+Before wiring in a real service, run something disposable through the whole chain
+(Newt → Gerbil → Traefik → your homelab) to confirm it actually works end-to-end.
+[`traefik/whoami`](https://github.com/traefik/whoami) is built for exactly this — it just echoes
+back the request it received (hostname, headers, source IP) as plain text, with no database, no
+auth, and nothing to secure or clean up beyond stopping the container:
+
+```bash
+$ podman run -d --rm --name whoami -p 8080:80 docker.io/traefik/whoami
+```
+
+**Open the test port on the homelab host's own firewall** — this step is easy to skip by mistake if
+you're used to Docker, but Podman doesn't behave the same way here. The
+[hardening doc](../../../system/ubuntu/hardening/README.md#firewall) notes that Docker inserts its
+own `iptables`/`nftables` rules *ahead of* `ufw`'s, bypassing the host firewall entirely for any
+published port. On a NixOS host with `nixos-fw` (also nftables-based), Podman's published port did
+***not*** get the same bypass — the host firewall still blocked it until an explicit accept rule was
+added:
+```bash
+$ sudo nft insert rule ip filter nixos-fw tcp dport 8080 counter accept
+```
+**Confirm the rule landed**:
+```bash
+$ sudo nft list chain ip filter nixos-fw | grep 8080
+```
+***This rule is temporary, not part of the declarative NixOS config*** — `nft insert` edits the
+live ruleset directly, so it disappears on the next `nixos-rebuild switch` (which regenerates
+`nixos-fw` from `networking.firewall.allowedTCPPorts` in config, not from whatever's live in the
+kernel). That's actually the right behavior for a throwaway test: nothing to remember to revert.
+If you want this port open permanently for a real service later, add it to
+`networking.firewall.allowedTCPPorts` in the host's NixOS config instead.
+
+**Confirm it's reachable on the LAN** before involving Pangolin at all — isolates whether a later
+problem is the tunnel or the container/firewall itself:
+```bash
+$ curl http://<homelab-host-ip>:8080
+```
+Should return plain text like `Hostname: <container-id>` plus the request headers.
+
+**Now expose it through Pangolin** the same way any other resource would be: [Add a Site](#add-a-site)
+and [Install Newt](#install-newt) if you haven't already, then [Create a Resource](#create-resource)
+pointing at `<homelab-host-ip>:8080`. Hitting `https://whoami.<your-domain>` afterward and seeing the
+same plain-text echo confirms the full path — Newt tunnel, Gerbil, Traefik, and (since the wildcard
+cert covers any new subdomain automatically) no extra Let's Encrypt request needed either.
+
+**Clean up when done**:
+```bash
+$ podman stop whoami
+```
+The `--rm` flag on the original `run` means it's removed automatically the moment it stops — no
+separate `podman rm` needed. Delete the test Resource and Site in the dashboard too if they were
+only created for this.
 
 ### Install Newt
 In order for your site to be active you need to complete the tunnel configuration with `Newt`
