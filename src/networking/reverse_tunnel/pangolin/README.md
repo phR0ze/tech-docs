@@ -50,6 +50,7 @@ the use of Jellyfin.
   - [Log Rotation for Traefik's Access Log](#log-rotation-for-traefiks-access-log)
   - [Extend Monitoring & Alerts for Pangolin](#extend-monitoring--alerts-for-pangolin)
   - [Harden Beyond the Quick Install Defaults](#harden-beyond-the-quick-install-defaults)
+  - [Back Up Pangolin's State](#back-up-pangolins-state)
 - [Access Control](#access-control)
   - [How Access Control Works](#how-access-control-works)
   - [Google as OAuth2 provider](#google-as-oauth2-provider)
@@ -208,16 +209,23 @@ distro, since the installer doesn't check this for you.
 
 ### Subnet Conflict Check
 Gerbil defaults to the CGNAT range `100.89.137.0/20` for its internal tunnel addressing (a `/24`
-block per site, `/30` per-site allocation within that). This must not overlap with any subnet
-already in use — your homelab LAN, or any other WireGuard/VPN already running that uses CGNAT
-space (`100.64.0.0/10`). Check for a conflict *before* initial site registration in Pangolin, not
-after:
+block per site, `/30` per-site allocation within that). Pangolin itself reserves two more CGNAT
+ranges alongside it — confirmed in
+[`server/lib/readConfigFile.ts`](https://github.com/fosrl/pangolin/blob/main/server/lib/readConfigFile.ts)'s
+`orgs.subnet_group` (`100.90.128.0/20`) and `orgs.utility_subnet_group` (`100.96.128.0/20`), used
+for org-level networking rather than Gerbil's own site tunnels. None of the three are documented
+together anywhere on the docs site — this is from tracing the actual config schema. All three must
+not overlap with any subnet already in use — your homelab LAN, or any other WireGuard/VPN already
+running that uses CGNAT space (`100.64.0.0/10`). The check below already covers all three at once,
+since it scans the entire `100.64.0.0/10` block rather than just Gerbil's specific `/20`. Check for
+a conflict *before* initial site registration in Pangolin, not after:
 ```bash
 $ ip route show | grep -E '100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\.'
 ```
-If nothing matches, you're clear. If something does, Gerbil's subnet is configurable — change it
-before creating your first site rather than after, since resubnetting an active site means
-reconfiguring every connected `newt` client.
+If nothing matches, you're clear. If something does, all three ranges are configurable in
+`config/config.yml` (`gerbil.subnet_group`, `orgs.subnet_group`, `orgs.utility_subnet_group`) —
+change them before creating your first site rather than after, since resubnetting an active site
+means reconfiguring every connected `newt` client.
 
 ### Port Requirements
 Per [DNS & Networking](https://docs.pangolin.net/self-host/dns-and-networking#port-configuration),
@@ -1160,10 +1168,11 @@ manually once to confirm both counts appear in the `ntfy` push.
 
 ### Harden Beyond the Quick Install Defaults
 Everything above reproduces what quick install gives you out of the box — a working instance, not
-a hardened one. Pangolin's own [config file reference](https://docs.pangolin.net/self-host/advanced/config-file)
-documents several settings the default `config.yml` (quick install or manual) simply omits, relying
-on the app's built-in defaults instead of anything explicit. Add these to `config/config.yml` and
-restart:
+a hardened one. Every setting below was checked directly against Pangolin's application source
+(`server/lib/readConfigFile.ts`'s zod schema for defaults, and the actual consuming code for whether
+a setting does anything at all) rather than the docs pages alone — two schema fields turned out to
+be unused dead weight once traced through the code, called out explicitly below rather than silently
+included. Add these to `config/config.yml` and restart:
 
 ```yaml
 server:
@@ -1176,9 +1185,10 @@ rate_limits:
     global:
         window_minutes: 1
         max_requests: 100
-    auth:
-        window_minutes: 1
-        max_requests: 10
+
+traefik:
+    additional_middlewares:
+        - "security-headers@file"
 
 app:
     # ...existing keys above (dashboard_url, log_level, telemetry) stay as-is...
@@ -1196,19 +1206,43 @@ $ sudo docker compose restart pangolin
   relies on the app's own default rather than a value this doc has verified matches the actual
   topology — set it explicitly so a future change (e.g. turning Cloudflare proxying back on) is a
   deliberate bump to `2`, not a silent mismatch. Getting this wrong doesn't just log the wrong IP —
-  every IP-based [Resource Rule](#how-access-control-works) (CIDR/geo/ASN) and the `rate_limits`
+  every IP-based [Resource Rule](#how-access-control-works) (CIDR/geo/ASN) and `rate_limits.global`
   below would evaluate against the wrong address if `trust_proxy` doesn't match the real hop count.
-* **`rate_limits`** — absent entirely from quick install's `config.yml`. The `auth` block matters
-  more than `global`: it throttles login attempts against Pangolin's own dashboard/resource auth,
-  a layer CrowdSec and `fail2ban` don't reach since they're watching Traefik/SSH logs, not Pangolin's
-  internal auth endpoint specifically. `10` requests/minute is the value from Pangolin's own docs
-  example — tune to your actual usage (a household with several users hitting a shared resource in
-  the same minute is a false-positive risk at very low values).
-* **`save_logs`/`log_failed_attempts`** — this is what the mystery `config/logs` directory (created
-  during [Create the Install Directory](#create-the-install-directory), mounted nowhere by the
-  compose file) is actually for: Pangolin's app-level log file, auto-rotated at 20MB/7 days.
-  `log_failed_attempts` specifically surfaces failed logins against Pangolin's *own* auth, distinct
-  from CrowdSec's Traefik-log view and the hardening doc's host-level
+* **`rate_limits.global`** — confirmed wired in
+  [`server/apiServer.ts`](https://github.com/fosrl/pangolin/blob/main/server/apiServer.ts) via
+  `express-rate-limit`, applied to every API route. Absent entirely from quick install's
+  `config.yml`, meaning the app-side default of `500` requests/minute applies unless set — `100`
+  here is a real tightening, not just documentation. ***`rate_limits.auth` is deliberately omitted
+  above*** — it exists in the config schema with the same shape, but tracing it through
+  `apiServer.ts`, `internalServer.ts`, and `server/routers/auth/login.ts` found no code that actually
+  reads it; setting it would be a no-op today, not a second layer of protection. `rate_limits.global`
+  already covers login requests too, since auth endpoints are still API routes.
+* **`traefik.additional_middlewares: ["security-headers@file"]`** — the single highest-value fix in
+  this section. Confirmed in
+  [`server/lib/traefik/getTraefikConfig.ts`](https://github.com/fosrl/pangolin/blob/main/server/lib/traefik/getTraefikConfig.ts):
+  every router Pangolin generates dynamically (i.e. *every resource you expose through the
+  dashboard* — Jellyfin, Vaultwarden, anything) gets `[badgerMiddlewareName, ...additionalMiddlewares]`
+  as its middleware chain. Without this key, the `security-headers` middleware defined in
+  `dynamic_config.yml` above only ever applies to Pangolin's own dashboard routers
+  (`next-router`/`api-router`/`ws-router`) — every resource you actually add is missing it entirely.
+  `crowdsec@file` doesn't have this gap since it's applied at the `websecure` *entry point* in
+  `traefik_config.yml`, which covers every router regardless of which provider created it — the
+  contrast between how these two middlewares needed to be wired is exactly why this was worth
+  tracing through source instead of assuming symmetry. `security-headers@file` uses the `@file`
+  provider suffix since that middleware is defined in the static `dynamic_config.yml`, not generated
+  by Pangolin itself.
+* **`traefik.rate_limit` (`average`/`burst`) is not included above** — it exists in the config
+  schema (`server/lib/readConfigFile.ts`) with defaults `average: 30`/`burst: 50`, but grepping
+  `getTraefikConfig.ts` and `TraefikConfigManager.ts` found no code path that reads it. Treat it as
+  unverified/possibly-unused rather than a real Traefik-level rate limit — don't rely on it as a
+  control.
+* **`save_logs`/`log_failed_attempts`** — both confirmed wired, unlike the two settings above.
+  `save_logs` (in [`server/logger.ts`](https://github.com/fosrl/pangolin/blob/main/server/logger.ts))
+  is what the mystery `config/logs` directory (created during
+  [Create the Install Directory](#create-the-install-directory), mounted nowhere by the compose file)
+  is actually for: a `winston` `DailyRotateFile` transport, 20MB/7-day retention. `log_failed_attempts`
+  (in `server/routers/auth/login.ts`) logs both wrong-password and wrong-TOTP-code attempts by name —
+  distinct from CrowdSec's Traefik-log view and the hardening doc's host-level
   [Security Review Digest](../../../system/ubuntu/hardening/README.md#security-review-digest) —
   worth wiring into that same digest later once you've confirmed the log format.
 * **`dashboard_session_length_hours`/`resource_session_length_hours`** — both default to `720`
@@ -1226,6 +1260,58 @@ $ sudo docker compose restart pangolin
 resource, but Pangolin also supports requiring
 [MFA](https://docs.pangolin.net/manage/access-control/mfa) at the organization level so it isn't an
 opt-in per resource. Worth turning on for the org before adding more users than just yourself.
+
+### Back Up Pangolin's State
+No official Pangolin backup/restore guide exists — checked the docs index directly, nothing under
+self-host or operations covers it. What actually needs preserving, traced through
+[`server/db/sqlite/driver.ts`](https://github.com/fosrl/pangolin/blob/main/server/db/sqlite/driver.ts)
+and this doc's own file layout:
+* **`config/db/db.sqlite`** — the entire app database: users, orgs, sites, resources, sessions.
+  Confirmed via source, not assumed — `APP_PATH` resolves to `config`, so the DB really does live at
+  the bind-mounted path this doc already creates, not somewhere unmounted that would silently vanish
+  on container recreation.
+* **`config/config.yml`** — includes `server.secret`, which signs every existing session; losing it
+  invalidates all logged-in sessions even if you restore the database.
+* **`config/letsencrypt/acme.json`** — Let's Encrypt's issued certs and account key. Losing this
+  means re-issuing from scratch, which is rate-limited by Let's Encrypt itself, not just slow.
+* **`config/traefik/`**, **`config/crowdsec/`**, **`docker-compose.yml`** — all hand-written earlier
+  in this doc, so technically reproducible from this doc alone, but restoring from a live backup is
+  faster than re-typing every file and re-registering the CrowdSec bouncer key.
+
+**Back up on a schedule** — same `tar`-the-`config`-directory approach the installer's own
+`backupConfig()` uses internally before modifying an existing install, just scheduled instead of
+one-off:
+```bash
+$ sudo mkdir -p /opt/pangolin-backups
+$ sudo tee /usr/local/sbin/backup-pangolin.sh > /dev/null <<'EOF'
+#!/bin/bash
+set -euo pipefail
+cd /opt/pangolin
+tar -czf "/opt/pangolin-backups/pangolin-$(date +%F).tar.gz" config docker-compose.yml
+find /opt/pangolin-backups -name 'pangolin-*.tar.gz' -mtime +14 -delete
+EOF
+$ sudo chmod +x /usr/local/sbin/backup-pangolin.sh
+$ (sudo crontab -l 2>/dev/null; echo "0 3 * * * /usr/local/sbin/backup-pangolin.sh") | sudo crontab -
+```
+`-mtime +14` keeps two weeks locally, trimming older archives automatically so this doesn't quietly
+fill the disk over months.
+
+***A local backup on the same VPS doesn't protect against losing the VPS itself*** — same reasoning
+as [Ship Logs Off-Box](#ship-logs-off-box) above. If you've already got the homelab-side `rsyslog`
+receiver from that section, reuse the same WireGuard tunnel to pull backups off-box too, e.g. a
+nightly `scp`/`rsync` from the homelab host pulling `/opt/pangolin-backups/` over the tunnel address
+rather than the public internet.
+
+**Restoring**: stop the stack, replace `config/` and `docker-compose.yml` with the backup's
+contents, start it back up:
+```bash
+$ sudo docker compose down
+$ cd /opt/pangolin && sudo tar -xzf /opt/pangolin-backups/pangolin-<date>.tar.gz
+$ sudo docker compose up -d
+```
+Untested against an actual disaster on this specific deployment — worth doing a dry-run restore
+(to a scratch directory, `docker compose -p pangolin-restore-test up -d` with different host ports)
+before trusting this procedure blind in a real outage.
 
 ## Access Control
 Pangolin enforces access control at the edge, before traffic ever reaches a resource. Identity
