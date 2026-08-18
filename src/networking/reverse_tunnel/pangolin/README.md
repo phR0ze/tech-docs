@@ -53,11 +53,15 @@ the use of Jellyfin.
   - [Extend Monitoring & Alerts for Pangolin](#extend-monitoring--alerts-for-pangolin)
     - [Docker Container Health Isn't Covered by check-failed-units.sh](#docker-container-health-isnt-covered-by-check-failed-unitssh)
     - [The Security Review Digest Only Reports the Host-Level CrowdSec Engine](#the-security-review-digest-only-reports-the-host-level-crowdsec-engine)
+    - [Alert on New Upstream Image Versions](#alert-on-new-upstream-image-versions)
   - [Troubleshooting](#troubleshooting)
   - [Harden Beyond the Quick Install Defaults](#harden-beyond-the-quick-install-defaults)
   - [Back Up Pangolin's State](#back-up-pangolins-state)
 - [Configure Pangolin](#configure-pangolin)
   - [Create Admin Account](#create-admin-account)
+  - [First Run Experience](#first-run-experience)
+    - [Create the initial organization](#create-the-initial-organization)
+    - [Enable MFA enforcement](#enable-mfa-enforcement)
   - [Add Site](#add-site)
   - [Install Newt](#install-newt)
   - [Create Resource](#create-resource)
@@ -561,7 +565,7 @@ services:
       - ./config/traefik/logs:/var/log/traefik
 
   crowdsec:
-    image: docker.io/crowdsecurity/crowdsec:latest
+    image: docker.io/crowdsecurity/crowdsec:v1.7.8
     container_name: crowdsec
     restart: unless-stopped
     environment:
@@ -608,11 +612,11 @@ $ sudo ss -tulpn | grep 6060
 then add `- 6060:6060` back to `crowdsec`'s `ports:` above (or bind it to a private address only,
 e.g. `<homelab-tunnel-ip>:6060:6060`, rather than `0.0.0.0`).
 
-**All four images are pinned, matching how the real installer behaves** — its
-`docker-compose.yml` template renders `fosrl/pangolin:{{.PangolinVersion}}` and
-`fosrl/gerbil:{{.GerbilVersion}}`, with those version strings baked into the installer binary at
-build time (whatever Pangolin release the installer itself shipped with); it never floats
-`latest`. `1.21.1`/`1.4.3`/`v3.7` are the current releases as of this doc's last check against
+**All four images are pinned** — the installer's own `docker-compose.yml` template renders
+`fosrl/pangolin:{{.PangolinVersion}}` and `fosrl/gerbil:{{.GerbilVersion}}`, with those version
+strings baked into the installer binary at build time (whatever Pangolin release the installer
+itself shipped with); it never floats `latest` for those two, or for `traefik`. `1.21.1`/`1.4.3`/
+`v3.7` are the current releases as of this doc's last check against
 [Pangolin's](https://github.com/fosrl/pangolin/releases),
 [Gerbil's](https://github.com/fosrl/gerbil/releases), and Traefik's release pages — they *will* go
 stale as new versions ship, since nothing here re-checks them automatically. Update the tags by
@@ -624,6 +628,18 @@ own default limit (`2g`) is tightened to `1g` here specifically because a `2GB`-
 containers to claim a limit at or above total system RAM; a `2g` ceiling on a ~1.9GiB-total host
 protects nothing; `gerbil`/`traefik`/`crowdsec` and the host OS all need to fit in the same physical
 memory too. Check your own box's actual total before trusting either number: `free -h`.
+
+***`crowdsec` deviates from the installer here, and deliberately so*** — the installer's own
+[`install/config/crowdsec/docker-compose.yml`](https://github.com/fosrl/pangolin/blob/main/install/config/crowdsec/docker-compose.yml)
+floats `crowdsecurity/crowdsec:latest` rather than pinning, trading reproducibility for automatic
+detection-rule/engine updates — arguably a more defensible tradeoff for a security-detection
+component than for infra glue like Traefik. This doc pins it instead (`v1.7.8`, the version already
+running as of this pin — not an upgrade, just locking in what was already deployed), matching the
+other three images' reproducibility guarantee: `docker compose pull` can't silently change what's
+running, and an upstream breaking change doesn't land on the VPS unannounced. The cost is the
+inverse — `crowdsec` now goes stale exactly like the other three unless you update the tag by hand.
+See [Alert on New Upstream Image Versions](#alert-on-new-upstream-image-versions) below for closing
+that gap with an `ntfy` push instead of finding out by accident.
 
 ***One installer prompt this doc's default intentionally doesn't match*** — `Is your server IPv6
 capable?` defaults to `Yes` in the interactive installer and controls the commented-out
@@ -1481,6 +1497,110 @@ custom compose override could rename it. Verify the edit landed correctly with
 `sudo cat /usr/local/sbin/security-digest.sh` before the next scheduled run, and re-run the digest
 manually once to confirm both counts appear in the `ntfy` push.
 
+#### Alert on New Upstream Image Versions
+Every image in `docker-compose.yml` is pinned to a specific tag (see
+[Write docker-compose.yml](#write-docker-composeyml) above) — good for reproducibility, but it means
+none of them update themselves, and nothing currently notices when upstream ships a new release.
+Check each project's latest GitHub release against the tag actually pinned in `docker-compose.yml`,
+and push an `ntfy` alert only when that comparison changes — same diff-on-change pattern as
+[Alert on Service Failures](../../../system/ubuntu/hardening/README.md#alert-on-service-failures) so
+a still-outdated pin doesn't re-page every run:
+```bash
+$ sudo tee /usr/local/sbin/check-pangolin-image-versions.sh > /dev/null <<'EOF'
+#!/bin/bash
+set -euo pipefail
+COMPOSE_FILE=/opt/pangolin/docker-compose.yml
+STATE_FILE=/var/lib/check-pangolin-image-versions.state
+
+latest_tag() {
+  curl -sf "https://api.github.com/repos/$1/releases/latest" \
+    | grep -oP '"tag_name":\s*"\K[^"]+'
+}
+
+PANGOLIN_CUR=$(grep -oP 'fosrl/pangolin:\K\S+' "$COMPOSE_FILE")
+GERBIL_CUR=$(grep -oP 'fosrl/gerbil:\K\S+' "$COMPOSE_FILE")
+TRAEFIK_CUR=$(grep -oP 'docker\.io/traefik:\K\S+' "$COMPOSE_FILE")
+CROWDSEC_CUR=$(grep -oP 'crowdsecurity/crowdsec:\K\S+' "$COMPOSE_FILE")
+
+PANGOLIN_LATEST=$(latest_tag fosrl/pangolin)
+GERBIL_LATEST=$(latest_tag fosrl/gerbil)
+CROWDSEC_LATEST=$(latest_tag crowdsecurity/crowdsec)
+TRAEFIK_LATEST=$(latest_tag traefik/traefik | grep -oP '^v\d+\.\d+')
+
+REPORT=""
+if [ "$PANGOLIN_CUR" != "$PANGOLIN_LATEST" ]; then
+  REPORT+="pangolin: $PANGOLIN_CUR -> $PANGOLIN_LATEST"$'\n'
+fi
+if [ "$GERBIL_CUR" != "$GERBIL_LATEST" ]; then
+  REPORT+="gerbil: $GERBIL_CUR -> $GERBIL_LATEST"$'\n'
+fi
+if [ "$TRAEFIK_CUR" != "$TRAEFIK_LATEST" ]; then
+  REPORT+="traefik: $TRAEFIK_CUR -> $TRAEFIK_LATEST (new minor/major series)"$'\n'
+fi
+if [ "$CROWDSEC_CUR" != "$CROWDSEC_LATEST" ]; then
+  REPORT+="crowdsec: $CROWDSEC_CUR -> $CROWDSEC_LATEST"$'\n'
+fi
+
+PREV=$(cat "$STATE_FILE" 2>/dev/null || true)
+if [ "$REPORT" != "$PREV" ] && [ -n "$REPORT" ]; then
+  curl -sf -H "Title: Pangolin stack: new image version(s) available" \
+    -d "$REPORT" https://ntfy.sh/<your-private-topic-name>
+fi
+echo "$REPORT" > "$STATE_FILE"
+EOF
+$ sudo chmod +x /usr/local/sbin/check-pangolin-image-versions.sh
+```
+***`traefik` is compared by minor version only, not exact tag*** — `docker-compose.yml` pins
+`v3.7`, a Docker Hub floating tag Traefik itself republishes on every `v3.7.x` patch (confirmed in
+this VPS's own logs: the `v3.7` tag resolved to `Traefik version 3.7.10` at pull time). Comparing
+that against GitHub's latest *patch* release (`v3.7.10`, `v3.7.11`, ...) would false-positive on
+every single patch even though `v3.7` already tracks them automatically — only a new minor/major
+series (`v3.8`, `v4.0`) is actually actionable here. `pangolin`, `gerbil`, and `crowdsec` are pinned
+to an exact patch, so those three compare exactly.
+
+**Schedule it** daily — a version check doesn't need the 5-minute cadence the health/failure checks
+use:
+```bash
+$ sudo tee /etc/systemd/system/check-pangolin-image-versions.timer > /dev/null <<'EOF'
+[Unit]
+Description=Check for new upstream Pangolin stack image versions daily
+
+[Timer]
+OnCalendar=*-*-* 09:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+$ sudo tee /etc/systemd/system/check-pangolin-image-versions.service > /dev/null <<'EOF'
+[Unit]
+Description=Check for new upstream Pangolin stack image versions
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/check-pangolin-image-versions.sh
+EOF
+$ sudo systemctl daemon-reload
+$ sudo systemctl enable --now check-pangolin-image-versions.timer
+```
+
+**Test it manually** before trusting the timer:
+```bash
+$ sudo /usr/local/sbin/check-pangolin-image-versions.sh
+$ cat /var/lib/check-pangolin-image-versions.state
+```
+An empty state file means everything's current. To confirm the `ntfy` push itself actually fires,
+temporarily edit one `*_CUR` line's comparison (or just downgrade a tag in a scratch copy of
+`docker-compose.yml` pointed at by a throwaway `COMPOSE_FILE` value) rather than waiting for a real
+upstream release.
+
+**A version notice isn't an auto-update** — bumping a tag in `docker-compose.yml` and running
+`docker compose up -d` is still a manual, deliberate step (see
+[Manual Install](#manual-install-docker-compose) above for how each tag was originally chosen and
+pinned). Read the project's release notes first, especially for `crowdsec` and `traefik`, before
+bumping — a breaking change landing via unattended automation is exactly what pinning was meant to
+prevent in the first place.
+
 ### Troubleshooting
 When one of the `ntfy` pushes wired up above (or the host-level ones from the
 [hardening doc](../../../system/ubuntu/hardening/README.md#monitoring--alerts)) reports something —
@@ -1648,7 +1768,7 @@ first organization. If you haven't already grabbed the setup token, see
 
 #### Create the initial organization
 1. Login using your new credentials
-2. Set `Organization Name`` e.g. `your-domain-name`
+2. Set `Organization Name` e.g. `your-domain-name`
 3. Click `Create Organization`
 
 #### Enable MFA enforcement
@@ -1660,7 +1780,8 @@ only supported method out of the box.
 
 1. Click on your profile image in the top right
 2. Choose the `Enable Two-factor` menu option
-
+3. Enter your password for confirmation
+4. User your favorite authenticator app to complete the standard process
 
 ### Add Site
 Create a new site for your homelab subnet
