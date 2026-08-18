@@ -116,6 +116,10 @@ $ sudo ufw allow 443/tcp
 $ sudo ufw allow 51820/udp
 $ sudo ufw allow 21820/udp
 ```
+`443/tcp` and `51820/udp` are always required. The other two are conditional, not blanket
+musts — see [Port Requirements](../../../networking/reverse_tunnel/pangolin/README.md#port-requirements)
+in the Pangolin doc for when `80/tcp` (skippable with a DNS-01 cert resolver) and `21820/udp`
+(skippable if you never expose Private/ZTNA resources) can be left closed instead.
 
 **Check status**
 ```bash
