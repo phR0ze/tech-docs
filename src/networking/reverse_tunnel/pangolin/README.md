@@ -47,9 +47,12 @@ the use of Jellyfin.
     - [Apply the CrowdSec Bouncer Key](#apply-the-crowdsec-bouncer-key)
     - [Complete Initial Setup](#complete-initial-setup)
     - [CrowdSec Is Included, Matching Quick Install](#crowdsec-is-included-matching-quick-install)
+  - [Switch to DNS-01 and Close Port 80](#switch-to-dns-01-and-close-port-80)
   - [CrowdSec: Two Separate Engines by Design](#crowdsec-two-separate-engines-by-design)
   - [Log Rotation for Traefik's Access Log](#log-rotation-for-traefiks-access-log)
   - [Extend Monitoring & Alerts for Pangolin](#extend-monitoring--alerts-for-pangolin)
+    - [Docker Container Health Isn't Covered by check-failed-units.sh](#docker-container-health-isnt-covered-by-check-failed-unitssh)
+    - [The Security Review Digest Only Reports the Host-Level CrowdSec Engine](#the-security-review-digest-only-reports-the-host-level-crowdsec-engine)
   - [Troubleshooting](#troubleshooting)
   - [Harden Beyond the Quick Install Defaults](#harden-beyond-the-quick-install-defaults)
   - [Back Up Pangolin's State](#back-up-pangolins-state)
@@ -105,13 +108,13 @@ Resources in Pangolin are the services you'd like expose over the tunnel (a.k.a.
 ## Configure Domain Name
 
 ### Purchase Domain Name
-A domain name is required to route public traffic to the VPS. [Cloudflare](../../../dns/cloudflare_dns/README.md)
+A domain name is required to route public traffic to the VPS. [Cloudflare](../../dns/cloudflare_dns/README.md)
 is the recommended registrar — it keeps prices steady, has no surprise renewal markups, and the
 domain integrates directly with Cloudflare DNS which handles the rest of the setup.
 
 ### Configure DNS
 Pangolin needs a domain name pointing at the VPS's static public IPv4 address. See
-[Configure DNS for your Domain Name](../../../dns/cloudflare_dns/README.md#configure-dns-for-your-domain-name)
+[Configure DNS for your Domain Name](../../dns/cloudflare_dns/README.md#configure-dns-for-your-domain-name)
 for the full setup — Cloudflare is the recommended registrar and DNS provider as it integrates
 cleanly with Pangolin's auto-SSL and is free for personal use.
 
@@ -244,14 +247,15 @@ are unconditionally required — two are, two depend on how you use Pangolin:
 
 **`80/tcp` can be closed if you switch to DNS-01 certificate validation.** By default, Traefik's
 ACME resolver uses HTTP-01, which needs port 80 reachable for the challenge. Since this doc already
-recommends Cloudflare as DNS provider, a `letsencrypt-dns` resolver with `dnsChallenge.provider:
-cloudflare` avoids that entirely — validation happens via a DNS TXT record instead of an inbound
-HTTP request, and it's also the only way to get a wildcard cert. See
+recommends Cloudflare as DNS provider, a `dnsChallenge.provider: cloudflare` resolver avoids that
+entirely — validation happens via a DNS TXT record instead of an inbound HTTP request, and it's also
+the only way to get a wildcard cert. See
 [Wildcard Domains](https://docs.pangolin.net/self-host/advanced/wild-card-domains) for the
-`cert_resolver`/`prefer_wildcard_cert` config. If you make this switch, close the port:
-```bash
-$ sudo ufw delete allow 80/tcp
-```
+`cert_resolver`/`prefer_wildcard_cert` config, and
+[Switch to DNS-01 and Close Port 80](#switch-to-dns-01-and-close-port-80) below for the concrete
+steps against this doc's own compose/Traefik files — ***`sudo ufw delete allow 80/tcp` alone does
+not close it***, since `gerbil` publishes `80:80` straight through Docker, which bypasses `ufw`
+entirely; that section covers removing the actual port mapping.
 Skip this if you're not ready to reconfigure the cert resolver — HTTP-01 on port 80 is the default
 and works fine, this is purely an optional attack-surface reduction.
 
@@ -490,8 +494,9 @@ in Pangolin's own repo, not the (stale in places — see the `v3.6`/network-name
 [manual install docs page](https://docs.pangolin.net/self-host/manual/docker-compose). `gerbil`
 opens the tunnel/HTTP(S) ports on the host on `traefik`'s behalf via `network_mode:
 service:gerbil`, so `traefik` itself publishes no ports of its own; `crowdsec` publishes nothing to
-the host except its Prometheus metrics port, since Traefik reaches it over the compose network by
-container name:
+the host at all, since Traefik reaches it over the compose network by container name — its
+Prometheus metrics port (`6060`) is left unpublished by default (see the note below the compose
+file):
 ```bash
 $ sudo tee docker-compose.yml > /dev/null <<'EOF'
 name: pangolin
@@ -576,8 +581,6 @@ services:
       - ./config/crowdsec:/etc/crowdsec
       - ./config/crowdsec/db:/var/lib/crowdsec/data
       - ./config/traefik/logs:/var/log/traefik
-    ports:
-      - 6060:6060 # Prometheus metrics endpoint — not required, drop if unused.
 
 networks:
   default:
@@ -586,6 +589,24 @@ networks:
     # enable_ipv6: true
 EOF
 ```
+***`crowdsec`'s Prometheus metrics port (`6060`) is deliberately left unpublished*** — the
+installer's own `--crowdsec` template includes `6060:6060` in `ports:` (marked optional there too:
+"not required, drop if unused"), but this doc drops it by default rather than including it commented
+out. Reason: `6060/tcp` is a common bind target for other tooling (a host-level Prometheus
+`node_exporter`, a leftover process from earlier testing, etc.), and a collision surfaces as an
+opaque `docker compose up` failure — `failed to bind host port 0.0.0.0:6060/tcp: address already in
+use` — with `crowdsec` itself shown `Healthy` and no indication which container's port mapping is at
+fault. Traefik still reaches CrowdSec fine over the internal `pangolin_frontend` compose network by
+container name (`crowdsec:8080` for the LAPI, `crowdsec:7422` for AppSec) regardless of whether this
+port is published — nothing else in this stack depends on `6060` being reachable from the host. If
+you do want to scrape these metrics externally (e.g. a homelab Prometheus), first confirm nothing
+else already owns the port before re-adding the mapping:
+```bash
+$ sudo ss -tulpn | grep 6060
+```
+then add `- 6060:6060` back to `crowdsec`'s `ports:` above (or bind it to a private address only,
+e.g. `<homelab-tunnel-ip>:6060:6060`, rather than `0.0.0.0`).
+
 **All four images are pinned, matching how the real installer behaves** — its
 `docker-compose.yml` template renders `fosrl/pangolin:{{.PangolinVersion}}` and
 `fosrl/gerbil:{{.GerbilVersion}}`, with those version strings baked into the installer binary at
@@ -744,8 +765,9 @@ ping:
 EOF
 ```
 The `certificatesResolvers.letsencrypt` block is HTTP-01 by default — this is what needs `80/tcp`
-open per [Port Requirements](#port-requirements) above. Switch to DNS-01 here (per that section's
-Cloudflare note) if you want `80/tcp` closed or a wildcard cert instead. The `http3` block is what
+open per [Port Requirements](#port-requirements) above. See
+[Switch to DNS-01 and Close Port 80](#switch-to-dns-01-and-close-port-80) if you want `80/tcp`
+closed or a wildcard cert instead. The `http3` block is what
 needs `443/udp` open, per the same section — comment it out (and drop the matching port line in
 `docker-compose.yml`) if you'd rather not run HTTP/3 yet.
 
@@ -1116,11 +1138,24 @@ Traefik logs but doesn't crash on. Expect noisy `crowdsec`-related lines in `doc
 traefik` until the next step replaces the placeholder.
 
 #### Apply the CrowdSec Bouncer Key
+CrowdSec splits detection from enforcement: the *agent* (the `crowdsec` container) parses Traefik's
+access log and decides an IP is malicious; a *bouncer* is what actually enforces that decision.
+Traefik's `crowdsec` plugin middleware is the bouncer here — on every request it calls CrowdSec's
+Local API (LAPI, `crowdsec:8080`) asking "any decisions against this IP?" That call has to
+authenticate with a per-bouncer API key so CrowdSec knows who's asking and can revoke access per
+bouncer independently of any other.
+
 `dynamic_config.yml` above still has `crowdsecLapiKey` set to the literal placeholder
 `PUT_YOUR_BOUNCER_KEY_HERE_OR_IT_WILL_NOT_WORK` — this is what the installer's own
 [`crowdsec.go`](https://github.com/fosrl/pangolin/blob/main/install/crowdsec.go) does too, since
-the real key can only be generated once the `crowdsec` container is actually running. Register the
-`traefik-bouncer` and capture its key:
+the real key can only be generated once the `crowdsec` container is actually running.
+
+***Don't skip this or leave it for later*** — with the placeholder in place, every LAPI call the
+bouncer plugin makes gets rejected with `403`, and the plugin fails closed: not just noisy log
+lines (`GET /v1/decisions?ip=... 403`), but **legitimate requests to your own dashboard/resources
+returning `403`** too, since the plugin can't distinguish "auth failed" from "actually banned."
+
+Register the `traefik-bouncer` and capture its key:
 ```bash
 $ sudo docker compose exec crowdsec cscli bouncers add traefik-bouncer -o raw
 ```
@@ -1137,7 +1172,10 @@ $ sudo docker compose logs traefik | grep -i crowdsec
 ```
 `cscli bouncers list` should show `traefik-bouncer` with a recent "last pull" time — if it stays
 blank, the key in `dynamic_config.yml` doesn't match what `crowdsec` issued, or `traefik` hasn't
-picked up the restart yet.
+picked up the restart yet. As a final check, confirm ordinary requests no longer 403:
+```bash
+$ curl -vI https://<your-dashboard-domain> 2>&1 | grep 'HTTP/'
+```
 
 #### Complete Initial Setup
 **Retrieve the initial setup token** from the pangolin container's logs — this is the exact grep
@@ -1165,6 +1203,139 @@ all, drop the `crowdsec` service from `docker-compose.yml`, the `crowdsec` plugi
 from `traefik_config.yml`, the `crowdsec` middleware from `dynamic_config.yml`, and skip writing the
 `config/crowdsec` files entirely — none of the other services depend on it existing except
 `traefik`'s `depends_on`, which you'd also remove.
+
+### Switch to DNS-01 and Close Port 80
+[Port Requirements](#port-requirements) above notes `80/tcp` (HTTP-01) can be closed in favor of
+DNS-01, but only gestures at the config. This section does it concretely against the manual-install
+files already in place, and — importantly — corrects a gap in that earlier `ufw delete` instruction:
+on its own, it doesn't actually close anything.
+
+**Create a scoped Cloudflare API token** — see
+[Cloudflare API token](../../dns/cloudflare_dns/README.md#cloudflare-api-token) (`Zone:DNS:Edit` +
+`Zone:Zone:Read`, not the Global API Key), naming it something like `Pangolin farspire.io` so it's
+identifiable and revocable independently of any other token (e.g. Caddy's, if your homelab also
+runs the [internal Caddy setup](../../reverse_proxy/caddy/README.md#lets-encrypt-cert-generation)).
+
+**Store the token in a `.env` file**, not inline in `docker-compose.yml` — `docker compose`
+auto-loads `.env` from the same directory, and restricting its permissions keeps the token out of
+anything that might later get `cat`'d or committed by accident:
+```bash
+$ cd /opt/pangolin
+$ sudo tee .env > /dev/null <<'EOF'
+CF_DNS_API_TOKEN=<token-from-cloudflare>
+EOF
+$ sudo chmod 600 .env
+```
+
+**Wire it into `traefik`'s environment** in `docker-compose.yml` — add `env_file` alongside its
+existing `volumes:` key:
+```yaml
+  traefik:
+    image: docker.io/traefik:v3.7
+    container_name: traefik
+    restart: unless-stopped
+    network_mode: service:gerbil
+    depends_on:
+      pangolin:
+        condition: service_healthy
+      crowdsec:
+        condition: service_healthy
+    env_file:
+      - .env
+    command:
+      - --configFile=/etc/traefik/traefik_config.yml
+    volumes:
+      - ./config/traefik:/etc/traefik:ro
+      - ./config/letsencrypt:/letsencrypt
+      - ./config/traefik/logs:/var/log/traefik
+```
+
+**Switch the `letsencrypt` resolver from `httpChallenge` to `dnsChallenge`** in
+`config/traefik/traefik_config.yml` — keep the resolver named `letsencrypt` rather than introducing
+a second `letsencrypt-dns` resolver, since `dynamic_config.yml`'s four routers already reference
+`certResolver: letsencrypt` and renaming it would mean updating every one of them for no benefit:
+```yaml
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      dnsChallenge:
+        provider: cloudflare
+        propagation:
+          delayBeforeChecks: "30s"
+      email: "admin@example.com" # REPLACE — same value already used above
+      storage: "/letsencrypt/acme.json"
+      caServer: "https://acme-v02.api.letsencrypt.org/directory"
+```
+`propagation.delayBeforeChecks` (not the older top-level `delayBeforeCheck`, deprecated as of this
+Traefik release with a startup log warning but not yet removed) is how long Traefik waits before
+polling DNS to confirm the `TXT` record it published has propagated — `30s` is generous headroom for
+Cloudflare's usually-fast propagation without meaningfully slowing down issuance.
+
+Remove the `httpChallenge: { entryPoint: web }` block it replaces. Leave the `web` entry point
+itself (`address: ":80"`) defined — `main-app-router-redirect` still references it for the
+HTTP→HTTPS redirect, and an unpublished entry point with nothing routed to it is harmless; Traefik
+just never receives traffic there once port 80 stops being published to the host.
+
+**Test DNS-01 before closing anything** — force a fresh certificate request so a broken Cloudflare
+token or DNS propagation issue surfaces while port 80 is still open as a fallback, rather than after:
+```bash
+$ sudo cp config/letsencrypt/acme.json config/letsencrypt/acme.json.bak
+$ sudo sh -c 'echo "{}" > config/letsencrypt/acme.json'
+$ sudo docker compose up -d traefik
+$ sudo docker compose logs -f traefik
+```
+Look for `"Trying to solve DNS-01 challenge"` followed by `"Server responded with a certificate."` —
+the same pair of log lines the original HTTP-01 issuance produced, just with `dns-01` in place of
+`http-01`. If it fails instead, restore the backup and troubleshoot the token/zone before proceeding:
+```bash
+$ sudo cp config/letsencrypt/acme.json.bak config/letsencrypt/acme.json
+$ sudo docker compose up -d traefik
+```
+
+***`sudo ufw delete allow 80/tcp` alone does not close port 80*** — this is the gap in the
+[Port Requirements](#port-requirements) table's instruction. `gerbil` publishes `80:80` directly via
+Docker (`ports:` in `docker-compose.yml`), and per the
+[hardening doc's Docker/`ufw` note](../../../system/ubuntu/hardening/README.md#firewall), Docker
+inserts its own `iptables`/`nftables` rules ahead of `ufw`'s — a container port published with
+`ports:` stays reachable from the internet regardless of `ufw deny` rules. Deleting the `ufw allow`
+rule only stops `ufw` itself from *advertising* the port as intentionally open; it doesn't stop
+Docker from routing to it. The only way to actually stop `gerbil` from listening on `80` is to
+remove the port mapping itself.
+
+**Remove the `80:80` line from `gerbil`'s `ports:`** in `docker-compose.yml`:
+```yaml
+    ports:
+      - 51820:51820/udp
+      - 21820:21820/udp
+      - 443:443
+      - 443:443/udp # For HTTP/3 (QUIC) — on by default in Pangolin's own template, unrelated to CrowdSec.
+```
+Recreate `gerbil` (and `traefik`, which rides its network via `network_mode: service:gerbil`) to
+pick up the port change:
+```bash
+$ sudo docker compose up -d
+```
+
+**Now delete the `ufw` rule too**, for consistency between `ufw status` and what's actually
+reachable — it's no longer misleading once the port mapping itself is gone:
+```bash
+$ sudo ufw delete allow 80/tcp
+```
+
+**Verify port 80 is actually closed**, from outside the VPS (a second terminal, not the VPS itself):
+```bash
+$ curl -v --connect-timeout 5 http://pangolin.farspire.io
+```
+Should time out or refuse the connection rather than returning Traefik's redirect response. Also
+confirm `443` still works and serves the DNS-01-issued cert:
+```bash
+$ curl -vI https://pangolin.farspire.io 2>&1 | grep -E 'issuer|subject|HTTP/'
+```
+
+**Clean up the backup** once satisfied:
+```bash
+$ sudo rm config/letsencrypt/acme.json.bak
+```
 
 ### CrowdSec: Two Separate Engines by Design
 Pangolin's installer has a `--crowdsec` flag that sets up its **own**, Docker-based CrowdSec
@@ -1232,8 +1403,7 @@ The `ntfy` alerting set up in the
 section only watches host-level state — it has two blind spots once Pangolin's stack is running,
 both worth closing using the same `ntfy` topic already configured.
 
-**1. Docker container health isn't covered by `check-failed-units.sh`**
-
+#### Docker Container Health Isn't Covered by check-failed-units.sh
 That script greps `systemctl --failed`, which only sees systemd units. If Pangolin, Gerbil,
 Traefik, or Newt crash-loops or exits, `docker.service` itself stays `active` the whole time —
 nothing in the existing alerting notices. Add a parallel check scoped to the Pangolin stack,
@@ -1293,8 +1463,7 @@ $ sudo systemctl daemon-reload
 $ sudo systemctl enable --now check-pangolin-containers.timer
 ```
 
-**2. The Security Review Digest only reports the host-level CrowdSec engine**
-
+#### The Security Review Digest Only Reports the Host-Level CrowdSec Engine
 Per the [Two Separate Engines](#crowdsec-two-separate-engines-by-design) decision above, Pangolin's
 `--crowdsec` runs its own engine inside Docker for Traefik/HTTP traffic — a completely separate
 `cscli` context from the host one the
