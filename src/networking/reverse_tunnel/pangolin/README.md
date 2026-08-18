@@ -49,6 +49,7 @@ the use of Jellyfin.
   - [CrowdSec: Two Separate Engines by Design](#crowdsec-two-separate-engines-by-design)
   - [Log Rotation for Traefik's Access Log](#log-rotation-for-traefiks-access-log)
   - [Extend Monitoring & Alerts for Pangolin](#extend-monitoring--alerts-for-pangolin)
+  - [Troubleshooting](#troubleshooting)
   - [Harden Beyond the Quick Install Defaults](#harden-beyond-the-quick-install-defaults)
   - [Back Up Pangolin's State](#back-up-pangolins-state)
 - [Access Control](#access-control)
@@ -501,7 +502,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2g
+          memory: 1g
         reservations:
           memory: 512m
     volumes:
@@ -593,8 +594,13 @@ build time (whatever Pangolin release the installer itself shipped with); it nev
 [Gerbil's](https://github.com/fosrl/gerbil/releases), and Traefik's release pages — they *will* go
 stale as new versions ship, since nothing here re-checks them automatically. Update the tags by
 hand when you next touch this file, the same way you'd re-run the installer to pick up a new
-release. The `pangolin` service's `deploy.resources` block is a soft memory cap/reservation the
-installer sets by default, not something this doc invented.
+release. The `pangolin` service's `deploy.resources` block is a soft memory cap/reservation
+concept the installer sets by default too, not something this doc invented — but the installer's
+own default limit (`2g`) is tightened to `1g` here specifically because a `2GB`-class VPS (per
+[Recommended Resources](#recommended-resources) above) doesn't have room to spare for one of four
+containers to claim a limit at or above total system RAM; a `2g` ceiling on a ~1.9GiB-total host
+protects nothing; `gerbil`/`traefik`/`crowdsec` and the host OS all need to fit in the same physical
+memory too. Check your own box's actual total before trusting either number: `free -h`.
 
 ***One installer prompt this doc's default intentionally doesn't match*** — `Is your server IPv6
 capable?` defaults to `Yes` in the interactive installer and controls the commented-out
@@ -614,6 +620,13 @@ it as a daemon — almost certainly a copy-paste bug in the upstream template ra
 so it's left off here. If you diff against the installer output and see it, that's expected — don't
 add it back without first confirming `crowdsec` actually stays `Up` in `docker compose ps` with it
 present.
+
+**Validate the file parses** before moving on — this only checks YAML syntax/compose schema at this
+point, not whether the files `traefik`/`crowdsec` reference actually exist yet (those come next),
+but it catches a typo or bad indentation immediately instead of at `docker compose up` time:
+```bash
+$ sudo docker compose config --quiet && echo "OK — compose file is valid" || echo "FAILED — see error above"
+```
 
 #### Write config/traefik/traefik_config.yml
 Traefik's static config: entry points, ACME/Let's Encrypt, HTTP/3 (on by default in Pangolin's own
@@ -734,6 +747,24 @@ open per [Port Requirements](#port-requirements) above. Switch to DNS-01 here (p
 Cloudflare note) if you want `80/tcp` closed or a wildcard cert instead. The `http3` block is what
 needs `443/udp` open, per the same section — comment it out (and drop the matching port line in
 `docker-compose.yml`) if you'd rather not run HTTP/3 yet.
+
+**Confirm the email placeholder was actually replaced** — checks a boolean, doesn't print the value
+back to you:
+```bash
+$ grep -q 'admin@example.com' config/traefik/traefik_config.yml && echo "STILL HAS PLACEHOLDER — go edit it" || echo "OK — email replaced"
+```
+
+**Validate the YAML itself** — there's no `docker compose config` equivalent for a plain Traefik
+config file, and Traefik itself has no standalone "check config and exit" flag, so parse it with a
+throwaway container instead of waiting to find out at `docker compose up` time:
+```bash
+$ sudo docker run --rm -v "$PWD/config/traefik/traefik_config.yml:/f.yml:ro" mikefarah/yq \
+  eval '.' /f.yml > /dev/null && echo "OK — valid YAML"
+```
+This only confirms well-formed YAML, not that Traefik will accept every key/value in it — a plugin
+version that doesn't exist or a typo'd key name would still pass this check and only surface once
+`traefik` actually starts. Worth knowing the limit of this check rather than treating it as a full
+guarantee.
 
 #### Write config/traefik/dynamic_config.yml
 Routers/services wiring the dashboard hostname to Pangolin's internal ports. Replace every
@@ -869,12 +900,24 @@ EOF
 `traefik_config.yml` above) rather than per-router, so it isn't listed again in any router's own
 `middlewares` list — adding it there too would just evaluate it twice.
 
+**Confirm the domain placeholder was replaced** and **validate the YAML**, same pattern as the
+previous two files:
+```bash
+$ grep -q 'pangolin.example.com' config/traefik/dynamic_config.yml && echo "STILL HAS PLACEHOLDER — go edit it" || echo "OK — domain replaced"
+$ sudo docker run --rm -v "$PWD/config/traefik/dynamic_config.yml:/f.yml:ro" mikefarah/yq \
+  eval '.' /f.yml > /dev/null && echo "OK — valid YAML"
+```
+
 #### Write config/config.yml
-Pangolin's own app config. Replace the four marked placeholders: dashboard domain (two spots),
-base domain, and the server secret (generated next). Includes `maxmind_db_path`/`maxmind_asn_path`
-under `server:`, matching the installer's default-`Yes` answer to its MaxMind prompt — see
-[Download MaxMind GeoLite2 Databases](#download-maxmind-geolite2-databases) right after this step,
-which is what actually puts those two files in place:
+Pangolin's own app config. Replace the two domain placeholders now (dashboard domain — three spots:
+`gerbil.base_endpoint`, `app.dashboard_url`, `server.cors.origins` — and base domain). ***Leave
+`server.secret` as its placeholder for now*** — it's filled in during
+[Generate the Server Secret](#generate-the-server-secret) below, which comes after
+[Download MaxMind GeoLite2 Databases](#download-maxmind-geolite2-databases) — not immediately next,
+despite the two being right next to each other in this file. Includes `maxmind_db_path`/
+`maxmind_asn_path` under `server:`, matching the installer's default-`Yes` answer to its MaxMind
+prompt — the MaxMind step right after this one is what actually puts those two `.mmdb` files in
+place:
 ```bash
 $ sudo tee config/config.yml > /dev/null <<'EOF'
 # To see all available options, please visit the docs:
@@ -910,6 +953,21 @@ flags:
     disable_user_create_org: false
     allow_raw_resources: true
 EOF
+```
+
+STOPED HERE
+
+**Confirm every placeholder was replaced** — five separate `grep`s since they're different literal
+strings, each just a pass/fail check that doesn't print your actual domain/secret back out:
+```bash
+$ for p in 'pangolin.example.com' '"example.com"' 'replace-with-a-long-random-secret'; do
+    grep -qF "$p" config/config.yml && echo "STILL HAS PLACEHOLDER: $p" || echo "OK: $p replaced"
+  done
+```
+**Validate the YAML**, same throwaway-container approach as `traefik_config.yml` above:
+```bash
+$ sudo docker run --rm -v "$PWD/config/config.yml:/f.yml:ro" mikefarah/yq \
+  eval '.' /f.yml > /dev/null && echo "OK — valid YAML"
 ```
 
 #### Download MaxMind GeoLite2 Databases
@@ -1165,6 +1223,16 @@ engine — confirm this matches your actual `docker ps` output before relying on
 custom compose override could rename it. Verify the edit landed correctly with
 `sudo cat /usr/local/sbin/security-digest.sh` before the next scheduled run, and re-run the digest
 manually once to confirm both counts appear in the `ntfy` push.
+
+### Troubleshooting
+When one of the `ntfy` pushes wired up above (or the host-level ones from the
+[hardening doc](../../../system/ubuntu/hardening/README.md#monitoring--alerts)) reports something —
+e.g. a "Daily security digest" showing failed SSH password attempts — see
+[Alert Recon](../../../security/alert_recon/README.md) for the full triage sequence: reading the raw
+log, checking each ban mechanism's own status independently (`fail2ban`, host-level `cscli`, and —
+per the [Two Separate Engines](#crowdsec-two-separate-engines-by-design) split above — Pangolin's own
+Dockerized `crowdsec` engine separately from the host one), catching config typos that pass
+validation but silently do nothing, and testing a ban safely without disconnecting your own session.
 
 ### Harden Beyond the Quick Install Defaults
 Everything above reproduces what quick install gives you out of the box — a working instance, not

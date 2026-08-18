@@ -242,7 +242,10 @@
   - [Workspace](productivity/workspace/README.md)
 
 - [Security](security/README.md)
+  - [Alert Recon](security/alert_recon/README.md)
+  - [Crowdsec](security/crowdsec/README.md)
   - [Cryptocurrency](security/cryptocurrency/README.md)
+  - [Fail2ban](security/fail2ban/README.md)
   - [IAM](security/iam/README.md)
     - [JWT](security/iam/jwt/README.md)
     - [MFA](security/iam/mfa/README.md)

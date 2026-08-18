@@ -4,6 +4,9 @@
 * [.. up dir](..)
 
 ### Linked pages
+* [Alert Recon](alert_recon/README.md)
+* [Crowdsec](crowdsec/README.md)
 * [Cryptocurrency](cryptocurrency/README.md)
+* [Fail2ban](fail2ban/README.md)
 * [IAM](iam/README.md)
 * [Password Managers](password_managers/README.md)
