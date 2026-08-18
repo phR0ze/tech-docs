@@ -1291,11 +1291,18 @@ HTTP→HTTPS redirect, and an unpublished entry point with nothing routed to it 
 just never receives traffic there once port 80 stops being published to the host.
 
 **Test DNS-01 before closing anything** — force a fresh certificate request so a broken Cloudflare
-token or DNS propagation issue surfaces while port 80 is still open as a fallback, rather than after:
+token or DNS propagation issue surfaces while port 80 is still open as a fallback, rather than after.
+Use `restart`, not `up -d`, here — `docker compose up -d` only recreates a container when it detects
+a change in the *compose service definition itself* (image, env vars, etc.); truncating a
+bind-mounted file like `acme.json` isn't a compose-level change, so `up -d` can silently no-op and
+leave Traefik running with its old in-memory cert store, making the truncated file on disk
+irrelevant. (It happened to work funcionally when you also added `env_file` to the compose file in
+the same pass, since *that* is a compose-level change — but that's incidental, not something to rely
+on.) `restart` always stops and starts the process, guaranteeing a fresh read from disk:
 ```bash
 $ sudo cp config/letsencrypt/acme.json config/letsencrypt/acme.json.bak
 $ sudo sh -c 'echo "{}" > config/letsencrypt/acme.json'
-$ sudo docker compose up -d traefik
+$ sudo docker compose restart traefik
 $ sudo docker compose logs -f traefik
 ```
 Look for `"Trying to solve DNS-01 challenge"` followed by `"Server responded with a certificate."` —
@@ -1303,7 +1310,7 @@ the same pair of log lines the original HTTP-01 issuance produced, just with `dn
 `http-01`. If it fails instead, restore the backup and troubleshoot the token/zone before proceeding:
 ```bash
 $ sudo cp config/letsencrypt/acme.json.bak config/letsencrypt/acme.json
-$ sudo docker compose up -d traefik
+$ sudo docker compose restart traefik
 ```
 
 ***`sudo ufw delete allow 80/tcp` alone does not close port 80*** — this is the gap in the
@@ -1369,12 +1376,35 @@ domains:
         cert_resolver: "letsencrypt"
 ```
 
-**2. Put the dashboard itself under the wildcard** — without this, Pangolin's own dashboard router
-(`next-router` in `dynamic_config.yml`) still requests its own single-host cert for
-`pangolin.example.com` even once `prefer_wildcard_cert` is set for resources. Add an explicit
-`tls.domains` override:
+**2. Put the dashboard itself under the wildcard** — without this, Pangolin's own dashboard routers
+still request their own single-host cert for `pangolin.example.com` even once
+`prefer_wildcard_cert` is set for resources. ***This override has to go on all three
+`websecure` routers that match the dashboard host — `next-router`, `api-router`, and
+`ws-router` — not just `next-router`.*** All three independently match
+`Host(\`pangolin.example.com\`)` in `dynamic_config.yml`, and Traefik requests a cert per router
+that has a `tls:` block without an explicit `domains:` override, inferring the router's own `Host()`
+rule as that cert's domain. Leaving even one of the three without the override means Traefik ends up
+holding two certs that both cover `pangolin.example.com` — the wildcard and an exact-match one — and
+it prefers the more specific exact match for that SNI, silently defeating the wildcard for the
+dashboard itself while still working fine for every other resource:
 ```yaml
 next-router:
+  tls:
+    certResolver: letsencrypt
+    domains:
+      - main: "example.com"
+        sans:
+          - "*.example.com"
+
+api-router:
+  tls:
+    certResolver: letsencrypt
+    domains:
+      - main: "example.com"
+        sans:
+          - "*.example.com"
+
+ws-router:
   tls:
     certResolver: letsencrypt
     domains:
@@ -1401,8 +1431,19 @@ $ openssl s_client -connect pangolin.example.com:443 -servername pangolin.exampl
     | openssl x509 -noout -text | grep -A1 'Subject Alternative Name'
 ```
 The `Subject Alternative Name` line should list `DNS:example.com, DNS:*.example.com` — if it only
-shows `DNS:pangolin.example.com`, `next-router`'s `tls.domains` override didn't take, or the old
-single-host cert is still cached in `acme.json` from before this change.
+shows `DNS:pangolin.example.com` even after confirming in the logs that Traefik *did* obtain the
+wildcard cert (`"Server responded with a certificate."` for `domains: example.com, *.example.com`),
+the most likely cause isn't a failed/stale request — it's `api-router` or `ws-router` still missing
+the `domains:` override from step 2 above. Check both:
+```bash
+$ sudo grep -A16 '    api-router:' config/traefik/dynamic_config.yml
+$ sudo grep -A16 '    ws-router:' config/traefik/dynamic_config.yml
+```
+If either shows `tls: { certResolver: letsencrypt }` with no `domains:` block underneath, that
+router is still requesting its own exact-match cert for `pangolin.example.com` — and Traefik will
+keep preferring that exact match over the wildcard for that SNI no matter how many times you
+re-issue. Add the override to whichever router is missing it, then repeat the
+back-up/blank/`up -d`/re-check cycle above.
 
 **No change needed to `docker-compose.yml`** — this doc's DNS-01 switch already wires the
 Cloudflare token in via `traefik`'s `env_file: [.env]`, and `CF_DNS_API_TOKEN` (the variable name
