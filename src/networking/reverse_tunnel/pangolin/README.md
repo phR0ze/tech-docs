@@ -39,9 +39,10 @@ the use of Jellyfin.
     - [Write docker-compose.yml](#write-docker-composeyml)
     - [Write config/traefik/traefik_config.yml](#write-configtraefiktraefik_configyml)
     - [Write config/traefik/dynamic_config.yml](#write-configtraefikdynamic_configyml)
+    - [Write config/crowdsec Acquisition and Profiles Files](#write-configcrowdsec-acquisition-and-profiles-files)
     - [Write config/config.yml](#write-configconfigyml)
-    - [Download MaxMind GeoLite2 Databases](#download-maxmind-geolite2-databases)
     - [Generate the Server Secret](#generate-the-server-secret)
+    - [Download MaxMind GeoLite2 Databases](#download-maxmind-geolite2-databases)
     - [Start the Stack](#start-the-stack)
     - [Apply the CrowdSec Bouncer Key](#apply-the-crowdsec-bouncer-key)
     - [Complete Initial Setup](#complete-initial-setup)
@@ -908,16 +909,91 @@ $ sudo docker run --rm -v "$PWD/config/traefik/dynamic_config.yml:/f.yml:ro" mik
   eval '.' /f.yml > /dev/null && echo "OK — valid YAML"
 ```
 
+#### Write config/crowdsec Acquisition and Profiles Files
+`docker-compose.yml`'s `crowdsec` service bind-mounts `./config/crowdsec` straight onto `/etc/crowdsec`
+— CrowdSec's own config root — so this directory needs to hold real config, not just the `db/` and
+`acquis.d/` directories [created earlier](#create-the-install-directory). Checked directly against the
+installer's own [`install/config/crowdsec/`](https://github.com/fosrl/pangolin/tree/main/install/config/crowdsec)
+template: three files land there that this doc hadn't written yet.
+
+Without them:
+* **No acquisition config** (`acquis.d/traefik.yaml`) means CrowdSec never actually reads Traefik's
+  access log — the `crowdsecurity/traefik` collection installed via `COLLECTIONS` in
+  `docker-compose.yml` ships parsers/scenarios for that log format, not a data source telling
+  CrowdSec where to find it. Without this file, `cscli decisions list` will stay empty forever no
+  matter how much traffic Traefik sees.
+* **No `acquis.d/appsec.yaml`** means nothing listens on `7422` — the exact address
+  `dynamic_config.yml`'s `crowdsecAppsecHost: crowdsec:7422` already points the AppSec middleware
+  at. With `crowdsecAppsecUnreachableBlock: true` also set there, every request would get blocked
+  once CrowdSec can't reach a component that was never started.
+* **No `profiles.yaml`** means CrowdSec falls back to its package defaults for what happens once a
+  scenario actually fires, instead of these explicit remediation rules (ban on IP/range match,
+  captcha on HTTP-scenario matches).
+
+Write all three, sourced verbatim from the installer's own templates:
+```bash
+$ sudo tee config/crowdsec/acquis.d/traefik.yaml > /dev/null <<'EOF'
+poll_without_inotify: false
+filenames:
+  - /var/log/traefik/*.log
+labels:
+  type: traefik
+EOF
+$ sudo tee config/crowdsec/acquis.d/appsec.yaml > /dev/null <<'EOF'
+listen_addr: 0.0.0.0:7422
+appsec_config: crowdsecurity/appsec-default
+name: myAppSecComponent
+source: appsec
+labels:
+  type: appsec
+EOF
+$ sudo tee config/crowdsec/profiles.yaml > /dev/null <<'EOF'
+name: captcha_remediation
+filters:
+  - Alert.Remediation == true && Alert.GetScope() == "Ip" && Alert.GetScenario() contains "http"
+decisions:
+  - type: captcha
+    duration: 4h
+on_success: break
+
+---
+name: default_ip_remediation
+filters:
+ - Alert.Remediation == true && Alert.GetScope() == "Ip"
+decisions:
+ - type: ban
+   duration: 4h
+on_success: break
+
+---
+name: default_range_remediation
+filters:
+ - Alert.Remediation == true && Alert.GetScope() == "Range"
+decisions:
+ - type: ban
+   duration: 4h
+on_success: break
+EOF
+```
+
+**Validate all three parse as YAML** — `profiles.yaml` is a multi-document stream (`---`-separated),
+which `yq eval '.'` handles fine since it prints each document in turn rather than erroring on the
+separator:
+```bash
+$ for f in config/crowdsec/acquis.d/traefik.yaml config/crowdsec/acquis.d/appsec.yaml config/crowdsec/profiles.yaml; do
+    sudo docker run --rm -v "$PWD/$f:/f.yml:ro" mikefarah/yq eval '.' /f.yml > /dev/null \
+      && echo "OK — $f valid YAML" || echo "FAILED — $f"
+  done
+```
+
 #### Write config/config.yml
 Pangolin's own app config. Replace the two domain placeholders now (dashboard domain — three spots:
-`gerbil.base_endpoint`, `app.dashboard_url`, `server.cors.origins` — and base domain). ***Leave
-`server.secret` as its placeholder for now*** — it's filled in during
-[Generate the Server Secret](#generate-the-server-secret) below, which comes after
-[Download MaxMind GeoLite2 Databases](#download-maxmind-geolite2-databases) — not immediately next,
-despite the two being right next to each other in this file. Includes `maxmind_db_path`/
-`maxmind_asn_path` under `server:`, matching the installer's default-`Yes` answer to its MaxMind
-prompt — the MaxMind step right after this one is what actually puts those two `.mmdb` files in
-place:
+`gerbil.base_endpoint`, `app.dashboard_url`, `server.cors.origins` — and base domain), and the
+`server.secret` placeholder using [Generate the Server Secret](#generate-the-server-secret) directly
+below. Includes `maxmind_db_path`/`maxmind_asn_path` under `server:`, matching the installer's
+default-`Yes` answer to its MaxMind prompt —
+[Download MaxMind GeoLite2 Databases](#download-maxmind-geolite2-databases) below is what actually
+puts those two `.mmdb` files in place:
 ```bash
 $ sudo tee config/config.yml > /dev/null <<'EOF'
 # To see all available options, please visit the docs:
@@ -955,11 +1031,23 @@ flags:
 EOF
 ```
 
-STOPED HERE
+#### Generate the Server Secret
+Paste the output into `config/config.yml`'s `server.secret` in place of the placeholder — this
+signs sessions/tokens, so it needs real entropy, not a memorable string. `-base64` rather than
+`-hex` to match `generateRandomSecretKey()` in the installer's own
+[`main.go`](https://github.com/fosrl/pangolin/blob/main/install/main.go), which base64-encodes 32
+random bytes rather than hex-encoding them — both are 256 bits of entropy either way, this is a
+format match, not a security difference:
+```bash
+$ openssl rand -base64 32
+```
 
 **Confirm every placeholder was replaced** — five separate `grep`s since they're different literal
-strings, each just a pass/fail check that doesn't print your actual domain/secret back out:
+strings, each just a pass/fail check that doesn't print your actual domain/secret back out. Run from
+`/opt/pangolin` (the [Create the Install Directory](#create-the-install-directory) `cd` earlier in
+this doc), since both this and the YAML check below use the `config/` path relative to it:
 ```bash
+$ cd /opt/pangolin
 $ for p in 'pangolin.example.com' '"example.com"' 'replace-with-a-long-random-secret'; do
     grep -qF "$p" config/config.yml && echo "STILL HAS PLACEHOLDER: $p" || echo "OK: $p replaced"
   done
@@ -977,37 +1065,38 @@ Pangolin's own per-resource [Resource Rules](#how-access-control-works), indepen
 host-level `ipset`-based [GeoIP Blocking](../../../system/ubuntu/hardening/README.md#geoip-blocking)
 already in the hardening doc. Same GitHub mirror the installer itself pulls from (no MaxMind
 account/license key needed):
+
+***Run the `curl`/`tar` steps from a directory your user can write to (e.g. your home directory),
+not from `/opt/pangolin`*** — that directory is `root:root` mode `755` (see
+[Create the Install Directory](#create-the-install-directory)), so a plain-user `curl -o` there
+fails with `Permission denied` even though `ls`/`cd` into it still works. Only the final `mv` into
+`config/` needs `sudo`, since that's the one step actually writing into the root-owned tree:
 ```bash
+$ cd ~/temp
 $ curl -L -o GeoLite2-Country.tar.gz https://github.com/GitSquared/node-geolite2-redist/raw/refs/heads/master/redist/GeoLite2-Country.tar.gz
 $ curl -L -o GeoLite2-ASN.tar.gz https://github.com/GitSquared/node-geolite2-redist/raw/refs/heads/master/redist/GeoLite2-ASN.tar.gz
 $ tar -xzf GeoLite2-Country.tar.gz
 $ tar -xzf GeoLite2-ASN.tar.gz
-$ sudo mv GeoLite2-Country_*/GeoLite2-Country.mmdb config/
-$ sudo mv GeoLite2-ASN_*/GeoLite2-ASN.mmdb config/
+$ sudo mv GeoLite2-Country_*/GeoLite2-Country.mmdb /opt/pangolin/config/
+$ sudo mv GeoLite2-ASN_*/GeoLite2-ASN.mmdb /opt/pangolin/config/
 $ rm -rf GeoLite2-Country.tar.gz GeoLite2-Country_* GeoLite2-ASN.tar.gz GeoLite2-ASN_*
 ```
 **Verify both files landed**:
 ```bash
-$ ls -la config/GeoLite2-Country.mmdb config/GeoLite2-ASN.mmdb
+$ sudo ls -la /opt/pangolin/config/GeoLite2-Country.mmdb /opt/pangolin/config/GeoLite2-ASN.mmdb
 ```
 These are point-in-time snapshots, not a live lookup service — IP-to-country/ASN mappings drift as
 address blocks get reallocated, so re-run this same block periodically to refresh them (there's no
 cron job wired up here; the installer doesn't set one up either, so this is a manual, occasional
 task either way).
 
-#### Generate the Server Secret
-Paste the output into `config/config.yml`'s `server.secret` in place of the placeholder — this
-signs sessions/tokens, so it needs real entropy, not a memorable string. `-base64` rather than
-`-hex` to match `generateRandomSecretKey()` in the installer's own
-[`main.go`](https://github.com/fosrl/pangolin/blob/main/install/main.go), which base64-encodes 32
-random bytes rather than hex-encoding them — both are 256 bits of entropy either way, this is a
-format match, not a security difference:
-```bash
-$ openssl rand -base64 32
-```
-
 #### Start the Stack
+Run from `/opt/pangolin` — `docker compose` picks up `docker-compose.yml` from the current
+directory, same as every other relative-path command in this doc:
 ```bash
+$ cd /opt/pangolin
+$ sudo docker run --rm -v "$PWD/config/config.yml:/f.yml:ro" mikefarah/yq \
+    eval '.' /f.yml > /dev/null && echo "OK — valid YAML"
 $ sudo docker compose up -d
 ```
 
@@ -1066,14 +1155,16 @@ your first organization — see [Configure Pangolin](#configure-pangolin) below 
 and exposing your first resource.
 
 #### CrowdSec Is Included, Matching Quick Install
-The `docker-compose.yml`, `traefik_config.yml`, and `dynamic_config.yml` above already fold in what
-the installer's `--crowdsec` flag would add — this is [Pangolin's own CrowdSec
-engine](#crowdsec-two-separate-engines-by-design), scoped to Traefik/HTTP traffic, distinct from the
-host-level CrowdSec already configured in the
+The `docker-compose.yml`, `traefik_config.yml`, `dynamic_config.yml`, and
+[`config/crowdsec` acquisition/profiles files](#write-configcrowdsec-acquisition-and-profiles-files)
+above already fold in what the installer's `--crowdsec` flag would add — this is [Pangolin's own
+CrowdSec engine](#crowdsec-two-separate-engines-by-design), scoped to Traefik/HTTP traffic, distinct
+from the host-level CrowdSec already configured in the
 [hardening doc](../../../system/ubuntu/hardening/README.md#crowdsec). If you'd rather not run it at
 all, drop the `crowdsec` service from `docker-compose.yml`, the `crowdsec` plugin/`accessLog` block
-from `traefik_config.yml`, and the `crowdsec` middleware from `dynamic_config.yml` — none of the
-other services depend on it existing except `traefik`'s `depends_on`, which you'd also remove.
+from `traefik_config.yml`, the `crowdsec` middleware from `dynamic_config.yml`, and skip writing the
+`config/crowdsec` files entirely — none of the other services depend on it existing except
+`traefik`'s `depends_on`, which you'd also remove.
 
 ### CrowdSec: Two Separate Engines by Design
 Pangolin's installer has a `--crowdsec` flag that sets up its **own**, Docker-based CrowdSec
