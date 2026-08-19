@@ -34,6 +34,7 @@ the use of Jellyfin.
     - [Audit with Docker Bench for Security](#audit-with-docker-bench-for-security)
 - [Deploy Pangolin](#deploy-pangolin)
   - [Pre-Flight Check](#pre-flight-check)
+    - [Enable Enterprise Edition](#enable-enterprise-edition)
   - [Manual Install (Docker Compose)](#manual-install-docker-compose)
     - [Create the Install Directory](#create-the-install-directory)
     - [Write docker-compose.yml](#write-docker-composeyml)
@@ -467,6 +468,63 @@ $ sudo ss -tulpn | grep -E ':80|:443'
 ```
 Empty output means you're clear to install.
 
+#### Enable Enterprise Edition
+Pangolin's Enterprise Edition (EE) is free for personal/hobbyist use, and for businesses under
+$100K USD gross annual revenue — a paid commercial license is only required above that revenue
+threshold. It's the same codebase as Community Edition (CE) behind a different image tag, so
+switching is a container swap plus a license key, not a reinstall. Decide before or after the
+[Manual Install](#manual-install-docker-compose) below — both orders work, since this only touches
+the `pangolin` service's image tag and a license key entered later in the dashboard, nothing that
+the rest of this doc's compose/config files depend on.
+
+**1. Obtain a free license key**
+1. Create an account at `app.pangolin.net`
+2. Create an organization there — required before a license application can be submitted
+3. Navigate to the `ORGANIZATION >Billing & Licensing >Licenses` from the left hand nav
+4. Click `+Generate License Key`
+5. Check the `Personal use only (free license - no checkout)`
+6. Fill out your other details
+7. Click `Generate License Key`
+
+**2. Point `docker-compose.yml` at the EE image** — same file as
+[Write docker-compose.yml](#write-docker-composeyml) below, just the `pangolin` service's `image:`
+line:
+```yaml
+services:
+  pangolin:
+    image: docker.io/fosrl/pangolin:ee-<version>   # was fosrl/pangolin:<CE version>
+```
+Pin an explicit `ee-<version>` tag rather than `ee-latest` — consistent with this doc's choice to
+pin `gerbil`/`traefik`/`crowdsec` and CE `pangolin` alike (see the pinning rationale after
+[Write docker-compose.yml](#write-docker-composeyml)) rather than floating `latest` and losing the
+reproducibility guarantee.
+
+**3. Restart the stack**
+```bash
+$ cd /opt/pangolin
+$ sudo docker compose down && sudo docker compose up -d
+$ sudo docker compose ps   # confirm all four containers are Up/healthy on the new image
+```
+
+**4. Activate the license in the dashboard**
+1. Log in with server admin credentials
+2. Open the Server Admin panel → License section (`/admin/license`)
+3. Enter the key and activate
+
+**5. Verify** Enterprise-only features are now visible/usable in the dashboard.
+
+**Reverting to Community Edition later** — swap the image tag back to a CE `fosrl/pangolin:<version>`
+release and restart. Enterprise-only UI elements stay visible but locked once EE features are no
+longer licensed; hide them instead by adding to
+[`config/config.yml`](#write-configconfigyml):
+```yaml
+flags:
+  disable_enterprise_features: true
+```
+
+***References***
+* [Enterprise Edition - Pangolin Docs](https://docs.pangolin.net/self-host/enterprise-edition)
+
 ### Manual Install (Docker Compose)
 Per [Pangolin's Manual Installation docs](https://docs.pangolin.net/self-host/manual/docker-compose),
 this is the same file layout the bash installer script generates from `install/config/*`, just
@@ -509,7 +567,7 @@ $ sudo tee docker-compose.yml > /dev/null <<'EOF'
 name: pangolin
 services:
   pangolin:
-    image: docker.io/fosrl/pangolin:1.21.1
+    image: docker.io/fosrl/pangolin:ee-1.21.1
     container_name: pangolin
     restart: unless-stopped
     deploy:
@@ -527,7 +585,7 @@ services:
       retries: 15
 
   gerbil:
-    image: docker.io/fosrl/gerbil:1.4.3
+    image: docker.io/fosrl/gerbil:1.5.0
     container_name: gerbil
     restart: unless-stopped
     depends_on:
@@ -617,7 +675,7 @@ e.g. `<homelab-tunnel-ip>:6060:6060`, rather than `0.0.0.0`).
 **All four images are pinned** — the installer's own `docker-compose.yml` template renders
 `fosrl/pangolin:{{.PangolinVersion}}` and `fosrl/gerbil:{{.GerbilVersion}}`, with those version
 strings baked into the installer binary at build time (whatever Pangolin release the installer
-itself shipped with); it never floats `latest` for those two, or for `traefik`. `1.21.1`/`1.4.3`/
+itself shipped with); it never floats `latest` for those two, or for `traefik`. `1.21.1`/`1.5.0`/
 `v3.7` are the current releases as of this doc's last check against
 [Pangolin's](https://github.com/fosrl/pangolin/releases),
 [Gerbil's](https://github.com/fosrl/gerbil/releases), and Traefik's release pages — they *will* go
@@ -1633,7 +1691,7 @@ CROWDSEC_LATEST=$(latest_tag crowdsecurity/crowdsec)
 TRAEFIK_LATEST=$(latest_tag traefik/traefik | grep -oP '^v\d+\.\d+')
 
 REPORT=""
-if [ "$PANGOLIN_CUR" != "$PANGOLIN_LATEST" ]; then
+if [ "${PANGOLIN_CUR#ee-}" != "$PANGOLIN_LATEST" ]; then
   REPORT+="pangolin: $PANGOLIN_CUR -> $PANGOLIN_LATEST"$'\n'
 fi
 if [ "$GERBIL_CUR" != "$GERBIL_LATEST" ]; then
@@ -1662,6 +1720,15 @@ that against GitHub's latest *patch* release (`v3.7.10`, `v3.7.11`, ...) would f
 every single patch even though `v3.7` already tracks them automatically — only a new minor/major
 series (`v3.8`, `v4.0`) is actually actionable here. `pangolin`, `gerbil`, and `crowdsec` are pinned
 to an exact patch, so those three compare exactly.
+
+***`pangolin`'s `ee-` prefix is stripped before comparing*** — if you've switched to
+[Enterprise Edition](#enable-enterprise-edition), `docker-compose.yml` pins something like
+`ee-1.21.1`, but GitHub's `releases/latest` API for `fosrl/pangolin` reports bare version numbers
+(`1.21.1`, no `ee-`/`v` prefix — EE and CE ship from the same release). Comparing the raw pinned tag
+against that would false-positive every single run, flagging a match as a mismatch forever. The
+`${PANGOLIN_CUR#ee-}` strip handles this while still reporting the actual pinned tag (`ee-1.21.1`)
+in the alert text, not the stripped comparison value — harmless no-op on a CE install, since a CE
+tag has no `ee-` prefix to strip.
 
 **Schedule it** daily — a version check doesn't need the 5-minute cadence the health/failure checks
 use:
