@@ -2,7 +2,7 @@
 
 ## What This Repo Is
 
-A personal technical reference built with [mdBook](https://rust-lang.github.io/mdBook/). Content
+A public technical reference built with [mdBook](https://rust-lang.github.io/mdBook/). Content
 lives under `src/` as Markdown files. The table of contents is manually maintained in
 `src/SUMMARY.md`. The built static site goes to `book/`.
 
@@ -95,3 +95,18 @@ When editing any page, verify:
 2. All relative file links (`subtopic/README.md`, `../sibling/README.md`) point to files that exist under `src/`
 3. The logo `src` path has the correct number of `../` segments for the file's depth under `src/`
 4. Every page listed under `### Linked pages` exists as a file in the repo
+
+## Sanitizing Personal Details
+
+This repo is a public technical reference — never write real personal networking details, usernames,
+or local filesystem paths into any page, even when they came up naturally while researching or
+testing the content with the user (e.g. troubleshooting against their live VPS). Replace them with
+generic placeholders instead:
+- Public IPs / hostnames → `<vps-ip>`, `<your-domain>`, generic examples (`192.168.x.x`, `example.com`)
+- Usernames → `<username>`, `someuser`, `user`
+- Local/host-specific paths → generic equivalents (`/opt/myapp`, `~/project`), not the literal path
+  from the user's actual machine or server
+
+This applies to prose, command examples, and sample output alike. If a real value slipped into a
+command's output while drafting (e.g. copy-pasted terminal output used as a worked example), replace
+it with a placeholder before it lands in the file — don't rely on catching it in review afterward.

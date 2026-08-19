@@ -13,6 +13,7 @@ applies to any internet-facing box running [Fail2ban](../fail2ban/README.md) and
 * [.. up dir](..)
 * [Overview](#overview)
 * [1. Read the Raw Log](#1-read-the-raw-log)
+  * [Checkpointing What You've Already Reviewed](#checkpointing-what-youve-already-reviewed)
 * [2. Check What Your Defenses Already Did](#2-check-what-your-defenses-already-did)
 * [3. Confirm the Port Actually Being Hit](#3-confirm-the-port-actually-being-hit)
 * [4. Sanity-Check the Jail/Engine Config](#4-sanity-check-the-jailengine-config)
@@ -28,9 +29,33 @@ IP on port 22 (and whatever you moved SSH to). The actual question worth answeri
 top to bottom; most alerts resolve at step 2.
 
 ## 1. Read the Raw Log
-Start with the source of truth, not the digest's summary count:
+Start with the source of truth, not the digest's summary count.
+
+### Checkpointing What You've Already Reviewed
+Re-triaging the same already-cleared entries every day wastes time and invites alert fatigue. Rather
+than deleting reviewed log lines — that destroys the audit trail, and log rotation already handles
+cleanup on its own schedule — keep a checkpoint file with the timestamp of your last review, and
+filter every command below to lines added since then. Capture the current timestamp *before* running
+anything else — not after — so entries that land in the log while you're mid-review aren't silently
+skipped next time. On the very first run there's no checkpoint file yet, so `SINCE` falls back to the
+epoch and nothing is filtered out:
 ```bash
-$ sudo grep "Failed password" /var/log/auth.log | tail -n 30
+$ NOW=$(date -u +%Y-%m-%dT%H:%M:%S)
+$ SINCE=$(sudo cat /var/lib/alert-recon/last-reviewed 2>/dev/null || echo 1970-01-01T00:00:00)
+```
+`auth.log` timestamps are ISO 8601 in the first field, so a plain string comparison sorts correctly
+without needing a date parser — every command below pipes through `awk -v since="$SINCE" '$1 > since'`
+right after the initial grep.
+
+(Need a one-off full-history read instead — e.g. auditing something older? Drop the `awk since` stage
+and grep `/var/log/auth.log` directly, or set `SINCE=1970-01-01T00:00:00` for that run.)
+
+***Match on `sshd\[` specifically, not the bare string `"Failed password"`*** — a bare match also
+catches `sudo`'s own audit-log lines whenever someone runs a command containing that string (e.g. this
+very grep, logged as `COMMAND=/usr/bin/grep 'Failed password' ...`), producing phantom entries with no
+`from <ip>` field:
+```bash
+$ sudo grep -E "sshd\[[0-9]+\]: Failed password" /var/log/auth.log | awk -v since="$SINCE" '$1 > since' | tail -n 30
 ```
 Look for:
 * **A single IP hammering repeatedly** — likely already caught, or should be, by
@@ -43,13 +68,13 @@ Look for:
 **Total attempts and top offenders** — a raw IP+count list drops all timing context, so pair it with
 a per-day trend and a first/last-seen date range per IP rather than reading counts in isolation:
 ```bash
-$ sudo grep "Failed password" /var/log/auth.log | wc -l
-$ sudo grep "Failed password" /var/log/auth.log | cut -d'T' -f1 | sort | uniq -c
+$ sudo grep -E "sshd\[[0-9]+\]: Failed password" /var/log/auth.log | awk -v since="$SINCE" '$1 > since' | wc -l
+$ sudo grep -E "sshd\[[0-9]+\]: Failed password" /var/log/auth.log | awk -v since="$SINCE" '$1 > since' | cut -d'T' -f1 | sort | uniq -c
 ```
 The second command shows attempts per calendar day — a spike on one day reads very differently than
 a steady background rate every day.
 ```bash
-$ sudo grep "Failed password" /var/log/auth.log | \
+$ sudo grep -E "sshd\[[0-9]+\]: Failed password" /var/log/auth.log | awk -v since="$SINCE" '$1 > since' | \
   awk '{
     ip=""; for(i=1;i<=NF;i++) if($i=="from") ip=$(i+1)
     d=substr($1,1,10)
@@ -60,17 +85,24 @@ $ sudo grep "Failed password" /var/log/auth.log | \
   END { for (ip in count) printf "%6d  %-16s  %s to %s\n", count[ip], ip, first[ip], last[ip] }' \
   | sort -rn | head
 ```
-Output reads as `432   91.92.42.126   2026-08-16 to 2026-08-18` — count, IP, and the date span it was
+Output reads as `432   203.0.113.42   2026-08-16 to 2026-08-18` — count, IP, and the date span it was
 active over, so a sustained multi-day campaign is visible at a glance instead of hiding behind a bare
 count.
+
+Once you've finished reviewing (including the rest of this checklist, in case a later step sends you
+back here), advance the checkpoint to `$NOW` so today's entries aren't re-shown tomorrow:
+```bash
+$ sudo mkdir -p /var/lib/alert-recon
+$ echo "$NOW" | sudo tee /var/lib/alert-recon/last-reviewed
+```
 
 ## 2. Check What Your Defenses Already Did
 Each mechanism keeps an independent blocklist — check all of them rather than assuming which one
 fired, or whether any did:
 ```bash
 $ sudo fail2ban-client status sshd
-$ sudo cscli decisions list                                 # host-level Crowdsec, if installed
-$ sudo docker compose exec crowdsec cscli decisions list    # Pangolin-stack Crowdsec, if that's what you run
+$ sudo cscli decisions list                                              # host-level Crowdsec, if installed
+$ cd /opt/pangolin && sudo docker compose exec crowdsec cscli decisions list    # Pangolin-stack Crowdsec — must run from the compose file's directory, or `exec` fails with "no configuration file provided: not found"
 $ sudo ipset list admin-allow                               # confirms your own IP is still trusted
 ```
 If the offending IP already shows up banned/decided against, your defenses worked as intended — the
