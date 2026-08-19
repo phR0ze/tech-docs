@@ -63,11 +63,12 @@ the use of Jellyfin.
   - [First Run Experience](#first-run-experience)
     - [Create the initial organization](#create-the-initial-organization)
     - [Enable MFA enforcement](#enable-mfa-enforcement)
-  - [Add Site](#add-site)
-  - [Install Newt](#install-newt)
-  - [Create Resource](#create-resource)
+  - [Create a temp service to expose](#create-a-temp-service-to-expose)
+  - [Create a Site describing your server](#create-a-site-describing-your-server)
   - [Access Control](#access-control)
-    - [How Access Control Works](#how-access-control-works)
+    - [Expose a public service over Pangolin](#expose-a-public-service-over-pangolin)
+    - [Expose a private service over Pangolin](#expose-a-private-service-over-pangolin)
+    - [Remove restrictions from public service](#remove-restrictions-from-public-service)
     - [Google as OAuth2 provider](#google-as-oauth2-provider)
     - [Case Study: Locking Down Vaultwarden](#case-study-locking-down-vaultwarden)
 
@@ -1887,25 +1888,7 @@ only supported method out of the box.
 3. Enter your password for confirmation
 4. User your favorite authenticator app to complete the standard process
 
-### Create Pangolin Tunnel
-This will cover the steps required to get a homelab service exposed through Pangolin
-
-#### Add a Site
-A site describes the service that you're trying to expose through Pangolin
-
-1. Set the `Name` e.g. `redfish`
-2. Set the `Method` to `Newt`
-3. Copy the newt configuration line 
-4. Check `I have copied the config`
-5. Click `Create Site`
-
-Note: the new site will be offline until you install the `Newt` agent on your homelab host using the
-supplied configuration.
-
-#### Add a Resource
-How were routing
-
-#### Test the Tunnel with a Throwaway Service
+### Create a temp service to expose
 Before wiring in a real service, run something disposable through the whole chain
 (Newt → Gerbil → Traefik → your homelab) to confirm it actually works end-to-end.
 [`traefik/whoami`](https://github.com/traefik/whoami) is built for exactly this — it just echoes
@@ -1958,56 +1941,67 @@ The `--rm` flag on the original `run` means it's removed automatically the momen
 separate `podman rm` needed. Delete the test Resource and Site in the dashboard too if they were
 only created for this.
 
-### Install Newt
-In order for your site to be active you need to complete the tunnel configuration with `Newt`
+### Create a Site describing your server
+A site describes a server instance that may have one or more services your interested in exposing
+over Pangolin.
 
-1. Browse to the [Pangoline newt instructions](https://docs.pangolin.net/manage/sites/install-site#docker-compose)
-2. Grab the docker compose configuration
-```yaml
-services:
-  newt:
-    image: fosrl/newt
-    container_name: newt
-    restart: unless-stopped
-    environment:
-      - PANGOLIN_ENDPOINT=https://app.pangolin.net
-      - NEWT_ID=2ix2t8xk22ubpfy
-      - NEWT_SECRET=nnisrfsdfc7prqsp9ewo1dvtvci50j5uiqotez00dgap0ii2
-```
-3. Update the environment variables with the configuration copied in the [Add Site](#add-site) section
-   1. Set `PANGOLIN_ENDPOINT`
-   2. Set `NEWT_ID`
-   3. Set `NEWT_SECRET`
-
-4. Once newt is up and running you should see your site go `active`
-
-### Create Resource
-Creating a resource is essentially configuring your homelab application to be accessible over the
-tunnel that the site configuration and newt created.
-
-1. Set the `Name` e.g. `Jellyfin`
-2. Set the `Subdomain` e.g. `jellyfin.example.com`
-3. Select the correct site e.g. `redfish`
-4. Click `Create Resource`
-5. Flip the toggle to `Enable SSL (https)`
-6. Enter the IP address e.g. `192.168.0.3` of Jellyfin
-7. Enter the Port e.g. `8096` of Jellyfin
-8. Click `Add Target` then `Save Target`
-
+1. Navigate to `NETWORK >Sites` in the left hand navigation then click `+ Add Site`
+2. Choose `Newt Site (Recommended)`
+3. Set the `Name` e.g. `testlab`
+4. Normally you'd save the 3 credentials `Endpoint`, `ID` and `Secret` for the Newt client
+   However for this test they are all baked into the docker run string below
+5. Choose `Install Site >Operating System >Docker` and then `Method >Docker Run`
+6. Copy out the docker run string and run it on your server
+7. Now back in Pangolin click `Create Site`
+8. Disable the `Enable Docker Blueprint`
 
 ### Access Control
-Pangolin enforces access control at the edge, before traffic ever reaches a resource. Identity
-providers, sites, and resources can each be scoped so that only authorized users reach a given
-service.
+Pangolin resources describe and provide access to services. You can essentially think of a Pangolin
+resource as a service. Pangolin resources come in two flavors. First `public` refering to the fact
+that no special software is needed to access the resource, but it can be controlled and locked down
+if desired. Second `private` meaning you have to have the Pangolin client to connect at all.
 
-#### How Access Control Works
+All Pangolin resources are ***deny-by-default*** out of the box. You have to specifically edit and
+change their configuration to make them truely public.
+
+#### Expose a public service over Pangolin
+Use the public resource when you want expose your service without the need for the Pangolin client.
+Think of anything that you'd interact with through a browser e.g. web site.
+
+1. Navigate to `NETWORK >Resources >Public` in the left hand navigation then click `+ Add Resource`
+2. Set the `Name` to e.g. `whoami`
+3. Choose the `Type` of service e.g. `HTTP`
+   * Note the type is what the service is on your LAN not how you want to expose through Pangolin
+4. Choose the `Subdomain` to expose it on e.g. `whoami.example.com`
+5. Click `+ Add Target`
+6. Choose the `Site` you configured for your server e.g. `testlab`
+7. Set the `Address` to your testlab server's LAN address e.g. `192.168.x.x`
+8. Set the `Port` to the port you exposed your test service on e.g. `8080`
+9. Click `Create Resource`
+
+#### Expose a private service over Pangolin
+Use the private resource when you have a service that is more nuanced, such as a custom API for an
+application e.g. hosting your own Vaultwarden but useing the Bitwarden app on your Android phone to
+access it.
+
+1. Navigate to `NETWORK >Resources >Private` in the left hand navigation then click `+ Add Resource`
+2. Set the `Name` to e.g. `whoami`
+3. Choose the `Type` of service e.g. `HTTP`
+   * Note the type is what the service is on your LAN not how you want to expose through Pangolin
+4. Choose the `Subdomain` to expose it on e.g. `whoami.example.com`
+5. Click `+ Add Target`
+6. Choose the `Site` you configured for your server e.g. `testlab`
+7. Set the `Address` to your testlab server's LAN address e.g. `192.168.x.x`
+8. Set the `Port` to the port you exposed your test service on e.g. `8080`
+9. Click `Create Resource`
+
+#### Remove restrictions from public service
 Resources in Pangolin are ***deny-by-default*** — nothing is reachable until you explicitly define
-a policy for who can reach it. Two layers work together:
+a policy for who can reach it.
 
-1. **Resource Rules** — network-level filtering (IP/CIDR, geography, ASN, URL path), evaluated
-   *before* any authentication happens.
-2. **RBAC + Authentication** — identity-level control. You attach a policy to the resource
-   specifying exactly which users/roles may authenticate, and by which method.
+1. Edit your resource
+2. Click the `Authentication` tab
+3. Toggle `Platform SSO` off
 
 #### Google as OAuth2 provider
 * [Setup GCP OAuth2](https://youtu.be/Bu8WFh1ns4c?t=655)
@@ -2099,12 +2093,12 @@ with the native Bitwarden app.
 
 Pangolin has two resource types, and they behave differently:
 
-| | Public Resource | Private Resource (ZTNA) |
-|---|---|---|
-| Access method | Browser, no client needed | Requires the Pangolin Client app |
-| What's exposed | An HTTP(S) endpoint via reverse proxy | A specific host/IP or CIDR range, at the network layer |
-| Auth | SSO redirect + cookie session | Login to the client app itself |
-| Best for | Web apps used in a browser | Native apps, SSH, databases, anything not browser-based |
+|                 | Public Resource                       | Private Resource (ZTNA)                                 |
+|-----------------|---------------------------------------|---------------------------------------------------------|
+| Access method   | Browser, no client needed             | Requires the Pangolin Client app                        |
+| What's exposed  | An HTTP(S) endpoint via reverse proxy | A specific host/IP or CIDR range, at the network layer  |
+| Auth            | SSO redirect + cookie session         | Login to the client app itself                          |
+| Best for        | Web apps used in a browser            | Native apps, SSH, databases, anything not browser-based |
 
 For a private resource, Bob defines a ***destination*** — either a single host/IP (e.g.
 Vaultwarden's internal container address) or a CIDR block — plus which ports/protocols are
