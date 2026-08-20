@@ -7,23 +7,23 @@ probed or attacked, and design so a compromise of one exposed service can't casc
 of the network.
 
 ### Quick links
-* [.. up dir](..)
-* [Threat Model](#threat-model)
-* [Network Segmentation](#network-segmentation)
-* [Exposure Methods](#exposure-methods)
-  * [Pangolin Reverse Tunnel](#pangolin-reverse-tunnel)
-    * [VPS as the DMZ](#vps-as-the-dmz)
-    * [Trust Boundary Tradeoffs](#trust-boundary-tradeoffs)
-* [Reverse Proxy Hardening](#reverse-proxy-hardening)
-* [Intrusion Prevention](#intrusion-prevention)
-  * [Fail2ban](#fail2ban)
-  * [CrowdSec](#crowdsec)
-* [Authentication](#authentication)
-* [Container Isolation](#container-isolation)
-* [Host Hardening](#host-hardening)
-* [Secrets Management](#secrets-management)
-* [Monitoring and Logging](#monitoring-and-logging)
-* [Backups and Recovery](#backups-and-recovery)
+- [.. up dir](..)
+- [Threat Model](#threat-model)
+- [Network Segmentation](#network-segmentation)
+- [Exposure Methods](#exposure-methods)
+  - [Pangolin Reverse Tunnel](#pangolin-reverse-tunnel)
+    - [VPS as the DMZ](#vps-as-the-dmz)
+    - [Trust Boundary Tradeoffs](#trust-boundary-tradeoffs)
+- [Reverse Proxy Hardening](#reverse-proxy-hardening)
+- [Intrusion Prevention](#intrusion-prevention)
+  - [Fail2ban](#fail2ban)
+  - [CrowdSec](#crowdsec)
+- [Authentication](#authentication)
+- [Container Isolation](#container-isolation)
+- [Host Hardening](#host-hardening)
+- [Secrets Management](#secrets-management)
+- [Monitoring and Logging](#monitoring-and-logging)
+- [Backups and Recovery](#backups-and-recovery)
 
 ### Linked pages
 
@@ -61,11 +61,11 @@ never the other direction.
 * [Secure Homelab: Public Plex with Cloudflare + DMZ](https://willgrana.com/posts/homelab2025/)
 
 ## Exposure Methods
-Port forwarding straight from the home router is avoided entirely — it opens an inbound hole
-directly into the home network and puts the home IP on public record. Instead the chosen approach
-is a self-hosted reverse tunnel via [Pangolin](../../networking/reverse_tunnel/pangolin/README.md),
-which gets outbound-only tunnel benefits similar to Cloudflare Tunnel without its `100mb` upload
-cap or ToS restrictions (e.g. it blocks Jellyfin).
+Best practice is to NOT port fowarding straight from the home router entirely. This avoids an entire
+category of threats and configuration hardening. Instead use a `Reverse Tunnel`. The best of these
+right now is the self-hosted [Pangolin](../../networking/reverse_tunnel/pangolin/README.md) which
+gives you outbound-only tunnel benefits similar to Cloudflare Tunnel without its `100mb` upload
+cap or ToS restrictions (e.g. Cloudflare doesn't allow Jellyfin).
 
 ### Pangolin Reverse Tunnel
 A cheap VPS ($4-6/month) runs Pangolin — `Traefik` as the reverse proxy and `Gerbil` for
@@ -82,8 +82,8 @@ host with a public IP and it terminates TLS via Traefik before anything reaches 
 the tunnel. Model it exactly as a DMZ host:
 * Treat it as semi-trusted, not trusted, even though you own and control it
 * Give it no credentials or access beyond what's needed to route traffic
-* Harden it the same as any [internet facing host](#host-hardening) — it's now a target you
-  maintain
+* Harden it the same as any [internet facing host](../../system/ubuntu/hardening/README.md) —
+  it's now a target you maintain
 * Scope Pangolin ***sites*** narrowly — a site maps to a subnet/host reachable over its tunnel, so
   don't collapse every exposed service behind a single site if it can be scoped tighter
 * Scope Pangolin ***resources*** (the individual exposed services) to only what actually needs to
@@ -107,7 +107,10 @@ doesn't remove the need for defense.
 * Pangolin's SSO (e.g. Google OAuth2) is a single point of failure for access — pair it with
   [MFA](../../security/iam/mfa/README.md)
 * Pangolin ships with no built-in WAF or bot protection — layer
-  [CrowdSec](#crowdsec) (or Fail2ban) in front of Traefik on the VPS
+  [CrowdSec](../../system/ubuntu/hardening/README.md#crowdsec) (or Fail2ban) in front of Traefik
+  on the VPS; Pangolin's own Dockerized instance runs as a
+  [second, separate engine](../../networking/reverse_tunnel/pangolin/README.md#crowdsec-two-separate-engines-by-design)
+  alongside the host-level one
 * Misconfiguring a resource/site is now the primary way to accidentally over-expose something
 
 ## Reverse Proxy Hardening
