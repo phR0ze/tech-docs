@@ -64,12 +64,14 @@ the use of Jellyfin.
   - [Create Admin Account](#create-admin-account)
   - [First Run Experience](#first-run-experience)
     - [Create the initial organization](#create-the-initial-organization)
-    - [Enable MFA enforcement](#enable-mfa-enforcement)
+    - [Enable MFA on Your Account](#enable-mfa-on-your-account)
   - [Create a temp service to expose](#create-a-temp-service-to-expose)
   - [Create a Site describing your server](#create-a-site-describing-your-server)
   - [Access Control](#access-control)
     - [Expose a public service over Pangolin](#expose-a-public-service-over-pangolin)
     - [Expose a private service over Pangolin](#expose-a-private-service-over-pangolin)
+    - [Require Device Approval on Private Resources](#require-device-approval-on-private-resources)
+    - [Enforce MFA Organization-Wide](#enforce-mfa-organization-wide)
     - [Remove restrictions from public service](#remove-restrictions-from-public-service)
     - [Google as OAuth2 provider](#google-as-oauth2-provider)
     - [Case Study: Locking Down Vaultwarden](#case-study-locking-down-vaultwarden)
@@ -1990,9 +1992,11 @@ first organization. If you haven't already grabbed the setup token, see
 2. Set `Organization Name` e.g. `your-domain-name`
 3. Click `Create Organization`
 
-#### Enable MFA enforcement
+#### Enable MFA on Your Account
 Considering this is a public facing portal you'll want extra protection on your account. TOTP is the
-only supported method out of the box.
+only supported method out of the box. This only turns TOTP on for *your own* account — see
+[Enforce MFA Organization-Wide](#enforce-mfa-organization-wide) below to require it for every user
+instead of relying on each one to opt in individually.
 
 **References**
 * [Configure MFA - Pangolin docs](https://docs.pangolin.net/manage/access-control/mfa)
@@ -2135,6 +2139,71 @@ Use the HTTP option for something like Vaultwarden that serves it's api up as HT
 9. Leave the `Enable TLS` on to ensure you get a Let's encrypt cert generated for the subdomain
 10. Click `Create Resource`
 
+#### Require Device Approval on Private Resources
+Private/ZTNA resources are reached through the Pangolin Client (Olm) app, not a browser — correct
+password + TOTP alone lets any device the user logs in from connect. Device approval closes that
+gap: even after correct credentials, a brand-new unrecognized device is blocked until an admin
+explicitly approves it from the dashboard. Devices are identified by fingerprint (OS version,
+hostname, etc.), so "Alice's iPhone" is distinguishable from any other device attempting to log in
+with her credentials, and a lost/compromised device can be revoked individually — archived, not
+deleted, preserving the audit trail — without touching the rest of her access.
+
+**Requires Enterprise Edition or Pangolin Cloud** — see
+[Enable Enterprise Edition](#enable-enterprise-edition) above; Community/Professional don't have
+this control.
+
+***This is a per-role setting, not global or per-resource*** — there's no single toggle that
+covers every Private Resource at once. It has to be enabled on every non-admin role that has any
+Private Resource attached; a role you forget leaves its resources reachable from any device the
+first time correct credentials are entered. It also can't be enabled on the admin role.
+
+1. Identify every role with a Private Resource attached (e.g. `vaultwarden-family` from the
+   [case study](#case-study-locking-down-vaultwarden) below).
+2. Navigate to `Roles` in the left hand navigation.
+3. Click into one of those roles.
+4. Toggle `Require Device Approval` on.
+5. Repeat for every other non-admin role that grants access to a Private Resource.
+
+**Approving devices going forward**
+- The first time a user logs into the Pangolin Client app from a device Pangolin hasn't seen
+  before, it shows as `Pending Approval` instead of connecting.
+- A centralized approvals page in the dashboard lists pending devices as they come in — approve or
+  deny each one there.
+- Revoke a specific device any time (e.g. Alice loses her phone) without affecting her account's
+  other access.
+
+**References**
+* [Device Approvals - Pangolin Docs](https://docs.pangolin.net/manage/access-control/approvals)
+
+#### Enforce MFA Organization-Wide
+[Enable MFA on Your Account](#enable-mfa-on-your-account) above only turns TOTP on for the account
+that enables it — it relies on every other user opting in themselves. Organization-wide enforcement
+instead blocks *any* user from reaching resources until they've set up TOTP, without needing to
+chase each one down individually.
+
+**Requires Enterprise Edition or Pangolin Cloud** — same restriction as
+[device approval](#require-device-approval-on-private-resources); Community/Professional don't have
+this control.
+
+***Org-wide, not per-role*** — unlike device approval, this is a single toggle that applies to the
+whole organization at once, not something to repeat per role.
+
+***Doesn't cover external IdP accounts*** — if you've set up
+[Google as OAuth2 provider](#google-as-oauth2-provider), this policy only governs Pangolin's native
+username/password + TOTP accounts. A user authenticated through Google SSO is still gated by
+whatever MFA Google itself enforces on that account, not this toggle.
+
+1. Navigate to `Organization Settings` in the dashboard.
+2. Find the `Security` section.
+3. Under `Security Settings` toggle `Require Two-Factor Authentication for All Users` to on.
+4. Set the `Maximum Session Length` to `7 days`
+
+Once enabled, any internal-account user without TOTP configured is prompted to enable it before
+they can proceed — they're blocked from every resource until they do.
+
+**References**
+* [Configure MFA - Pangolin docs](https://docs.pangolin.net/manage/access-control/mfa)
+
 #### Remove restrictions from public service
 Resources in Pangolin are ***deny-by-default*** — nothing is reachable until you explicitly define
 a policy for who can reach it.
@@ -2255,7 +2324,7 @@ There are two different tunnel roles at play:
    public-facing address) — e.g. its container address on his Docker network.
 3. Restrict the port policy to just what Vaultwarden needs (its HTTPS port) — nothing broader.
 4. Assign the resource to the `vaultwarden-family` role only.
-5. Enable device approval for that role.
+5. [Enable device approval](#require-device-approval-on-private-resources) for that role.
 6. Alice installs the Pangolin Client app (Play Store / App Store), logs in with password + TOTP,
    and Bob approves her device the first time from the dashboard. From then on, Bitwarden talks
    to the internal address through the tunnel automatically.
