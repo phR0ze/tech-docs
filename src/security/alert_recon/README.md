@@ -40,12 +40,22 @@ anything else — not after — so entries that land in the log while you're mid
 skipped next time. On the very first run there's no checkpoint file yet, so `SINCE` falls back to the
 epoch and nothing is filtered out:
 ```bash
-$ NOW=$(date -u +%Y-%m-%dT%H:%M:%S)
+$ NOW=$(date +%Y-%m-%dT%H:%M:%S)
 $ SINCE=$(sudo cat /var/lib/alert-recon/last-reviewed 2>/dev/null || echo 1970-01-01T00:00:00)
 ```
 `auth.log` timestamps are ISO 8601 in the first field, so a plain string comparison sorts correctly
 without needing a date parser — every command below pipes through `awk -v since="$SINCE" '$1 > since'`
 right after the initial grep.
+
+***Deliberately local time, not `-u`/UTC*** — `rsyslog` writes `auth.log` timestamps in the
+system's local timezone (see [System Timezone](../../system/ubuntu/hardening/README.md#system-timezone)),
+so the checkpoint has to match that, not a fixed `UTC` assumption. The lexicographic comparison
+above only holds when `$NOW`/`$SINCE` and the log lines they're compared against represent the same
+wall-clock timezone — mixing a `UTC` checkpoint against locally-timestamped log lines would silently
+mis-sort entries around any offset from `UTC` (worse the further the box's local timezone sits from
+`UTC`), without erroring or looking obviously wrong. Since `date` (no `-u`) always reflects whatever
+the system's current local timezone is, this self-adjusts if that timezone is ever changed again —
+nothing here to revisit by hand.
 
 (Need a one-off full-history read instead — e.g. auditing something older? Drop the `awk since` stage
 and grep `/var/log/auth.log` directly, or set `SINCE=1970-01-01T00:00:00` for that run.)
