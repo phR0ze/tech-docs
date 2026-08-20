@@ -9,6 +9,7 @@ Android app, and the DNS/routing gotchas found troubleshooting it against a live
   - [Firefox's Own DNS-over-HTTPS Setting](#firefoxs-own-dns-over-https-setting)
   - [Android's System-Level Private DNS Setting](#androids-system-level-private-dns-setting)
 - [Install and Connect](#install-and-connect)
+- [Using with Bitwarden](#using-with-bitwarden)
 
 ## Prerequisites
 Two DNS settings — one in Firefox, one at the Android OS level — can silently break general

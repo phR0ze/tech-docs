@@ -1948,10 +1948,9 @@ $ (sudo crontab -l 2>/dev/null; echo "0 4 * * * /usr/local/sbin/backup-pangolin.
 fill the disk over months.
 
 ***`04:00`, not `03:00`*** — deliberately scheduled an hour after the hardening doc's
-[unattended-upgrades reboot window](../../../system/ubuntu/hardening/README.md#automatic-updates),
-same reasoning as that doc's [AIDE check](../../../system/ubuntu/hardening/README.md#aide): a `tar`
-mid-reboot risks an incomplete archive, and `config/` should reflect the post-reboot state anyway if
-a package update changed anything under it. See the hardening doc's
+[unattended-upgrades reboot window](../../../system/ubuntu/hardening/README.md#automatic-updates):
+a `tar` mid-reboot risks an incomplete archive, and `config/` should reflect the post-reboot state
+anyway if a package update changed anything under it. See the hardening doc's
 [Scheduled Job Times](../../../system/ubuntu/hardening/README.md#scheduled-job-times) for how this
 slots in alongside its own cron/timer jobs on the same VPS.
 
