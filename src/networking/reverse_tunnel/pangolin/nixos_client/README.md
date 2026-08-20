@@ -7,8 +7,7 @@ Connecting to a self-hosted [Pangolin](../README.md) instance from a NixOS (or a
 - [.. up dir](..)
 - [Install](#install)
 - [Login and Bring Up a Connection](#login-and-bring-up-a-connection)
-- [Routing Scope Is Set Server-Side, Not by a Client Flag](#routing-scope-is-set-server-side-not-by-a-client-flag)
-- [The DNS Override Is What Actually Jacks Your Network](#the-dns-override-is-what-actually-jacks-your-network)
+- [The DNS Override can Cause confusion](#the-dns-override-can-cause-confusion)
 - [Recovering From a Stuck or Crashed Client](#recovering-from-a-stuck-or-crashed-client)
 - [Tear Down Deliberately](#tear-down-deliberately)
 

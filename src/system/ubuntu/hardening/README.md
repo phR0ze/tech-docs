@@ -38,7 +38,6 @@ Traefik, Newt) changes or adds to the generic advice.
   * [Ship Logs Off-Box](#ship-logs-off-box)
   * [Alert on Service Failures](#alert-on-service-failures)
   * [Security Review Digest](#security-review-digest)
-* [AIDE](#aide)
 * [Auditing with Lynis](#auditing-with-lynis)
 
 ## System Updates
@@ -95,15 +94,14 @@ backup mid-write:
 | `01:00` Sun | GeoIP blocklist refresh | Weekly | [GeoIP Blocking](#geoip-blocking) |
 | `03:00` | `unattended-upgrades` reboot window | Daily, conditional — only if a reboot is actually pending | [Automatic Updates](#automatic-updates) |
 | `04:00` | Pangolin config backup | Daily | [Back Up Pangolin's State](../../../networking/reverse_tunnel/pangolin/README.md#back-up-pangolins-state) |
-| `04:30` | AIDE integrity check | Daily | [AIDE](#aide) |
 | `05:00` | Security review digest | Daily | [Security Review Digest](#security-review-digest) |
 | `09:00` | Pangolin image-version check | Daily | [Alert on New Upstream Image Versions](../../../networking/reverse_tunnel/pangolin/README.md#alert-on-new-upstream-image-versions) |
 | `06:00`–`07:00`* | `apt-daily-upgrade.timer` (`unattended-upgrades` run itself, distinct from the `03:00` reboot window above) | Daily | *Ubuntu system default, not configured by this doc* |
 | `06:00`/`18:00`, ±12h*| `apt-daily.timer` (package index/download only) | Twice daily | *Ubuntu system default, not configured by this doc* |
 
-The `04:00`/`04:30` pair is ordered deliberately, not just spaced — both the Pangolin backup and the
-AIDE check run *after* the `03:00` reboot window plus a buffer, so they capture the post-reboot state
-and don't risk running mid-reboot. The `09:00` image-version check is the one deliberate exception to
+`04:00` is deliberately placed, not just spaced — the Pangolin backup runs *after* the `03:00` reboot
+window plus a buffer, so it captures the post-reboot state and doesn't risk running mid-reboot. The
+`09:00` image-version check is the one deliberate exception to
 the "early morning" pattern — it pushes an `ntfy` notification meant to actually be seen, so it stays
 in normal waking hours rather than joining the night-time spread. The two `apt-daily*` rows are listed
 for completeness, not because this doc sets them — they ship as Ubuntu system defaults
@@ -1029,85 +1027,6 @@ each digest scoped to recent activity rather than re-counting old attempts every
 acted on them rather than assuming a nonzero number means something is wrong. See
 [Alert Recon](../../../security/alert_recon/README.md) for the full triage sequence (raw log review,
 per-mechanism ban status, port/config sanity checks, safe ban testing).
-
-## AIDE
-`AIDE` (Advanced Intrusion Detection Environment) baselines file checksums and alerts when
-tracked files change unexpectedly — a complement to `auditd`'s event log. Build the baseline last,
-after every section above — it snapshots the current state as "known good", so running it earlier
-means later steps (new config files under `/etc/sysctl.d/`, `/etc/fstab`, etc.) show up as
-unexpected diffs on the first check.
-
-**Install and build the baseline database**
-```bash
-$ sudo apt install aide
-$ sudo aideinit
-$ sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
-```
-
-**Run a check**
-```bash
-$ sudo aide --check
-```
-
-**Schedule nightly checks with alerting** — reuse the `ntfy` topic from
-[Alert on Service Failures](#alert-on-service-failures) so a detected change shows up as a push
-notification instead of something only visible by SSHing in and reading a report:
-```bash
-$ sudo tee /usr/local/sbin/aide-check.sh > /dev/null <<'EOF'
-#!/bin/bash
-set -uo pipefail
-REPORT=$(aide --check 2>&1)
-STATUS=$?
-if [ "$STATUS" -ne 0 ]; then
-  curl -sf -H "Title: AIDE detected file changes on $(hostname)" -H "Priority: high" \
-    -d "$REPORT" https://ntfy.sh/<your-private-topic-name>
-fi
-EOF
-$ sudo chmod +x /usr/local/sbin/aide-check.sh
-```
-`set -e` is deliberately left out — `aide --check` exits non-zero whenever it finds *any* diff,
-which is the normal/expected outcome here, not a script failure to abort on.
-
-Run it after `Automatic Updates`' `03:00` reboot window (see
-[Automatic Updates](#automatic-updates)), with enough buffer for the reboot and services to
-settle:
-```bash
-$ sudo tee /etc/systemd/system/aide-check.timer > /dev/null <<'EOF'
-[Unit]
-Description=Run AIDE integrity check nightly
-
-[Timer]
-OnCalendar=*-*-* 04:30:00
-Persistent=true
-
-[Install]
-WantedBy=timers.target
-EOF
-$ sudo tee /etc/systemd/system/aide-check.service > /dev/null <<'EOF'
-[Unit]
-Description=Run AIDE integrity check
-
-[Service]
-Type=oneshot
-ExecStart=/usr/local/sbin/aide-check.sh
-EOF
-$ sudo systemctl daemon-reload
-$ sudo systemctl enable --now aide-check.timer
-```
-
-**Re-baseline after every intentional change** — `apt upgrade`s (including unattended ones),
-editing `/etc/fstab`, adding a sysctl drop-in, creating a user, etc. all legitimately modify
-watched files and will show up as diffs on the next check. Don't automate this step — review the
-`ntfy` report first and confirm every changed path traces back to something you actually did,
-*then* re-baseline:
-```bash
-$ sudo aideinit
-$ sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
-```
-Skipping this after routine updates buries real findings in expected noise within days —
-`unattended-upgrades` alone touches enough watched files that the report stops being trustworthy
-if it's never re-baselined. Treat "AIDE flagged something I can't explain" as the actual alert to
-act on; everything else is house-keeping.
 
 ## Auditing with Lynis
 `Lynis` scans the system and scores it against the CIS benchmark, surfacing hardening gaps the
