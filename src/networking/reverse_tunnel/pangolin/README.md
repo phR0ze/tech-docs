@@ -69,6 +69,7 @@ the use of Jellyfin.
   - [Create a Site describing your server](#create-a-site-describing-your-server)
   - [Access Control](#access-control)
     - [Expose a public service over Pangolin](#expose-a-public-service-over-pangolin)
+    - [Expose a service fronted by Caddy over Pangolin](#expose-a-service-fronted-by-caddy-over-pangolin)
     - [Expose a private service over Pangolin](#expose-a-private-service-over-pangolin)
     - [Require Device Approval on Private Resources](#require-device-approval-on-private-resources)
     - [Enforce MFA Organization-Wide](#enforce-mfa-organization-wide)
@@ -2104,6 +2105,44 @@ Think of anything that you'd interact with through a browser e.g. web site.
 7. Set the `Address` to your testlab server's LAN address e.g. `192.168.x.x`
 8. Set the `Port` to the port you exposed your test service on e.g. `8080`
 9. Click `Create Resource`
+
+#### Expose a service fronted by Caddy over Pangolin
+Some homelab services aren't reachable directly by their own LAN IP:port — they sit behind a local
+Caddy reverse proxy that terminates TLS and multiplexes several apps on port 443 by hostname (see
+`services.raw.caddy` in the NixOS config). Pointing a Pangolin Resource straight at the app's own
+port would bypass Caddy entirely (and in the NixOS setup, that port usually isn't even published on
+the LAN — see `options/services/oci/newt.nix`), so the target has to go through Caddy instead, and
+Caddy has to be told which app to route to.
+
+**The target is always the same, for every Caddy-fronted app**: `https://host.containers.internal:443`
+with `Enable TLS` on. `host.containers.internal` is a host alias Newt's container is given for its
+own network's gateway address — reachable only from inside Newt's namespace, never from the LAN — and
+Caddy listens on all interfaces, so it's reachable there. Since every app is multiplexed behind this
+one address/port, the target alone can't tell Caddy which app you mean — that's the job of the two
+fields below.
+
+1. Create the Resource same as [a public](#expose-a-public-service-over-pangolin) or
+   [private](#expose-a-private-service-over-pangolin) HTTP resource, but set the `Address` to
+   `host.containers.internal` and `Port` to `443`, `Scheme` to `https`
+2. Under `HTTP Settings >Additional Proxy Settings`, set:
+   * **TLS Server Name**: the app's Caddy vhost, e.g. `home.example.com` for Homarr. Caddy answers
+     every connection with its one wildcard cert (`*.example.com`), so without this the backend TLS
+     client verifies the cert against the wrong hostname (the literal target, `host.containers.internal`)
+     and the handshake fails before any HTTP request is sent — Pangolin reports this as a generic
+     `502 Bad Gateway` with nothing useful in Newt's own logs, since Newt just tunnels raw TCP bytes
+     and never sees inside the TLS session.
+   * **Custom Host Header**: the same value, e.g. `home.example.com`. This is what Caddy actually
+     routes on — its Caddyfile matches `@home host home.example.com` per app. Left empty, the request
+     arrives with the Resource's own public hostname as the `Host` header (e.g. `test2.example.com`),
+     which matches none of Caddy's per-app blocks, so it 502s even once TLS succeeds.
+3. Leave `TLS Server Name` and `Custom Host Header` as the *only* per-app difference — reuse the exact
+   same target `host.containers.internal:443` for every other Caddy-fronted app, just with its own
+   subdomain in those two fields.
+
+Note: Newt's HTTPS-resource proxying is known to not forward the real SNI on its backend connection at
+all (fosrl/pangolin#207), so Caddy's `default_sni` directive is what actually keeps the TLS handshake
+alive server-side, independent of whatever you type into `TLS Server Name` here — that field only
+controls hostname verification on Pangolin's end, it does not fix the missing on-wire SNI.
 
 #### Expose a private service over Pangolin
 Use the private resource when you have a service that is more nuanced, such as a custom API for an
