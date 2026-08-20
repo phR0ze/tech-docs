@@ -32,13 +32,13 @@ Every page follows this structure:
 Brief description of the topic.
 
 ### Quick links
-* [.. up dir](..)
-* [Section One](#section-one)
-  * [Subsection](#subsection)
-* [Another Section](#another-section)
+- [.. up dir](..)
+- [Section One](#section-one)
+  - [Subsection](#subsection)
+- [Another Section](#another-section)
 
 ### Linked pages
-* [Sub Topic](subtopic/README.md)
+- [Sub Topic](subtopic/README.md)
 
 ## Section One
 ...

@@ -220,6 +220,8 @@
   - [Reverse Tunnel](networking/reverse_tunnel/README.md)
     - [Cloudflare Tunnel](networking/reverse_tunnel/cloudflare_tunnel/README.md)
     - [Pangolin](networking/reverse_tunnel/pangolin/README.md)
+      - [Android Client](networking/reverse_tunnel/pangolin/android_client/README.md)
+      - [NixOS Client](networking/reverse_tunnel/pangolin/nixos_client/README.md)
   - [Remoting](networking/remoting/README.md)
     - [Guacamole](networking/remoting/guacamole/README.md)
     - [KasmVNC](networking/remoting/kasmvnc/README.md)

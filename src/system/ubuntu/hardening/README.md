@@ -11,6 +11,8 @@ Traefik, Newt) changes or adds to the generic advice.
 ### Quick links
 * [.. up dir](..)
 * [System Updates](#system-updates)
+* [System Timezone](#system-timezone)
+  * [Scheduled Job Times](#scheduled-job-times)
 * [User Accounts](#user-accounts)
   * [Disable root login](#disable-root-login)
   * [Use passwordless access](#use-passwordless-access)
@@ -46,6 +48,76 @@ Patch known vulnerabilities before anything else — this is the first action on
 $ sudo apt update && sudo apt full-upgrade -y
 $ sudo reboot
 ```
+
+## System Timezone
+A fresh VPS image typically defaults to `UTC`. Set it to your own timezone early — before any of
+the scheduled jobs later in this doc are configured — since `unattended-upgrades`' automatic reboot
+window, every `systemd` timer's `OnCalendar`, and `cron` all interpret a bare `HH:MM`/schedule
+against the system's local timezone by default. Setting it once here means none of those need a
+timezone-aware variant or manual recalculation later, and it stays correct across DST transitions
+automatically — the timezone database, not a fixed offset, is what's doing the work.
+
+```bash
+$ sudo timedatectl set-timezone America/Boise
+```
+
+**Verify**
+```bash
+$ timedatectl
+```
+`Time zone` should read `America/Boise (MDT, -0600)` or `(MST, -0700)` depending on time of year.
+
+**Pick your own zone** if you're not in Mountain Time — list valid values with:
+```bash
+$ timedatectl list-timezones | grep -i boise
+```
+Mountain Time has two IANA entries with identical `MST`/`MDT` offsets — `America/Denver` and
+`America/Boise` — because `tzdata` splits zones by *historical* DST-observance differences, not
+current ones; the two have followed the same rules for decades now, so either resolves to the same
+wall-clock time today. Use whichever matches your actual location.
+
+***Side effect worth knowing***: log timestamps shift too. `journalctl`, `auth.log`, and container
+logs (`docker compose logs`) all switch to local time once this is set, not `UTC` — `rsyslog` writes
+`auth.log`'s ISO 8601 timestamps in whatever the system's local timezone is, not a fixed `UTC`.
+[Alert Recon](../../../security/alert_recon/README.md#checkpointing-what-youve-already-reviewed)'s
+checkpoint file depends on matching that exactly for its plain string-comparison filtering to stay
+correct — see that doc's own note on why its checkpoint uses local `date`, not `-u`/UTC.
+
+### Scheduled Job Times
+Every cron/timer job across this doc and the [Pangolin doc](../../../networking/reverse_tunnel/pangolin/README.md)
+that touches this VPS is deliberately spread across the early-morning hours (local time, once the
+timezone above is set) rather than left at whatever hour each section happened to introduce it —
+avoids two jobs landing on the same minute and fighting over disk/CPU, or a reboot cutting off a
+backup mid-write:
+
+| Local time | Job | Frequency | Section |
+|------------|-----|-----------|---------|
+| `01:00` Sun | GeoIP blocklist refresh | Weekly | [GeoIP Blocking](#geoip-blocking) |
+| `03:00` | `unattended-upgrades` reboot window | Daily, conditional — only if a reboot is actually pending | [Automatic Updates](#automatic-updates) |
+| `04:00` | Pangolin config backup | Daily | [Back Up Pangolin's State](../../../networking/reverse_tunnel/pangolin/README.md#back-up-pangolins-state) |
+| `04:30` | AIDE integrity check | Daily | [AIDE](#aide) |
+| `05:00` | Security review digest | Daily | [Security Review Digest](#security-review-digest) |
+| `09:00` | Pangolin image-version check | Daily | [Alert on New Upstream Image Versions](../../../networking/reverse_tunnel/pangolin/README.md#alert-on-new-upstream-image-versions) |
+| `06:00`–`07:00`* | `apt-daily-upgrade.timer` (`unattended-upgrades` run itself, distinct from the `03:00` reboot window above) | Daily | *Ubuntu system default, not configured by this doc* |
+| `06:00`/`18:00`, ±12h*| `apt-daily.timer` (package index/download only) | Twice daily | *Ubuntu system default, not configured by this doc* |
+
+The `04:00`/`04:30` pair is ordered deliberately, not just spaced — both the Pangolin backup and the
+AIDE check run *after* the `03:00` reboot window plus a buffer, so they capture the post-reboot state
+and don't risk running mid-reboot. The `09:00` image-version check is the one deliberate exception to
+the "early morning" pattern — it pushes an `ntfy` notification meant to actually be seen, so it stays
+in normal waking hours rather than joining the night-time spread. The two `apt-daily*` rows are listed
+for completeness, not because this doc sets them — they ship as Ubuntu system defaults
+(`systemctl cat apt-daily-upgrade.timer` / `apt-daily.timer`) with their own `RandomizedDelaySec`
+(`60m` / `12h` respectively), so unlike every other row here their actual fire time drifts within that
+window rather than landing on the minute.
+
+***If you change the system timezone after these timers already exist*** (i.e. running
+[System Timezone](#system-timezone) on a VPS that's been up for a while, rather than fresh), expect
+one extra out-of-window run from any `Persistent=true` timer shortly after the change — recomputing
+each timer's next elapse against the new local time can make systemd think a scheduled run was missed
+and fire an immediate catch-up. This is a one-time transitional artifact of the zone change, not a
+sign the timer is misconfigured; `systemctl list-timers` settling back into this table's normal
+windows on the next cycle confirms it self-corrected.
 
 ## User Accounts
 
@@ -267,7 +339,7 @@ its on-disk copy for next time.
 
 **Refresh the list periodically** — country CIDR allocations do change
 ```bash
-$ (sudo crontab -l 2>/dev/null; echo "0 4 * * 0 /usr/local/sbin/update-geoipset.sh") | sudo crontab -
+$ (sudo crontab -l 2>/dev/null; echo "0 1 * * 0 /usr/local/sbin/update-geoipset.sh") | sudo crontab -
 ```
 
 ***Docker bypasses this the same way it bypasses `ufw`*** — a rule in `ufw-before-input` doesn't
@@ -545,6 +617,19 @@ Unattended-Upgrade::Automatic-Reboot-Time "03:00";
 **If this VPS runs `Pangolin`**, the scheduled reboot is safe as long as its containers use
 `restart: unless-stopped` (the default in Pangolin/Gerbil/Newt's docker-compose) — Docker brings
 them back up automatically after the host restarts, no manual intervention needed.
+
+***Known annoyance: a `wall` broadcast lands on your terminal the moment a reboot gets
+scheduled*** — `unattended-upgrades` schedules the reboot by calling `shutdown -r 03:00`, and
+`shutdown` immediately broadcasts a notice to every logged-in terminal. If it interrupts you
+mid-command, the line just looks garbled — press `Enter` or `Ctrl-L` to clear it, nothing actually
+hung. `mesg n` on your own session does *not* suppress this: it only blocks broadcasts from other
+regular users, not from root (which is what `shutdown`/systemd is acting as here). To avoid the
+interruption entirely while you're actively connected, set:
+```
+Unattended-Upgrade::Automatic-Reboot-WithUsers "false";
+```
+in `/etc/apt/apt.conf.d/50unattended-upgrades` — the reboot then only gets scheduled when no one
+has an active session, instead of firing (and broadcasting) while you're working.
 
 ## Service Minimization
 Every running service is attack surface. Disable anything not actually needed on a headless
@@ -934,7 +1019,7 @@ $ sudo chmod +x /usr/local/sbin/security-digest.sh
 
 **Schedule it** daily via `cron`:
 ```bash
-$ (sudo crontab -l 2>/dev/null; echo "0 7 * * * /usr/local/sbin/security-digest.sh") | sudo crontab -
+$ (sudo crontab -l 2>/dev/null; echo "0 5 * * * /usr/local/sbin/security-digest.sh") | sudo crontab -
 ```
 Auth log rotation means `grep`-ing `/var/log/auth.log` only ever covers roughly the last day or
 two by default (see `/etc/logrotate.d/rsyslog`) — that's a feature here, not a bug, since it keeps

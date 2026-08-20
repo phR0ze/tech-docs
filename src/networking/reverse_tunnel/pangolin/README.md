@@ -57,6 +57,7 @@ the use of Jellyfin.
     - [The Security Review Digest Only Reports the Host-Level CrowdSec Engine](#the-security-review-digest-only-reports-the-host-level-crowdsec-engine)
     - [Alert on New Upstream Image Versions](#alert-on-new-upstream-image-versions)
   - [Troubleshooting](#troubleshooting)
+    - [Updating gerbil Alone Breaks traefik's Networking](#updating-gerbil-alone-breaks-traefiks-networking)
   - [Harden Beyond the Quick Install Defaults](#harden-beyond-the-quick-install-defaults)
   - [Back Up Pangolin's State](#back-up-pangolins-state)
 - [Configure Pangolin](#configure-pangolin)
@@ -72,6 +73,13 @@ the use of Jellyfin.
     - [Remove restrictions from public service](#remove-restrictions-from-public-service)
     - [Google as OAuth2 provider](#google-as-oauth2-provider)
     - [Case Study: Locking Down Vaultwarden](#case-study-locking-down-vaultwarden)
+  - [Configure Pangolin Client](#configure-pangolin-client)
+    - [Android Client](#android-client)
+    - [Linux CLI (NixOS)](#linux-cli-nixos)
+
+### Linked pages
+* [Android Client](android_client/README.md)
+* [NixOS Client](nixos_client/README.md)
 
 ## Overview
 Pangolin uses `Traefik` as its reverse proxy and `Gerbil` for `WireGuard tunnel management`. It can
@@ -1783,6 +1791,38 @@ per the [Two Separate Engines](#crowdsec-two-separate-engines-by-design) split a
 Dockerized `crowdsec` engine separately from the host one), catching config typos that pass
 validation but silently do nothing, and testing a ban safely without disconnecting your own session.
 
+#### Updating gerbil Alone Breaks traefik's Networking
+`traefik` has no ports or network of its own — `network_mode: service:gerbil` in `docker-compose.yml`
+makes it share `gerbil`'s network namespace outright (see [Write docker-compose.yml](#write-docker-composeyml)
+above), which is how it sees traffic arriving on the ports `gerbil` publishes. That namespace is tied
+to `gerbil`'s specific *container*, not just its name — bumping only `gerbil`'s image tag and running
+`sudo docker compose up -d gerbil` recreates `gerbil` as a new container with a new namespace, but
+leaves the running `traefik` container still attached to the old, now-stopped one. The dashboard and
+every resource go unreachable, and `traefik`'s own logs show DNS failures that look unrelated to the
+real cause:
+```
+dial tcp: lookup pangolin on 127.0.0.11:53: read udp 127.0.0.1:xxxxx->127.0.0.11:53: read: connection refused
+```
+That's Docker's embedded DNS resolver being unreachable — expected once `traefik` is orphaned in a
+dead network namespace, since that namespace no longer has a working resolver behind it.
+
+**Confirm this is what happened** — compare `traefik`'s pinned namespace against `gerbil`'s actual
+current container ID:
+```bash
+$ sudo docker inspect traefik --format '{{.HostConfig.NetworkMode}}'
+$ sudo docker ps --filter name=gerbil --format '{{.ID}}'
+```
+If the ID inside `traefik`'s `container:<id>` output doesn't match `gerbil`'s current ID, this is it.
+
+**Fix** — recreate `traefik` alongside `gerbil` any time `gerbil` is updated, so Compose re-attaches
+it to the new namespace instead of leaving it pinned to the old one:
+```bash
+$ sudo docker compose up -d gerbil traefik
+```
+`pangolin` and `crowdsec` don't share `gerbil`'s namespace, so they're unaffected either way and don't
+need to be included. No need to recreate the whole stack (`docker compose down && up -d`) for a
+`gerbil`-only update — just remember `gerbil`+`traefik` are a package deal.
+
 ### Harden Beyond the Quick Install Defaults
 Everything above reproduces what quick install gives you out of the box — a working instance, not
 a hardened one. Every setting below was checked directly against Pangolin's application source
@@ -1902,10 +1942,18 @@ tar -czf "/opt/pangolin-backups/pangolin-$(date +%F).tar.gz" config docker-compo
 find /opt/pangolin-backups -name 'pangolin-*.tar.gz' -mtime +14 -delete
 EOF
 $ sudo chmod +x /usr/local/sbin/backup-pangolin.sh
-$ (sudo crontab -l 2>/dev/null; echo "0 3 * * * /usr/local/sbin/backup-pangolin.sh") | sudo crontab -
+$ (sudo crontab -l 2>/dev/null; echo "0 4 * * * /usr/local/sbin/backup-pangolin.sh") | sudo crontab -
 ```
 `-mtime +14` keeps two weeks locally, trimming older archives automatically so this doesn't quietly
 fill the disk over months.
+
+***`04:00`, not `03:00`*** — deliberately scheduled an hour after the hardening doc's
+[unattended-upgrades reboot window](../../../system/ubuntu/hardening/README.md#automatic-updates),
+same reasoning as that doc's [AIDE check](../../../system/ubuntu/hardening/README.md#aide): a `tar`
+mid-reboot risks an incomplete archive, and `config/` should reflect the post-reboot state anyway if
+a package update changed anything under it. See the hardening doc's
+[Scheduled Job Times](../../../system/ubuntu/hardening/README.md#scheduled-job-times) for how this
+slots in alongside its own cron/timer jobs on the same VPS.
 
 ***A local backup on the same VPS doesn't protect against losing the VPS itself*** — same reasoning
 as [Ship Logs Off-Box](#ship-logs-off-box) above. If you've already got the homelab-side `rsyslog`
@@ -1963,7 +2011,7 @@ back the request it received (hostname, headers, source IP) as plain text, with 
 auth, and nothing to secure or clean up beyond stopping the container:
 
 ```bash
-$ podman run -d --rm --name whoami -p 8080:80 docker.io/traefik/whoami
+$ sudo podman run -d --rm --name whoami -p 8080:80 docker.io/traefik/whoami
 ```
 
 **Open the test port on the homelab host's own firewall** — this step is easy to skip by mistake if
@@ -2002,7 +2050,7 @@ cert covers any new subdomain automatically) no extra Let's Encrypt request need
 
 **Clean up when done**:
 ```bash
-$ podman stop whoami
+$ sudo podman stop whoami
 ```
 The `--rm` flag on the original `run` means it's removed automatically the moment it stops — no
 separate `podman rm` needed. Delete the test Resource and Site in the dashboard too if they were
@@ -2018,15 +2066,23 @@ over Pangolin.
 4. Normally you'd save the 3 credentials `Endpoint`, `ID` and `Secret` for the Newt client
    However for this test they are all baked into the docker run string below
 5. Choose `Install Site >Operating System >Docker` and then `Method >Docker Run`
-6. Copy out the docker run string and run it on your server
+6. Copy out the docker run string to be run later
 7. Now back in Pangolin click `Create Site`
 8. Disable the `Enable Docker Blueprint`
+9. Now paste the docker run into your local server and run it
 
 ### Access Control
 Pangolin resources describe and provide access to services. You can essentially think of a Pangolin
 resource as a service. Pangolin resources come in two flavors. First `public` refering to the fact
 that no special software is needed to access the resource, but it can be controlled and locked down
 if desired. Second `private` meaning you have to have the Pangolin client to connect at all.
+
+|                 | Public Resource                       | Private Resource (ZTNA)                                 |
+|-----------------|---------------------------------------|---------------------------------------------------------|
+| Access method   | Browser, no client needed             | Requires the Pangolin Client app                        |
+| What's exposed  | An HTTP(S) endpoint via reverse proxy | A specific host/IP or CIDR range, at the network layer  |
+| Auth            | SSO redirect + cookie session         | Login to the client app itself                          |
+| Best for        | Web apps used in a browser            | Native apps, SSH, databases, anything not browser-based |
 
 All Pangolin resources are ***deny-by-default*** out of the box. You have to specifically edit and
 change their configuration to make them truely public.
@@ -2051,16 +2107,34 @@ Use the private resource when you have a service that is more nuanced, such as a
 application e.g. hosting your own Vaultwarden but useing the Bitwarden app on your Android phone to
 access it.
 
+The `Type` field describes what the destination actually *is*, which determines what Pangolin does
+with the traffic once the client's tunnel is up:
+* **Host** — a single internal host/IP:port. Traffic to that exact destination is proxied through
+  the tunnel — the right choice for one specific service, e.g. Vaultwarden's container address.
+* **CIDR** — a whole subnet/range (e.g. `192.168.x.0/24`) instead of one host. Use this when the
+  client needs reach into a block of addresses rather than one service — broader blast radius than
+  `Host`, so scope it as tight as actually needed.
+* **HTTP** — the destination is a web service; Pangolin proxies it as HTTP(S) at the application
+  layer, same as a Public resource's proxying, just gated behind the client-tunnel requirement
+  instead of the SSO redirect.
+* **SSH** — the destination is an SSH server; lets Pangolin apply SSH-specific, protocol-aware
+  handling instead of treating it as an opaque TCP stream.
+
+##### Create HTTP Private Resource
+Use the HTTP option for something like Vaultwarden that serves it's api up as HTTP/S.
+
 1. Navigate to `NETWORK >Resources >Private` in the left hand navigation then click `+ Add Resource`
 2. Set the `Name` to e.g. `whoami`
 3. Choose the `Type` of service e.g. `HTTP`
-   * Note the type is what the service is on your LAN not how you want to expose through Pangolin
-4. Choose the `Subdomain` to expose it on e.g. `whoami.example.com`
-5. Click `+ Add Target`
-6. Choose the `Site` you configured for your server e.g. `testlab`
+   * Note the type here referes to the target service not how Pangolin exposes it
+4. Choose the `Subdomain` and `Base Domain` to expose it on e.g. `whoami.example.com`
+5. Choose the `Site` you configured for your server e.g. `testlab`
+6. Choose the `Scheme` appropriate for your service e.g. `http` for raw HTTP service
+   * This is from Newt to the target service
 7. Set the `Address` to your testlab server's LAN address e.g. `192.168.x.x`
 8. Set the `Port` to the port you exposed your test service on e.g. `8080`
-9. Click `Create Resource`
+9. Leave the `Enable TLS` on to ensure you get a Let's encrypt cert generated for the subdomain
+10. Click `Create Resource`
 
 #### Remove restrictions from public service
 Resources in Pangolin are ***deny-by-default*** — nothing is reachable until you explicitly define
@@ -2100,24 +2174,16 @@ Pangolin's SSO login wall (username/password + TOTP) is a ***browser-based redir
 Bitwarden mobile/desktop app talks directly to the server's API — it doesn't open a browser,
 follow redirects, or hold a session cookie — so the standard SSO gate doesn't apply to it the way
 it would to visiting a resource in Chrome/Safari. This matters when choosing how to expose
-Vaultwarden. There are two ways to handle it:
+Vaultwarden. 
 
-* ***Option A (Recommended): Private Resource + Pangolin Client app*** — expose Vaultwarden as a
-  private/ZTNA resource rather than a public HTTP resource. It's reachable only through the
-  dedicated Pangolin Client app (a WireGuard-based tunnel client), and Bitwarden connects to the
-  internal address once that tunnel is active. This preserves full defense in depth: Pangolin
-  identity + TOTP at the outer (network) layer, and Vaultwarden's own master password + 2FA at
-  the inner (application) layer.
-* ***Option B: Public Resource + HTTP Basic Auth header injection*** — Pangolin can inject HTTP
-  Basic Auth in front of a resource instead of the SSO redirect. Native HTTP clients (including
-  Bitwarden's) generally handle standard Basic Auth challenges automatically. Downside: Basic
-  Auth is username + password only — no TOTP at this layer, so the second factor would need to
-  live entirely in Vaultwarden's own 2FA. Simpler to set up, but a weaker outer layer.
+***Private Resource + Pangolin Client app*** — expose Vaultwarden as a
+private/ZTNA resource rather than a public HTTP resource. It's reachable only through the
+dedicated Pangolin Client app (a WireGuard-based tunnel client), and Bitwarden connects to the
+internal address once that tunnel is active. This preserves full defense in depth: Pangolin
+identity + TOTP at the outer (network) layer, and Vaultwarden's own master password + 2FA at
+the inner (application) layer.
 
-**Recommendation: use Option A** — it keeps TOTP enforcement at the outer gate and works cleanly
-with the native Bitwarden app.
-
-**Recommended Setup (Option A)**
+**Setup of the Private Resource**
 
 1. ***Two named user accounts — never a shared login***
    - One account per person, each with their own credentials.
@@ -2156,16 +2222,7 @@ with the native Bitwarden app.
    - Non-owner accounts should be plain members of the resource's role only — never
      admin/owner on the Pangolin org itself.
 
-**Private (ZTNA) Resources: How They Actually Work**
-
-Pangolin has two resource types, and they behave differently:
-
-|                 | Public Resource                       | Private Resource (ZTNA)                                 |
-|-----------------|---------------------------------------|---------------------------------------------------------|
-| Access method   | Browser, no client needed             | Requires the Pangolin Client app                        |
-| What's exposed  | An HTTP(S) endpoint via reverse proxy | A specific host/IP or CIDR range, at the network layer  |
-| Auth            | SSO redirect + cookie session         | Login to the client app itself                          |
-| Best for        | Web apps used in a browser            | Native apps, SSH, databases, anything not browser-based |
+**Background**
 
 For a private resource, Bob defines a ***destination*** — either a single host/IP (e.g.
 Vaultwarden's internal container address) or a CIDR block — plus which ports/protocols are
@@ -2180,9 +2237,6 @@ There are two different tunnel roles at play:
   connects with to reach resources she's been granted. Traffic is scoped only to the specific
   resources her role allows — not full-network VPN access.
 
-As of Pangolin 1.15, there are official iOS and Android apps (built on Olm, the same client core
-used on desktop), so private resources are genuinely usable from Alice's phone, not just a laptop.
-Pangolin 1.15 also added device-level zero-trust controls worth enabling for her phone:
 * ***Device fingerprinting*** — identifies each device by attributes like OS version and
   hostname, so Bob can distinguish "Alice's iPhone" from any other device that might try to log in
   with her credentials.
@@ -2209,13 +2263,13 @@ Pangolin 1.15 also added device-level zero-trust controls worth enabling for her
 
 **Alice's Phone Experience, Step by Step**
 
-1. Alice opens the Pangolin Client app (separate from Bitwarden).
+1. Alice opens the `Pangolin Client` app (separate from Bitwarden).
 2. It prompts her to sign in to Bob's Pangolin org — she enters her username and password.
 3. She's prompted for her TOTP code — she opens her authenticator app, reads the 6-digit code,
    and enters it.
 4. The Pangolin Client establishes the tunnel in the background, scoped only to the resources
    her role (`vaultwarden-family`) can reach.
-5. She opens the Bitwarden app, configured with Bob's self-hosted server URL. Since the tunnel is
+5. She opens the `Bitwarden app`, configured with Bob's self-hosted server URL. Since the tunnel is
    up, it connects.
 6. She logs into Bitwarden as normal: master password, then Vaultwarden's own 2FA (if enabled).
 
@@ -2227,7 +2281,7 @@ that creates a circular dependency (locked out of the vault means locked out of 
 to unlock the vault). Use a separate authenticator app on Alice's phone, and keep printed/offline
 backup codes somewhere safe.
 
-**Resulting Access Flow**
+**Access Flow**
 
 Two independent authentication layers, both scoped to named individuals, both auditable, and
 both revocable independently:
@@ -2236,9 +2290,13 @@ both revocable independently:
    tunnel.
 2. **Inner layer (application):** Vaultwarden login — master password + Vaultwarden 2FA.
 
-**Next Steps (not yet covered)**
-- [Ubuntu VPS hardening](../../../system/ubuntu/hardening/README.md) (covers `Crowdsec` setup)
-- Pangolin server hardening (admin panel exposure, rate limiting)
-- Vaultwarden hardening
-- Network segmentation / isolation design
+### Configure Pangolin Client
 
+#### Android Client
+See [Android Client](android_client/README.md) for connecting from a phone, and — critically — the
+Private DNS and full-tunnel routing gotchas found troubleshooting it against a live instance.
+
+#### Linux CLI (NixOS)
+See [NixOS Client](nixos_client/README.md) for installing `Pangolin CLI` via `nixpkgs`, logging in,
+and — critically — how routing scope and DNS overrides actually work so it doesn't silently take
+over the whole machine's network.
