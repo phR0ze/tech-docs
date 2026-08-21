@@ -95,13 +95,6 @@ merely a missing dashboard field:***
   has no `host-header`/`tls-server-name` mapping either, consistent with the field not existing on
   this resource type at all — this isn't a Blueprints-specific omission the way it first looked.
 
-An earlier version of this doc concluded this was just a missing dashboard input and could be set
-via a direct API call. That was wrong — confirmed empirically too: calling `PUT /v1/resource/{id}`
-against a real private HTTP resource's ID 404s (it isn't in that table), and the actual
-`GET /v1/org/{orgId}/private-resources` response for one contains no `tlsServerName`/`setHostHeader`
-key at all, present or empty. There's currently no way, dashboard or API, to override the backend
-SNI/Host header for a Private HTTP resource.
-
 ### The fix: switch to a `host`-mode resource, no override needed
 A `host`-mode private resource is a raw Layer-4 tunnel — Pangolin/Newt never touch TLS or HTTP at
 all, they just relay encrypted bytes end-to-end between the Pangolin Client and the destination.
@@ -114,18 +107,17 @@ resource's shared, SNI-multiplexed `443` vhost) earns its keep here: point `dest
 `destinationPort` straight at that listener's real LAN `IP:port`, and it needs zero Caddy-side
 changes — the SNI reaching it is genuinely correct, not routed around a gap.
 
-Switch the resource's mode in the dashboard (`Type: Host`, under the resource's connectivity
-settings) or via the API — `mode`/`destination`/`destinationPort` *are* exposed fields on this
-resource type, unlike the SNI/Host-header ones, so the API isn't strictly required for this part.
-Look up the `siteResourceId` first if going the API route — see [Finding IDs you'll
-need](../api/README.md#finding-ids-youll-need) for the equivalent private-resource listing call —
-then:
-```bash
-$ curl -X POST "http://localhost:3003/v1/private-resource/<siteResourceId>" \
-  -H "Authorization: Bearer <keyId>.<keySecret>" \
-  -H "Content-Type: application/json" \
-  -d '{"mode": "host", "destination": "192.168.x.x", "destinationPort": 8443, "enabled": true}'
-```
+1. Navigate in the Pangolin UI to `NETWORK >Resources >Private`
+2. Set the name e.g. `vault-vpn`
+3. Choose the `Type` as `Host`
+4. Set the Alias to the name you'd like e.g. `vault-vpn.example.com`
+5. Set the site e.g. `testlab`
+6. Set the destination to your internal LAN caddy service address e.g. `192.168.x.x`
+7. Set the `TCP` selection to `Custom` and the actual port value to your caddy service e.g. `8433`
+8. Set `UDP` to `Blocked`
+9. Disable ICMP and click `Create Resource`
+10. After creation switch to the `Authentication` tab and add custom roles for access
+
 `192.168.x.x` is Caddy's real LAN address, and `8443` the dedicated listener already serving the
 private vhost correctly for LAN clients — reuse whatever you already have working locally rather
 than inventing a new one.
