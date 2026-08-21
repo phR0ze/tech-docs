@@ -367,29 +367,66 @@ on its own:
   starts, silently dropping anything added by hand.
 
 #### Create an idempotent apply script
+***Scope every rule to the public-facing interface (`-i <iface>`), not just `DOCKER-USER` as a
+whole*** — `DOCKER-USER` sits in the `FORWARD` chain and evaluates traffic Docker forwards in *both*
+directions, not just inbound. A rule matching on `src` with no interface filter also matches a
+container's own *outbound* requests (DNS lookups, license/telemetry pings, package downloads,
+whatever the container itself initiates) — at that point in the chain the source is the container's
+internal bridge IP (e.g. `172.x.x.x`), which is never going to appear in a public-country CIDR set
+either, so the `geo-allow` DROP silently swallows it exactly like it would a scanner's IP. The
+symptom is ugly and easy to misattribute: outbound calls from *any* container time out, one-by-one,
+with nothing in the container's own logs pointing at the firewall — it just looks like the app itself
+is hanging or a dependency is unreachable. Scoping to `-i <iface>` (the interface facing the
+internet, found with `ip route show default` — look for `dev <name>` in the output, e.g. `eth0`)
+restricts these rules to traffic actually *arriving* from outside; container-originated traffic
+leaves via the Docker bridge interface, not the public one, so it never matches and passes through
+to Docker's normal forwarding/NAT path untouched.
+
 Create an idempotent apply script — checks each rule before inserting so re-running it (e.g. on
 every `docker.service` start) doesn't stack duplicate rules. Rules are inserted in *reverse* priority
 order deliberately: each `-I DOCKER-USER 1` pushes to the very top of the chain, so the last one
 inserted ends up evaluated first — the sequence below leaves `admin-allow`'s ACCEPT on top, `geo-allow`'s
-DROP below it, `manual-block`'s DROP below that, and Docker's own trailing `RETURN` last:
+DROP below it, `manual-block`'s DROP below that, and Docker's own trailing `RETURN` last. Replace
+`eth0` with whatever `ip route show default` reported for your own VPS:
 ```bash
 $ sudo tee /usr/local/sbin/apply-docker-user-rules.sh > /dev/null <<'EOF'
 #!/bin/bash
 set -euo pipefail
+IFACE=eth0 # REPLACE with your public interface — see `ip route show default`
 insert_at_top() {
   if ! iptables -C DOCKER-USER "$@" 2>/dev/null; then
     iptables -I DOCKER-USER 1 "$@"
   fi
 }
-insert_at_top -m set --match-set manual-block src -j DROP
-insert_at_top -m set ! --match-set geo-allow src -j DROP
-insert_at_top -m set --match-set admin-allow src -j ACCEPT
+insert_at_top -i "$IFACE" -m set --match-set manual-block src -j DROP
+insert_at_top -i "$IFACE" -m set ! --match-set geo-allow src -j DROP
+insert_at_top -i "$IFACE" -m set --match-set admin-allow src -j ACCEPT
 EOF
 $ sudo chmod +x /usr/local/sbin/apply-docker-user-rules.sh
 ```
 Adding, removing, or reordering a mirror rule later means editing this one script — it's the single
 source of truth for all three `DOCKER-USER` mirrors, not three copy-pasted `iptables` commands scattered
 across sections.
+
+***If you already applied an earlier, unscoped version of this script*** (no `-i "$IFACE"` on any
+rule), re-running the updated script above won't fix it on its own — `insert_at_top`'s duplicate
+check (`iptables -C`) compares the full rule spec, so the old unscoped rules are a different rule
+entirely and just stay in place alongside the new ones. Remove them first, by line number, highest
+first so the numbering doesn't shift out from under you:
+```bash
+$ sudo iptables -L DOCKER-USER -v -n --line-numbers
+$ sudo iptables -D DOCKER-USER 3   # old manual-block, unscoped
+$ sudo iptables -D DOCKER-USER 2   # old geo-allow, unscoped
+$ sudo iptables -D DOCKER-USER 1   # old admin-allow, unscoped
+$ sudo /usr/local/sbin/apply-docker-user-rules.sh
+```
+Confirm containers can actually reach the internet again afterward — from inside any container that
+makes outbound calls:
+```bash
+$ sudo docker exec pangolin node -e "fetch('https://api.ipify.org').then(r=>r.text()).then(t=>console.log('OK:',t)).catch(e=>console.log('ERR:',e.message))"
+```
+`OK: <your VPS's public IP>` confirms outbound access is restored; a timeout means the rules are
+still blocking it.
 
 #### Hook it into `docker.service` itself
 Hook it into the `docker.service` itself, rather than a standalone systemd unit — `ExecStartPost` runs
@@ -425,7 +462,8 @@ $ sudo /usr/local/sbin/apply-docker-user-rules.sh
 $ sudo iptables -L DOCKER-USER -v -n --line-numbers
 ```
 Should show, top to bottom: the `admin-allow` ACCEPT, `geo-allow` DROP, `manual-block` DROP, then
-Docker's own `RETURN`. Repeat traffic that should be blocked (e.g. a confirmed-malicious IP already in
+Docker's own `RETURN` — each of the three showing your public interface (e.g. `eth0`) in the `in`
+column, not `*`. Repeat traffic that should be blocked (e.g. a confirmed-malicious IP already in
 `manual-block`) climbing that rule's packet counter is the real confirmation it's active — not just
 that the rule exists.
 
