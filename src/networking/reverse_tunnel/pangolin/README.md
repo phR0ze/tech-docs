@@ -2171,10 +2171,15 @@ Use the HTTP option for something like Vaultwarden that serves it's api up as HT
    * Note the type here referes to the target service not how Pangolin exposes it
 4. Choose the `Subdomain` and `Base Domain` to expose it on e.g. `whoami.example.com`
 5. Choose the `Site` you configured for your server e.g. `testlab`
-6. Choose the `Scheme` appropriate for your service e.g. `http` for raw HTTP service
-   * This is from Newt to the target service
-7. Set the `Address` to your testlab server's LAN address e.g. `192.168.x.x`
-8. Set the `Port` to the port you exposed your test service on e.g. `8080`
+6. Choose the `Scheme` appropriate for your service:
+   * `http` for raw HTTP service
+   * `http` for a Caddy HTTPS fronted service 
+7. Set the `Address` to the service from Newt's perspective:
+   * For standalong service use your server's LAN address e.g. `192.168.x.x`
+   * For Caddy HTTPS fronted service use `host.containers.internal`
+8. Set the `Port` to the port you exposed your test service:
+   * e.g. `8080` for standard service
+   * `443` for Caddy HTTPS fronted service
 9. Leave the `Enable TLS` on to ensure you get a Let's encrypt cert generated for the subdomain
 10. Click `Create Resource`
 

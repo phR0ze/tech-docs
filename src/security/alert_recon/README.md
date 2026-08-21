@@ -14,6 +14,7 @@ applies to any internet-facing box running [Fail2ban](../fail2ban/README.md) and
 * [Overview](#overview)
 * [1. Read the Raw Log](#1-read-the-raw-log)
   * [Checkpointing What You've Already Reviewed](#checkpointing-what-youve-already-reviewed)
+  * [Sanity-Check fail2ban Is Actually Watching](#sanity-check-fail2ban-is-actually-watching)
 * [2. Check What Your Defenses Already Did](#2-check-what-your-defenses-already-did)
 * [3. Confirm the Port Actually Being Hit](#3-confirm-the-port-actually-being-hit)
 * [4. Sanity-Check the Jail/Engine Config](#4-sanity-check-the-jailengine-config)
@@ -29,78 +30,58 @@ IP on port 22 (and whatever you moved SSH to). The actual question worth answeri
 top to bottom; most alerts resolve at step 2.
 
 ## 1. Read the Raw Log
-Start with the source of truth, not the digest's summary count.
+Start with `fail2ban.log` — it's fail2ban's own record of what it matched, more reliable than a
+hand-copied regex trying to track `/etc/fail2ban/filter.d/sshd.conf`.
 
 ### Checkpointing What You've Already Reviewed
-Re-triaging the same already-cleared entries every day wastes time and invites alert fatigue. Rather
-than deleting reviewed log lines — that destroys the audit trail, and log rotation already handles
-cleanup on its own schedule — keep a checkpoint file with the timestamp of your last review, and
-filter every command below to lines added since then. Capture the current timestamp *before* running
-anything else — not after — so entries that land in the log while you're mid-review aren't silently
-skipped next time. On the very first run there's no checkpoint file yet, so `SINCE` falls back to the
-epoch and nothing is filtered out:
+Keep a checkpoint file of your last review so already-cleared entries aren't re-triaged daily.
+Capture the timestamp *before* running anything else, so entries landing mid-review aren't skipped
+next time. No checkpoint yet → falls back to epoch, nothing filtered:
 ```bash
 $ NOW=$(date +%Y-%m-%dT%H:%M:%S)
 $ SINCE=$(sudo cat /var/lib/alert-recon/last-reviewed 2>/dev/null || echo 1970-01-01T00:00:00)
 ```
-`auth.log` timestamps are ISO 8601 in the first field, so a plain string comparison sorts correctly
-without needing a date parser — every command below pipes through `awk -v since="$SINCE" '$1 > since'`
-right after the initial grep.
-
-***Deliberately local time, not `-u`/UTC*** — `rsyslog` writes `auth.log` timestamps in the
-system's local timezone (see [System Timezone](../../system/ubuntu/hardening/README.md#system-timezone)),
-so the checkpoint has to match that, not a fixed `UTC` assumption. The lexicographic comparison
-above only holds when `$NOW`/`$SINCE` and the log lines they're compared against represent the same
-wall-clock timezone — mixing a `UTC` checkpoint against locally-timestamped log lines would silently
-mis-sort entries around any offset from `UTC` (worse the further the box's local timezone sits from
-`UTC`), without erroring or looking obviously wrong. Since `date` (no `-u`) always reflects whatever
-the system's current local timezone is, this self-adjusts if that timezone is ever changed again —
-nothing here to revisit by hand.
-
-(Need a one-off full-history read instead — e.g. auditing something older? Drop the `awk since` stage
-and grep `/var/log/auth.log` directly, or set `SINCE=1970-01-01T00:00:00` for that run.)
-
-***Match on `sshd\[` specifically, not the bare string `"Failed password"`*** — a bare match also
-catches `sudo`'s own audit-log lines whenever someone runs a command containing that string (e.g. this
-very grep, logged as `COMMAND=/usr/bin/grep 'Failed password' ...`), producing phantom entries with no
-`from <ip>` field:
+`fail2ban.log` splits its timestamp across two fields (`2026-08-20 17:57:06,781 ...`) — join them
+before comparing to `$SINCE`:
 ```bash
-$ sudo grep -E "sshd\[[0-9]+\]: Failed password" /var/log/auth.log | awk -v since="$SINCE" '$1 > since' | tail -n 30
+$ sudo grep '\[sshd\] Found' /var/log/fail2ban.log | awk -v since="$SINCE" '($1"T"$2) > since' | tail -n 30
 ```
-Look for:
-* **A single IP hammering repeatedly** — likely already caught, or should be, by
-  [Fail2ban](../fail2ban/README.md)/[Crowdsec](../crowdsec/README.md).
-* **Many different IPs, low attempts each** — a botnet/credential-stuffing scan, not targeted at
-  you specifically. Normal background noise for any public IP.
-* **Usernames like `root`, `admin`, `ubuntu`, `test`** — automated scanner noise, not evidence of a
-  targeted attack.
+Both `fail2ban.log` and `auth.log` are written in local time (see
+[System Timezone](../../system/ubuntu/hardening/README.md#system-timezone)) — keep `$NOW`/`$SINCE` in
+local time too (plain `date`, not `date -u`) or the string comparison silently mis-sorts.
 
-**Total attempts and top offenders** — a raw IP+count list drops all timing context, so pair it with
-a per-day trend and a first/last-seen date range per IP rather than reading counts in isolation:
+(One-off full-history read? Drop the `awk since` stage, or set `SINCE=1970-01-01T00:00:00`.)
+
+Look for a single IP hammering repeatedly (should already be banned — see step 2), or many different
+IPs at low volume each (botnet/credential-stuffing scan, normal background noise).
+
+**Total attempts and top offenders**:
 ```bash
-$ sudo grep -E "sshd\[[0-9]+\]: Failed password" /var/log/auth.log | awk -v since="$SINCE" '$1 > since' | wc -l
-$ sudo grep -E "sshd\[[0-9]+\]: Failed password" /var/log/auth.log | awk -v since="$SINCE" '$1 > since' | cut -d'T' -f1 | sort | uniq -c
-```
-The second command shows attempts per calendar day — a spike on one day reads very differently than
-a steady background rate every day.
-```bash
-$ sudo grep -E "sshd\[[0-9]+\]: Failed password" /var/log/auth.log | awk -v since="$SINCE" '$1 > since' | \
+$ sudo grep '\[sshd\] Found' /var/log/fail2ban.log | awk -v since="$SINCE" '($1"T"$2) > since' | wc -l
+$ sudo grep '\[sshd\] Found' /var/log/fail2ban.log | awk -v since="$SINCE" '($1"T"$2) > since' | \
   awk '{
-    ip=""; for(i=1;i<=NF;i++) if($i=="from") ip=$(i+1)
-    d=substr($1,1,10)
-    count[ip]++
+    ip=""; for(i=1;i<=NF;i++) if($i=="Found") ip=$(i+1)
+    d=$1; count[ip]++
     if (!(ip in first) || d<first[ip]) first[ip]=d
     if (!(ip in last) || d>last[ip]) last[ip]=d
   }
   END { for (ip in count) printf "%6d  %-16s  %s to %s\n", count[ip], ip, first[ip], last[ip] }' \
   | sort -rn | head
 ```
-Output reads as `432   203.0.113.42   2026-08-16 to 2026-08-18` — count, IP, and the date span it was
-active over, so a sustained multi-day campaign is visible at a glance instead of hiding behind a bare
-count.
+Reads as `432   203.0.113.42   2026-08-16 to 2026-08-18` — count, IP, first/last-seen date.
 
-Once you've finished reviewing (including the rest of this checklist, in case a later step sends you
-back here), advance the checkpoint to `$NOW` so today's entries aren't re-shown tomorrow:
+### Sanity-Check fail2ban Is Actually Watching
+`fail2ban.log` is only as good as the service running — it's been silently down before while
+`auth.log` kept filling with real failures. Confirm the service, and fall back to `auth.log` directly
+if anything looks off:
+```bash
+$ systemctl is-active fail2ban
+$ sudo grep -E "sshd\[[0-9]+\]: (Failed (password|publickey) for|[Ii]nvalid user .* from)" /var/log/auth.log | awk -v since="$SINCE" '$1 > since' | tail -n 30
+```
+If `auth.log` shows hits `fail2ban.log` doesn't, jump to [step 4](#4-sanity-check-the-jailengine-config).
+
+Once done reviewing (including the rest of this checklist, in case a later step sends you back here),
+advance the checkpoint:
 ```bash
 $ sudo mkdir -p /var/lib/alert-recon
 $ echo "$NOW" | sudo tee /var/lib/alert-recon/last-reviewed
@@ -204,8 +185,7 @@ the hardening doc — it's independent of fail2ban/Crowdsec entirely and keeps `
 down to one rule no matter how many IPs accumulate. Set it up once there; the recurring step, every
 time a new IP needs blocking, is just:
 ```bash
-$ sudo vim /etc/ipset/manual-block-list.txt   # add the new IP, one per line
-$ sudo /usr/local/sbin/update-manual-block.sh
+$ sudo /usr/local/sbin/block-ip.sh <ip>
 ```
 Verify it took:
 ```bash
