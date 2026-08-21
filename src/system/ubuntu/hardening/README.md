@@ -19,6 +19,10 @@ Traefik, Newt) changes or adds to the generic advice.
 * [Harden sshd](#harden-sshd)
 * [Firewall](#firewall)
 * [GeoIP Blocking](#geoip-blocking)
+  * [Install `ipset`](#install-ipset)
+  * [Add an admin allow-list](#add-an-admin-allow-list)
+  * [Keep ipset populated across reboots](#keep-ipset-populated-across-reboots)
+  * [Persisting DOCKER-USER Rules](#persisting-docker-user-rules)
 * [Manual IP Blocklist](#manual-ip-blocklist)
 * [Fail2ban](#fail2ban)
 * [Crowdsec](#crowdsec)
@@ -204,8 +208,9 @@ ahead of `ufw`'s, so a container started with `ports:` (as Pangolin/Gerbil/Newt 
 from the internet regardless of `ufw deny` rules. Since Pangolin's components run in Docker, treat
 `ufw` as informational for those ports and lock them down with
 [`ufw-docker`](https://github.com/chaifeng/ufw-docker) or explicit `DOCKER-USER` chain rules
-instead. This doesn't matter for 80/443/51820/21820 since those are meant to be public, but it
-matters for anything else you containerize later that shouldn't be.
+instead — see [Persisting DOCKER-USER Rules](#persisting-docker-user-rules) below for how this doc
+sets up and persists the latter. This doesn't matter for 80/443/51820/21820 since those are meant to
+be public, but it matters for anything else you containerize later that shouldn't be.
 
 ## GeoIP Blocking
 Restrict inbound connections to a single country (e.g. `US`) using `ipset` fed by
@@ -213,7 +218,7 @@ Restrict inbound connections to a single country (e.g. `US`) using `ipset` fed b
 `before.rules` hook. This blocks a lot of scanner/credential-stuffing noise outright, before it
 ever reaches `fail2ban`/`Crowdsec` or a service's own auth.
 
-**Install `ipset`**
+### Install `ipset`
 ```bash
 $ sudo apt install ipset
 ```
@@ -256,7 +261,8 @@ $ sudo chmod +x /usr/local/sbin/update-geoipset.sh
 $ sudo /usr/local/sbin/update-geoipset.sh
 ```
 
-***Add an admin allow-list before enabling the drop rule — do not skip this.*** Static country
+### Add an admin allow-list
+Add an admin allow-list before enabling the drop rule — do not skip this.*** Static country
 lists like ipdeny.com's have false negatives: a VPN, mobile carrier CGNAT, or an imperfectly
 attributed ISP block can put *your own* connecting IP outside the `US` set, geo-blocking the
 person managing the box with no way back in except console access. Carve out your own IP(s)
@@ -295,7 +301,8 @@ The `tee` is required, not just style — `sudo cmd > file` redirects in your ow
 `sudo` runs, so it's your user (not root) trying to write into `/etc/ipset`, which fails with
 `Permission denied`. Re-run this `save` any time you add or remove an IP from `admin-allow`.
 
-**Keep both `ipset`s populated across reboots** — they're in-memory only by default, and `ufw` will
+### Keep ipset populated across reboots
+We need to persist the ipsets. IP sets are in-memory only by default, and `ufw` will
 fail to (re)apply its rules if either set doesn't exist yet when it starts. `ufw.service` itself is
 deliberately early-boot (`DefaultDependencies=no`, `Before=network-pre.target`) so the firewall is
 up before networking is. That means the restore step ***must not*** depend on `network-online.target`
@@ -340,22 +347,97 @@ its on-disk copy for next time.
 $ (sudo crontab -l 2>/dev/null; echo "0 1 * * 0 /usr/local/sbin/update-geoipset.sh") | sudo crontab -
 ```
 
-***Docker bypasses this the same way it bypasses `ufw`*** — a rule in `ufw-before-input` doesn't
-see traffic Docker DNATs straight to a published container port. If this VPS runs `Pangolin`,
-mirror both rules into the `DOCKER-USER` chain (admin-allow first, same ordering rule as above) to
-actually cover 80/443/51820/21820:
+### Persisting DOCKER-USER Rules
+Docker bypasses this the same way it bypasses `ufw` — a rule in `ufw-before-input` doesn't see
+traffic Docker DNATs straight to a published container port. If this VPS runs `Pangolin`, the
+`admin-allow`/`geo-allow` rules above (and `manual-block`, set up in
+[Manual IP Blocklist](#manual-ip-blocklist) below) all need a mirror in the `DOCKER-USER` chain to
+actually cover 80/443/51820/21820 — one unified mechanism here covers all three rather than
+repeating the setup per section. Two things make a bare `iptables -A DOCKER-USER ...` insufficient
+on its own:
+
+* **Rule order** — `dockerd` creates `DOCKER-USER` with a trailing `-j RETURN` rule the moment the
+  daemon starts, so any traffic that reaches the chain without matching an earlier rule immediately
+  jumps back to Docker's own chain instead of falling through to anything appended after it. `-A`
+  (append) adds a rule *after* that existing `RETURN`, where it's never evaluated. Insert with
+  `-I DOCKER-USER 1` instead, so the new rule lands ahead of it.
+* **Nothing restores it automatically** — unlike `ufw-before-input` (rebuilt by `ufw reload`/on boot
+  from `/etc/ufw/before.rules`), a rule added straight to `DOCKER-USER` lives only in the running
+  kernel table. It doesn't survive a reboot, and `dockerd` re-creates the chain fresh each time it
+  starts, silently dropping anything added by hand.
+
+#### Create an idempotent apply script
+Create an idempotent apply script — checks each rule before inserting so re-running it (e.g. on
+every `docker.service` start) doesn't stack duplicate rules. Rules are inserted in *reverse* priority
+order deliberately: each `-I DOCKER-USER 1` pushes to the very top of the chain, so the last one
+inserted ends up evaluated first — the sequence below leaves `admin-allow`'s ACCEPT on top, `geo-allow`'s
+DROP below it, `manual-block`'s DROP below that, and Docker's own trailing `RETURN` last:
+```bash
+$ sudo tee /usr/local/sbin/apply-docker-user-rules.sh > /dev/null <<'EOF'
+#!/bin/bash
+set -euo pipefail
+insert_at_top() {
+  if ! iptables -C DOCKER-USER "$@" 2>/dev/null; then
+    iptables -I DOCKER-USER 1 "$@"
+  fi
+}
+insert_at_top -m set --match-set manual-block src -j DROP
+insert_at_top -m set ! --match-set geo-allow src -j DROP
+insert_at_top -m set --match-set admin-allow src -j ACCEPT
+EOF
+$ sudo chmod +x /usr/local/sbin/apply-docker-user-rules.sh
 ```
--A DOCKER-USER -m set --match-set admin-allow src -j ACCEPT
--A DOCKER-USER -m set ! --match-set geo-allow src -j DROP
+Adding, removing, or reordering a mirror rule later means editing this one script — it's the single
+source of truth for all three `DOCKER-USER` mirrors, not three copy-pasted `iptables` commands scattered
+across sections.
+
+#### Hook it into `docker.service` itself
+Hook it into the `docker.service` itself, rather than a standalone systemd unit — `ExecStartPost` runs
+every time the daemon (re)starts, which is the actual moment `DOCKER-USER` gets reset, including after
+an `unattended-upgrades`-triggered Docker package update:
+```bash
+$ sudo systemctl edit docker.service
 ```
 
-***Consider scope before blocking `Pangolin`'s public ports (80/443) this way*** — Pangolin already
-has per-resource [Resource Rules](../../../networking/reverse_tunnel/pangolin/README.md#how-access-control-works)
+Add the following:
+```
+[Unit]
+After=geoipset.service
+
+[Service]
+ExecStartPost=/usr/local/sbin/apply-docker-user-rules.sh
+```
+`After=geoipset.service` ensures the `admin-allow`/`geo-allow`/`manual-block` ipsets themselves already
+exist by the time the script runs — matching against a nonexistent set makes `iptables` error out
+rather than silently skip it.
+
+#### Apply now without restarting Docker
+Apply now without restarting Docker — a full `docker.service` restart would briefly take down every
+Pangolin container, so run the script directly this first time instead of restarting the daemon just to
+trigger `ExecStartPost`:
+```bash
+$ sudo systemctl daemon-reload
+$ sudo /usr/local/sbin/apply-docker-user-rules.sh
+```
+
+**Verify**
+```bash
+$ sudo iptables -L DOCKER-USER -v -n --line-numbers
+```
+Should show, top to bottom: the `admin-allow` ACCEPT, `geo-allow` DROP, `manual-block` DROP, then
+Docker's own `RETURN`. Repeat traffic that should be blocked (e.g. a confirmed-malicious IP already in
+`manual-block`) climbing that rule's packet counter is the real confirmation it's active — not just
+that the rule exists.
+
+***Consider scope before blocking `Pangolin`'s public ports (80/443) via the `geo-allow` mirror***
+— Pangolin already has per-resource
+[Resource Rules](../../../networking/reverse_tunnel/pangolin/README.md#how-access-control-works)
 that can geo-filter individual resources. A blanket host-level block on 80/443 is coarser: it
 affects every resource the same way, including ones you might want reachable from outside the US
 (e.g. a family member traveling). Applying it to SSH and any admin-only surface is close to
 risk-free; applying it to 80/443 is a real trade-off, not just a stronger version of the same
-control.
+control. This caveat doesn't apply to `manual-block` — a confirmed-malicious IP has no legitimate
+traffic to preserve.
 
 ## Manual IP Blocklist
 Fail2ban and Crowdsec bans below are both tied to that mechanism's own lifecycle — a fail2ban ban
@@ -420,10 +502,38 @@ Add:
 ExecStart=/bin/sh -c '/sbin/ipset restore -exist < /etc/ipset/manual-block.conf'
 ```
 
-**If this VPS runs Pangolin**, mirror the same rule into the `DOCKER-USER` chain — same
-Docker-bypasses-`ufw` caveat as `geo-allow` above, needed to also cover 80/443/etc.:
+**If this VPS runs Pangolin**, this set also needs a `DOCKER-USER` mirror to cover 80/443/etc. — same
+Docker-bypasses-`ufw` caveat as `geo-allow` above. The `manual-block` DROP is already included in
+[Persisting DOCKER-USER Rules](#persisting-docker-user-rules)'s apply script — if that section is set
+up (do it once, alongside `geo-allow`'s own mirror), nothing further is needed here. If it isn't yet, go
+set it up now: a `manual-block` entry with no `DOCKER-USER` mirror in place silently doesn't cover ports
+80/443/51820/21820 at all, even though `ipset list manual-block` shows the IP present.
+
+**5. Add a helper script for the recurring workflow** — wraps the append-then-rebuild sequence into
+one command instead of hand-editing the list file each time. `grep -qxF` does an exact, whole-line,
+fixed-string match rather than a substring search, so adding `1.2.3.4` doesn't false-positive against
+an existing `11.2.3.4` entry:
+```bash
+$ sudo tee /usr/local/sbin/block-ip.sh > /dev/null <<'EOF'
+#!/bin/bash
+set -euo pipefail
+IP="${1:?Usage: block-ip.sh <ip>}"
+LIST=/etc/ipset/manual-block-list.txt
+if grep -qxF "$IP" "$LIST"; then
+  echo "$IP is already in $LIST"
+  exit 0
+fi
+echo "$IP" | tee -a "$LIST" > /dev/null
+/usr/local/sbin/update-manual-block.sh
+echo "Added $IP to $LIST"
+ipset list manual-block | grep -qxF "$IP" && echo "Verified: $IP is active in the manual-block ipset"
+EOF
+$ sudo chmod +x /usr/local/sbin/block-ip.sh
 ```
--A DOCKER-USER -m set --match-set manual-block src -j DROP
+
+**Usage**
+```bash
+$ sudo /usr/local/sbin/block-ip.sh <ip>
 ```
 
 See [Alert Recon's Manually Banning IPs](../../../security/alert_recon/README.md#manually-banning-ips)
