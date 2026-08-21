@@ -20,6 +20,7 @@ applies to any internet-facing box running [Fail2ban](../fail2ban/README.md) and
 * [4. Sanity-Check the Jail/Engine Config](#4-sanity-check-the-jailengine-config)
 * [5. Look for a Pattern Worth Acting On](#5-look-for-a-pattern-worth-acting-on)
   * [Manually Banning IPs](#manually-banning-ips)
+    * [Automatically Promoting Confirmed Exploit Bans](#automatically-promoting-confirmed-exploit-bans)
 * [6. If a Ban Should Have Fired but Didn't](#6-if-a-ban-should-have-fired-but-didnt)
 * [Testing a Fix Without Locking Yourself Out](#testing-a-fix-without-locking-yourself-out)
 
@@ -190,6 +191,148 @@ $ sudo /usr/local/sbin/block-ip.sh <ip>
 Verify it took:
 ```bash
 $ sudo ipset list manual-block
+```
+
+### Automatically Promoting Confirmed Exploit Bans
+Manually eyeballing `cscli decisions list` after every alert doesn't scale once scanner traffic becomes
+a daily occurrence, and a lot of it does resolve on its own — `captcha` on a soft signal like
+`http-bad-user-agent` doesn't need a permanent block the way an actual exploit-attempt `ban` does. This
+promotes the strong-signal subset automatically, leaving weaker signals to Crowdsec's own temporary
+ban/captcha:
+
+***Promotion policy*** — only a decision with `type == ban` **and** a scenario name matching an
+exploit-signature pattern (`cve|rce|exploit|backdoor|vpatch|traversal`) gets permanently blocked.
+Softer scenarios (`http-probing`, `http-bad-user-agent`) stay on Crowdsec's own temporary
+ban/captcha, even when they fire against the same IP — a single low-signal hit isn't reason enough for
+a permanent block, but a matched CVE/RCE scenario is.
+
+***Polling interval matters here*** — Crowdsec ban durations can be as short as an hour or two (see the
+[Diagnosing and clearing a ban](../../system/ubuntu/hardening/README.md#diagnosing-and-clearing-a-ban)
+example durations), so a once-daily check (matching the [Security Review
+Digest](../../system/ubuntu/hardening/README.md#security-review-digest)'s cadence) would miss most
+decisions before they naturally expire. This runs on a 15-minute timer instead, the same interval as
+[Alert on Service Failures](../../system/ubuntu/hardening/README.md#alert-on-service-failures)'s
+`check-failed-units.timer`.
+
+**Install `jq`** — needed to parse `cscli`'s JSON output:
+```bash
+$ sudo apt install jq
+```
+
+**Create the script** — checks both Crowdsec engines (host-level and, if this VPS runs Pangolin, the
+dockerized stack engine — see
+[CrowdSec: Two Separate Engines by Design](../../networking/reverse_tunnel/pangolin/README.md#crowdsec-two-separate-engines-by-design)),
+skips anything already in `admin-allow` as a safety net against a false-positive match on your own IP,
+and always prints what it found before acting on it — silent success and a silently-broken pipeline
+should never look the same. `set -e` is deliberately left off here (unlike this doc's other scripts):
+each `cscli`/`jq` call below has its own `|| echo '[]'` fallback, so a transient failure on one engine
+degrades to "no matches from that engine" instead of aborting the whole run — with `-e` in place, an
+unreachable `docker compose exec` (e.g. Pangolin stack mid-restart) would silently kill the script
+before it ever reached the host-level check or printed anything, which is the exact failure mode that
+looks like unexplained silence:
+```bash
+$ sudo tee /usr/local/sbin/auto-promote-crowdsec-bans.sh > /dev/null <<'EOF'
+#!/bin/bash
+set -uo pipefail
+PATTERN='(cve|rce|exploit|backdoor|vpatch|traversal)'
+
+find_matches() {
+  # $1: raw `cscli decisions list -o json` output (or '[]' on failure)
+  # `-o json` returns an array of *alerts*, each holding a nested `decisions`
+  # array — the `type`/`scenario`/`value` fields being filtered on live inside
+  # that nested array, not on the alert object itself.
+  echo "$1" | jq -r --arg pat "$PATTERN" \
+    '(. // [])[] | (.decisions // [])[]? | select(.type=="ban" and (.scenario | test($pat; "i"))) | "\(.value)\t\(.scenario)"' 2>/dev/null
+}
+
+HOST_JSON=$(cscli decisions list -o json 2>/dev/null || echo '[]')
+PANGOLIN_JSON=$(cd /opt/pangolin 2>/dev/null && docker compose exec -T crowdsec cscli decisions list -o json 2>/dev/null || echo '[]')
+
+MATCHES=$(
+  { find_matches "$HOST_JSON"; find_matches "$PANGOLIN_JSON"; } | sort -u
+)
+
+if [ -z "$MATCHES" ]; then
+  echo "No decisions currently match the promotion policy (type=ban, scenario~=$PATTERN)."
+  exit 0
+fi
+
+echo "Decisions matching promotion policy:"
+while IFS=$'\t' read -r ip reason; do
+  printf '  %-16s %s\n' "$ip" "$reason"
+done <<< "$MATCHES"
+echo
+
+NEWLY_ADDED=""
+while IFS=$'\t' read -r ip reason; do
+  if ipset test admin-allow "$ip" &>/dev/null; then
+    echo "  SKIP             $ip ($reason) — present in admin-allow"
+  elif ipset test manual-block "$ip" &>/dev/null; then
+    echo "  ALREADY BLOCKED  $ip ($reason)"
+  else
+    echo "  ADDING           $ip ($reason)"
+    /usr/local/sbin/block-ip.sh "$ip" > /dev/null
+    NEWLY_ADDED+="$ip ($reason)"$'\n'
+  fi
+done <<< "$MATCHES"
+
+if [ -n "$NEWLY_ADDED" ]; then
+  curl -sf -H "Title: New permanent IP block — $(hostname)" \
+    -d "$NEWLY_ADDED" https://ntfy.sh/<your-private-topic-name>
+fi
+EOF
+$ sudo chmod +x /usr/local/sbin/auto-promote-crowdsec-bans.sh
+```
+***Both loops feed from `<<< "$MATCHES"` (a here-string) rather than `echo "$MATCHES" | while ...`***
+— piping into the loop runs its body in a subshell, so `NEWLY_ADDED` set inside it would vanish the
+moment the loop ends, and the `curl` push afterward would never see anything to send. A here-string
+runs the loop in the current shell instead, so the variable actually persists past `done`.
+
+**Use the same `ntfy` topic already set up** in
+[Alert on Service Failures](../../system/ubuntu/hardening/README.md#alert-on-service-failures) —
+replace `<your-private-topic-name>` with that same topic rather than generating a new one, so a new
+permanent block lands in the same channel you're already watching instead of a second, easy-to-forget
+subscription.
+
+Drop the `PANGOLIN_JSON` line (and its `find_matches` call below) if this VPS doesn't run Pangolin —
+there's no dockerized Crowdsec engine to query in that case; `HOST_JSON` alone is sufficient.
+
+**Test it manually before scheduling** — confirms the script actually matches and promotes against
+whatever's currently in `cscli decisions list`, rather than trusting it blind the first time a timer
+fires:
+```bash
+$ sudo /usr/local/sbin/auto-promote-crowdsec-bans.sh
+$ sudo ipset list manual-block
+```
+
+**Schedule it** on a 15-minute timer:
+```bash
+$ sudo tee /etc/systemd/system/auto-promote-crowdsec-bans.timer > /dev/null <<'EOF'
+[Unit]
+Description=Promote confirmed-exploit CrowdSec decisions to permanent manual-block
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=15min
+
+[Install]
+WantedBy=timers.target
+EOF
+$ sudo tee /etc/systemd/system/auto-promote-crowdsec-bans.service > /dev/null <<'EOF'
+[Unit]
+Description=Promote confirmed-exploit CrowdSec decisions to manual-block
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/auto-promote-crowdsec-bans.sh
+EOF
+$ sudo systemctl daemon-reload
+$ sudo systemctl enable --now auto-promote-crowdsec-bans.timer
+```
+
+**Verify it's actually running on schedule**, not just enabled:
+```bash
+$ sudo systemctl list-timers auto-promote-crowdsec-bans.timer
 ```
 
 ## 6. If a Ban Should Have Fired but Didn't
