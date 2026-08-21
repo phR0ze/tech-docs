@@ -222,6 +222,8 @@
     - [Pangolin](networking/reverse_tunnel/pangolin/README.md)
       - [Android Client](networking/reverse_tunnel/pangolin/android_client/README.md)
       - [NixOS Client](networking/reverse_tunnel/pangolin/nixos_client/README.md)
+      - [Vaultwarden Example](networking/reverse_tunnel/pangolin/vault_example/README.md)
+      - [Using the Pangolin API](networking/reverse_tunnel/pangolin/api/README.md)
   - [Remoting](networking/remoting/README.md)
     - [Guacamole](networking/remoting/guacamole/README.md)
     - [KasmVNC](networking/remoting/kasmvnc/README.md)

@@ -76,6 +76,7 @@ the use of Jellyfin.
     - [Remove restrictions from public service](#remove-restrictions-from-public-service)
     - [Google as OAuth2 provider](#google-as-oauth2-provider)
     - [Case Study: Locking Down Vaultwarden](#case-study-locking-down-vaultwarden)
+  - [Using the Pangolin API](#using-the-pangolin-api)
   - [Configure Pangolin Client](#configure-pangolin-client)
     - [Android Client](#android-client)
     - [Linux CLI (NixOS)](#linux-cli-nixos)
@@ -83,6 +84,8 @@ the use of Jellyfin.
 ### Linked pages
 * [Android Client](android_client/README.md)
 * [NixOS Client](nixos_client/README.md)
+* [Vaultwarden Example](vault_example/README.md)
+* [Using the Pangolin API](api/README.md)
 
 ## Overview
 Pangolin uses `Traefik` as its reverse proxy and `Gerbil` for `WireGuard tunnel management`. It can
@@ -2277,130 +2280,19 @@ accurate.) To use it:
    auto-creates their account and applies the mapped role/org — no manual pre-provisioning needed.
 
 #### Case Study: Locking Down Vaultwarden
-**Goal:** expose Vaultwarden through Pangolin so that only two named individuals — e.g. Bob and
-his daughter Alice — can reach it, with independent auditing and revocation.
+See [Vaultwarden Example](vault_example/README.md) for a full walkthrough — exposing Vaultwarden
+through Pangolin so that Pangolin's own identity layer (not just Vaultwarden's) gates *all*
+traffic, including the Bitwarden mobile app's API calls and not merely the browser-based web
+vault. Covers the `vaultwarden-family` role/device-approval setup, the upstream-source-verified fix
+for the Private HTTP resource SNI/Host-header gap, and how to apply it via the Pangolin API.
 
-**Important Nuance: Browser vs. Native App Access**
-
-Pangolin's SSO login wall (username/password + TOTP) is a ***browser-based redirect flow***. The
-Bitwarden mobile/desktop app talks directly to the server's API — it doesn't open a browser,
-follow redirects, or hold a session cookie — so the standard SSO gate doesn't apply to it the way
-it would to visiting a resource in Chrome/Safari. This matters when choosing how to expose
-Vaultwarden. 
-
-***Private Resource + Pangolin Client app*** — expose Vaultwarden as a
-private/ZTNA resource rather than a public HTTP resource. It's reachable only through the
-dedicated Pangolin Client app (a WireGuard-based tunnel client), and Bitwarden connects to the
-internal address once that tunnel is active. This preserves full defense in depth: Pangolin
-identity + TOTP at the outer (network) layer, and Vaultwarden's own master password + 2FA at
-the inner (application) layer.
-
-**Setup of the Private Resource**
-
-1. ***Two named user accounts — never a shared login***
-   - One account per person, each with their own credentials.
-   - Enables per-person audit logs and instant, independent revocation (e.g. if Alice's phone is
-     lost, Bob kills *her* access only).
-
-2. ***Enforce TOTP 2FA on both accounts***
-   - Pangolin has native TOTP with backup codes.
-   - This is the single highest-value control here: a leaked or guessed Pangolin password alone
-     is not enough to get in.
-
-3. ***Create a dedicated role*** — e.g. `vaultwarden-family`
-   - Add only the intended users to it.
-   - Pangolin supports multiple roles per user, so if Bob exposes other self-hosted services
-     later, he can scope each one to its own role instead of giving blanket access.
-
-4. ***Expose Vaultwarden as a Private (ZTNA) resource***
-   - Attach it to the `vaultwarden-family` role only — no "any authenticated user," no
-     public/anonymous fallback.
-   - Access requires the Pangolin Client app to establish a tunnel; there is no direct public
-     HTTP endpoint to scan or brute-force.
-
-5. ***Add Resource Rules as a network-level filter***
-   - Geo-block to the country/countries the user will realistically connect from — this cuts
-     most scanner and credential-stuffing traffic before it ever reaches the login page.
-   - Skip IP allowlisting when the user roams (dorm wifi, cellular, coffee shops) — it's
-     impractical to maintain.
-
-6. ***Avoid shared secrets as the primary gate***
-   - Pangolin also offers resource-specific pins/passwords and email-OTP whitelisting. These are
-     handy for one-off sharing but weaker than per-user identity + TOTP for something as
-     sensitive as a password vault — a shared pin can't be individually revoked or audited.
-   - Skip these for a resource like this.
-
-7. ***Separate admin and resource access boundaries***
-   - Non-owner accounts should be plain members of the resource's role only — never
-     admin/owner on the Pangolin org itself.
-
-**Background**
-
-For a private resource, Bob defines a ***destination*** — either a single host/IP (e.g.
-Vaultwarden's internal container address) or a CIDR block — plus which ports/protocols are
-allowed (TCP/UDP/ICMP). He can optionally give it a friendly internal DNS name instead of
-remembering an IP.
-
-There are two different tunnel roles at play:
-* ***Newt*** — runs on *Bob's* side (the site connector), establishing the outbound WireGuard
-  tunnel from his home network/VPS to the Pangolin server. This is what makes Vaultwarden
-  reachable at all, without opening inbound ports on his firewall.
-* ***Pangolin Client (Olm)*** — runs on the *user's* device (Alice's phone), and is what she
-  connects with to reach resources she's been granted. Traffic is scoped only to the specific
-  resources her role allows — not full-network VPN access.
-
-* ***Device fingerprinting*** — identifies each device by attributes like OS version and
-  hostname, so Bob can distinguish "Alice's iPhone" from any other device that might try to log in
-  with her credentials.
-* ***Device approval (deny-by-default for new hardware)*** — even after correct password + TOTP,
-  a brand-new unrecognized device is blocked until Bob explicitly approves it from the dashboard.
-  Turn this on for the `vaultwarden-family` role.
-* ***Instant block on lost/compromised device*** — one click on the dashboard immediately cuts
-  off a specific device (e.g. if Alice loses her phone), without touching her account's other
-  access. Devices are archived, not deleted, preserving an audit trail.
-* ***Posture checks*** (optional) — can require things like disk encryption before granting
-  access. Likely more than needed for a personal use case, but worth knowing about.
-
-**Setup Steps**
-
-1. Vaultwarden is already reachable via Newt as part of Bob's Pangolin site.
-2. Create a Private Resource pointing at Vaultwarden's *internal* host:port (not its
-   public-facing address) — e.g. its container address on his Docker network.
-3. Restrict the port policy to just what Vaultwarden needs (its HTTPS port) — nothing broader.
-4. Assign the resource to the `vaultwarden-family` role only.
-5. [Enable device approval](#require-device-approval-on-private-resources) for that role.
-6. Alice installs the Pangolin Client app (Play Store / App Store), logs in with password + TOTP,
-   and Bob approves her device the first time from the dashboard. From then on, Bitwarden talks
-   to the internal address through the tunnel automatically.
-
-**Alice's Phone Experience, Step by Step**
-
-1. Alice opens the `Pangolin Client` app (separate from Bitwarden).
-2. It prompts her to sign in to Bob's Pangolin org — she enters her username and password.
-3. She's prompted for her TOTP code — she opens her authenticator app, reads the 6-digit code,
-   and enters it.
-4. The Pangolin Client establishes the tunnel in the background, scoped only to the resources
-   her role (`vaultwarden-family`) can reach.
-5. She opens the `Bitwarden app`, configured with Bob's self-hosted server URL. Since the tunnel is
-   up, it connects.
-6. She logs into Bitwarden as normal: master password, then Vaultwarden's own 2FA (if enabled).
-
-In practice this isn't a "re-auth every time" ritual — the Pangolin Client can stay connected or
-reconnect automatically, with re-auth frequency controlled by the session length Bob configures.
-
-**Important:** don't store the Pangolin TOTP secret inside the Bitwarden vault it's protecting —
-that creates a circular dependency (locked out of the vault means locked out of the code needed
-to unlock the vault). Use a separate authenticator app on Alice's phone, and keep printed/offline
-backup codes somewhere safe.
-
-**Access Flow**
-
-Two independent authentication layers, both scoped to named individuals, both auditable, and
-both revocable independently:
-
-1. **Outer layer (network):** Pangolin Client login — username/password + TOTP — establishes the
-   tunnel.
-2. **Inner layer (application):** Vaultwarden login — master password + Vaultwarden 2FA.
+### Using the Pangolin API
+See [Using the Pangolin API](api/README.md) for calling Pangolin's REST API directly — needed for
+resource fields (like `tlsServerName`/`setHostHeader` on a Private HTTP resource, per the
+[Vaultwarden Example](vault_example/README.md)) that aren't exposed in the dashboard form yet.
+Covers the two separate API servers Pangolin runs (only one accepts an API key — hitting the wrong
+one is a common source of a confusing generic `401 Unauthorized`), how to turn the key-gated one on
+without ever exposing it publicly, and how to create a properly scoped API key.
 
 ### Configure Pangolin Client
 
