@@ -60,7 +60,6 @@ CHECKPOINT=$CHECKPOINT_DIR/last-reviewed
 mkdir -p "$CHECKPOINT_DIR"
 NOW=$(date +%Y-%m-%dT%H:%M:%S)
 SINCE=$(cat "$CHECKPOINT" 2>/dev/null || echo 1970-01-01T00:00:00)
-THRESHOLD=5 # attempts within the reviewed window before an IP is flagged as a block suspect
 
 echo "=== Reviewing since $SINCE ==="
 
@@ -104,11 +103,10 @@ echo "=== Port actually being hit ==="
 ss -tlnp | grep ssh
 
 echo
-echo "=== Suspect IPs (>= $THRESHOLD attempts, not already trusted or blocked) ==="
+echo "=== Suspect IPs (every offender above, not already trusted or blocked — review before acting) ==="
 FOUND_SUSPECT=0
 while read -r count ip _rest; do
   [ -z "${ip:-}" ] && continue
-  [ "$count" -lt "$THRESHOLD" ] && continue
   if ipset test admin-allow "$ip" &>/dev/null; then
     echo "  $ip ($count attempts) — SKIPPED, present in admin-allow (your own IP?)"
     continue
