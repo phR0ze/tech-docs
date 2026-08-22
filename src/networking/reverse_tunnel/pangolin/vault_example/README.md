@@ -180,3 +180,4 @@ This is for configuring Pangolin proxy to Caddy over TCP for native applications
 ### Device Setup Steps
 
 * see [setup Android phone](../android_client/README.md)
+* see [setup Extensions in Firefox](../extension_client/README.md)

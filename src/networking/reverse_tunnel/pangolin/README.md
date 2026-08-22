@@ -84,6 +84,7 @@ the use of Jellyfin.
 ### Linked pages
 * [Android Client](android_client/README.md)
 * [NixOS Client](nixos_client/README.md)
+* [Extension Client](extension_client/README.md)
 * [Vaultwarden Example](vault_example/README.md)
 * [Using the Pangolin API](api/README.md)
 
