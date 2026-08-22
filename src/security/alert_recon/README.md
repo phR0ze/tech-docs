@@ -12,6 +12,8 @@ applies to any internet-facing box running [Fail2ban](../fail2ban/README.md) and
 ### Quick links
 * [.. up dir](..)
 * [Overview](#overview)
+* [Automated Recon Script](#automated-recon-script)
+  * [Passwordless sudo for the recon script](#passwordless-sudo-for-the-recon-script)
 * [1. Read the Raw Log](#1-read-the-raw-log)
   * [Checkpointing What You've Already Reviewed](#checkpointing-what-youve-already-reviewed)
   * [Sanity-Check fail2ban Is Actually Watching](#sanity-check-fail2ban-is-actually-watching)
@@ -28,7 +30,133 @@ applies to any internet-facing box running [Fail2ban](../fail2ban/README.md) and
 A nonzero count in a digest isn't itself an emergency — the internet constantly scans every public
 IP on port 22 (and whatever you moved SSH to). The actual question worth answering each time is
 *"did my defenses handle this correctly,"* not *"is the count zero."* Work through the steps below
-top to bottom; most alerts resolve at step 2.
+top to bottom; most alerts resolve at step 2. Steps 1–3 are read-only and don't change alert to
+alert — [Automated Recon Script](#automated-recon-script) below wraps them into one command instead
+of re-typing the same pipelines by hand each time; the manual walk-throughs stay in place as the
+reference for what it's doing and why, useful when something looks off and needs digging into by
+hand.
+
+## Automated Recon Script
+Steps 1–3 below — read the raw log, check what your defenses already did, confirm the port actually
+being hit — are read-only end to end and identical every time an alert lands. Wrapping them into one
+script means an alert resolves in one command instead of hand-typing the same `grep`/`awk` pipelines,
+while leaving those sections in place below as the reference for what each piece is doing.
+
+**Create the script** — same checkpointing logic as
+[Checkpointing What You've Already Reviewed](#checkpointing-what-youve-already-reviewed), the raw-log
+read, the fail2ban-is-actually-watching sanity check from
+[Sanity-Check fail2ban Is Actually Watching](#sanity-check-fail2ban-is-actually-watching), what your
+defenses already did ([step 2](#2-check-what-your-defenses-already-did)), the SSH port sanity check
+([step 3](#3-confirm-the-port-actually-being-hit)), and a closing list of suspect IPs worth a manual
+block ([step 5](#5-look-for-a-pattern-worth-acting-on)), in one pass. Unlike the manual walk-through,
+the script never advances the checkpoint itself — it only prints the command to do so, so re-running
+it mid-investigation always shows the same window instead of silently narrowing it:
+```bash
+$ sudo tee /usr/local/sbin/alert-recon.sh > /dev/null <<'EOF'
+#!/bin/bash
+set -uo pipefail
+CHECKPOINT_DIR=/var/lib/alert-recon
+CHECKPOINT=$CHECKPOINT_DIR/last-reviewed
+mkdir -p "$CHECKPOINT_DIR"
+NOW=$(date +%Y-%m-%dT%H:%M:%S)
+SINCE=$(cat "$CHECKPOINT" 2>/dev/null || echo 1970-01-01T00:00:00)
+THRESHOLD=5 # attempts within the reviewed window before an IP is flagged as a block suspect
+
+echo "=== Reviewing since $SINCE ==="
+
+echo
+echo "=== [sshd] Found entries in fail2ban.log ==="
+grep '\[sshd\] Found' /var/log/fail2ban.log | awk -v since="$SINCE" '($1"T"$2) > since' | tail -n 30
+
+echo
+echo "=== Total attempts and top offenders ==="
+OFFENDERS=$(grep '\[sshd\] Found' /var/log/fail2ban.log | awk -v since="$SINCE" '($1"T"$2) > since' | \
+  awk '{
+    ip=""; for(i=1;i<=NF;i++) if($i=="Found") ip=$(i+1)
+    d=$1; count[ip]++
+    if (!(ip in first) || d<first[ip]) first[ip]=d
+    if (!(ip in last) || d>last[ip]) last[ip]=d
+  }
+  END { for (ip in count) printf "%6d  %-16s  %s to %s\n", count[ip], ip, first[ip], last[ip] }' \
+  | sort -rn)
+echo "$OFFENDERS" | head
+
+echo
+echo "=== fail2ban service sanity check ==="
+systemctl is-active fail2ban || echo "WARNING: fail2ban is not active"
+
+echo
+echo "=== auth.log direct check (cross-check against fail2ban.log above) ==="
+grep -E "sshd\[[0-9]+\]: (Failed (password|publickey) for|[Ii]nvalid user .* from)" /var/log/auth.log \
+  | awk -v since="$SINCE" '$1 > since' | tail -n 30
+
+echo
+echo "=== What your defenses already did ==="
+fail2ban-client status sshd
+cscli decisions list
+if [ -f /opt/pangolin/docker-compose.yml ]; then
+  (cd /opt/pangolin && docker compose exec -T crowdsec cscli decisions list)
+fi
+ipset list admin-allow
+
+echo
+echo "=== Port actually being hit ==="
+ss -tlnp | grep ssh
+
+echo
+echo "=== Suspect IPs (>= $THRESHOLD attempts, not already trusted or blocked) ==="
+FOUND_SUSPECT=0
+while read -r count ip _rest; do
+  [ -z "${ip:-}" ] && continue
+  [ "$count" -lt "$THRESHOLD" ] && continue
+  if ipset test admin-allow "$ip" &>/dev/null; then
+    echo "  $ip ($count attempts) — SKIPPED, present in admin-allow (your own IP?)"
+    continue
+  elif ipset test manual-block "$ip" &>/dev/null; then
+    echo "  $ip ($count attempts) — already in manual-block, nothing to do"
+  else
+    echo "  $ip ($count attempts) — sudo /usr/local/sbin/block-ip.sh $ip"
+    FOUND_SUSPECT=1
+  fi
+done <<< "$OFFENDERS"
+[ "$FOUND_SUSPECT" -eq 0 ] && echo "  none"
+
+echo
+echo "=== Checkpoint NOT advanced — this run is safe to repeat ==="
+echo "Once you're done reviewing (including any manual blocks above), advance it with:"
+echo "  echo \"$NOW\" | sudo tee $CHECKPOINT"
+EOF
+$ sudo chmod +x /usr/local/sbin/alert-recon.sh
+```
+
+**Run it**
+```bash
+$ sudo /usr/local/sbin/alert-recon.sh
+```
+Review the output, run `sudo /usr/local/sbin/block-ip.sh <ip>` for any suspect worth blocking, then
+copy the `echo ... | sudo tee ...` command the script prints at the end to advance the checkpoint —
+it already has that run's exact timestamp baked in, so nothing gets skipped on the next alert.
+
+### Passwordless sudo for the recon script
+The script is read-only end to end (the only write is the checkpoint file itself), so it's safe to
+grant `NOPASSWD` for it specifically. ***Don't grant `NOPASSWD` for the individual commands it
+wraps*** (`grep`, `cat`, etc.) — those would open a path to reading arbitrary files as root (e.g.
+`/etc/shadow`) the moment any of them gets invoked with different arguments elsewhere. Scoping to
+one fixed script keeps the exposure to exactly what's written above:
+```bash
+$ sudo visudo -f /etc/sudoers.d/alert-recon
+```
+Contents:
+```
+alice ALL=(root) NOPASSWD: /usr/local/sbin/alert-recon.sh
+```
+**Verify**
+```bash
+$ sudo -l
+$ sudo /usr/local/sbin/alert-recon.sh
+```
+`sudo -l` should list only this one script under `NOPASSWD`; everything else run with `sudo` should
+still prompt for a password as before.
 
 ## 1. Read the Raw Log
 Start with `fail2ban.log` — it's fail2ban's own record of what it matched, more reliable than a
