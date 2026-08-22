@@ -2166,7 +2166,9 @@ with the traffic once the client's tunnel is up:
   handling instead of treating it as an opaque TCP stream.
 
 ##### Create HTTP Private Resource
-Use the HTTP option for something like Vaultwarden that serves it's api up as HTTP/S.
+Unfortunately the HTTP Private resources don't work with Rerverse Proxies as they don't pass on the
+SNI values needed to map to the correct backend. However if you wanted to connect directly to the
+service its still an option.
 
 1. Navigate to `NETWORK >Resources >Private` in the left hand navigation then click `+ Add Resource`
 2. Set the `Name` to e.g. `whoami`
