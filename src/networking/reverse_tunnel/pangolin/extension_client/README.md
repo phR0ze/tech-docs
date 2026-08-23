@@ -22,6 +22,10 @@ working correctly with Pangolin's public resources. The browser hits the ***Publ
 granted access to the resource — the same redirect flow as opening the resource in a tab, since the
 extension runs inside the browser's own process and shares its cookies/session for the domain.
 
+***WARNING*** I noticed that the extension didn't automatically prompt for the login flow the way I
+was expecting. However once I went through the login flow in the browser the extension inherited the
+session and worked fine.
+
 ## Install and configure Bitwarden extension
 
 ### Install the Extension
