@@ -22,7 +22,7 @@ applies to any internet-facing box running [Fail2ban](../fail2ban/README.md) and
 * [4. Sanity-Check the Jail/Engine Config](#4-sanity-check-the-jailengine-config)
 * [5. Look for a Pattern Worth Acting On](#5-look-for-a-pattern-worth-acting-on)
   * [Manually Banning IPs](#manually-banning-ips)
-    * [Automatically Promoting Confirmed Exploit Bans](#automatically-promoting-confirmed-exploit-bans)
+    * [Automatically Promoting All Crowdsec-Flagged IPs](#automatically-promoting-all-crowdsec-flagged-ips)
 * [6. If a Ban Should Have Fired but Didn't](#6-if-a-ban-should-have-fired-but-didnt)
 * [Testing a Fix Without Locking Yourself Out](#testing-a-fix-without-locking-yourself-out)
 
@@ -319,18 +319,27 @@ Verify it took:
 $ sudo ipset list manual-block
 ```
 
-### Automatically Promoting Confirmed Exploit Bans
+### Automatically Promoting All Crowdsec-Flagged IPs
 Manually eyeballing `cscli decisions list` after every alert doesn't scale once scanner traffic becomes
-a daily occurrence, and a lot of it does resolve on its own — `captcha` on a soft signal like
-`http-bad-user-agent` doesn't need a permanent block the way an actual exploit-attempt `ban` does. This
-promotes the strong-signal subset automatically, leaving weaker signals to Crowdsec's own temporary
-ban/captcha:
+a daily occurrence. This promotes *every* IP Crowdsec has an active decision against — regardless of
+`type` (`ban`, `captcha`, …) or scenario — to a permanent [`manual-block`](../../system/ubuntu/hardening/README.md#manual-ip-blocklist)
+entry, instead of leaving any of it to Crowdsec's own temporary ban/captcha lifecycle:
 
-***Promotion policy*** — only a decision with `type == ban` **and** a scenario name matching an
-exploit-signature pattern (`cve|rce|exploit|backdoor|vpatch|traversal`) gets permanently blocked.
-Softer scenarios (`http-probing`, `http-bad-user-agent`) stay on Crowdsec's own temporary
-ban/captcha, even when they fire against the same IP — a single low-signal hit isn't reason enough for
-a permanent block, but a matched CVE/RCE scenario is.
+***Promotion policy*** — every decision Crowdsec currently holds against an IP gets permanently
+blocked, full stop. No `type` or scenario filtering — a single soft-signal hit (`http-probing`,
+`http-bad-user-agent`) is promoted exactly the same as a matched CVE/RCE `ban`.
+
+***This is deliberately aggressive — know the trade-off before enabling it.*** Crowdsec's own
+temporary `ban`/`captcha` decisions exist precisely because not every signal warrants a permanent
+block; promoting all of them trades that nuance for the tightest possible reaction to first sight,
+at the cost of a higher false-positive rate. In particular, the `ssh-keyscan` false-positive
+described in [Diagnosing and clearing a ban](../../system/ubuntu/hardening/README.md#diagnosing-and-clearing-a-ban)
+— which previously just expired on its own — now gets permanently promoted the next time this timer
+fires, unless the IP is already in `admin-allow`. Keep `admin-allow` current (every IP you might
+scan or connect from) before turning this on, and expect to
+[clear](../../system/ubuntu/hardening/README.md#clear-a-crowdsec-ban) and
+[unblock](../../system/ubuntu/hardening/README.md#manual-ip-blocklist) an occasional false positive
+by hand.
 
 ***Polling interval matters here*** — Crowdsec ban durations can be as short as an hour or two (see the
 [Diagnosing and clearing a ban](../../system/ubuntu/hardening/README.md#diagnosing-and-clearing-a-ban)
@@ -360,47 +369,47 @@ looks like unexplained silence:
 $ sudo tee /usr/local/sbin/auto-promote-crowdsec-bans.sh > /dev/null <<'EOF'
 #!/bin/bash
 set -uo pipefail
-PATTERN='(cve|rce|exploit|backdoor|vpatch|traversal)'
 
-find_matches() {
+find_decisions() {
   # $1: raw `cscli decisions list -o json` output (or '[]' on failure)
   # `-o json` returns an array of *alerts*, each holding a nested `decisions`
-  # array — the `type`/`scenario`/`value` fields being filtered on live inside
-  # that nested array, not on the alert object itself.
-  echo "$1" | jq -r --arg pat "$PATTERN" \
-    '(. // [])[] | (.decisions // [])[]? | select(.type=="ban" and (.scenario | test($pat; "i"))) | "\(.value)\t\(.scenario)"' 2>/dev/null
+  # array — the `type`/`scenario`/`value` fields live inside that nested array,
+  # not on the alert object itself. No filtering here — every decision of
+  # every type/scenario is promoted.
+  echo "$1" | jq -r \
+    '(. // [])[] | (.decisions // [])[]? | "\(.value)\t\(.type)\t\(.scenario)"' 2>/dev/null
 }
 
 HOST_JSON=$(cscli decisions list -o json 2>/dev/null || echo '[]')
 PANGOLIN_JSON=$(cd /opt/pangolin 2>/dev/null && docker compose exec -T crowdsec cscli decisions list -o json 2>/dev/null || echo '[]')
 
-MATCHES=$(
-  { find_matches "$HOST_JSON"; find_matches "$PANGOLIN_JSON"; } | sort -u
+DECISIONS=$(
+  { find_decisions "$HOST_JSON"; find_decisions "$PANGOLIN_JSON"; } | sort -u
 )
 
-if [ -z "$MATCHES" ]; then
-  echo "No decisions currently match the promotion policy (type=ban, scenario~=$PATTERN)."
+if [ -z "$DECISIONS" ]; then
+  echo "No active Crowdsec decisions on either engine."
   exit 0
 fi
 
-echo "Decisions matching promotion policy:"
-while IFS=$'\t' read -r ip reason; do
-  printf '  %-16s %s\n' "$ip" "$reason"
-done <<< "$MATCHES"
+echo "Active Crowdsec decisions (promoting all, regardless of type/scenario):"
+while IFS=$'\t' read -r ip type reason; do
+  printf '  %-16s %-8s %s\n' "$ip" "$type" "$reason"
+done <<< "$DECISIONS"
 echo
 
 NEWLY_ADDED=""
-while IFS=$'\t' read -r ip reason; do
+while IFS=$'\t' read -r ip type reason; do
   if ipset test admin-allow "$ip" &>/dev/null; then
-    echo "  SKIP             $ip ($reason) — present in admin-allow"
+    echo "  SKIP             $ip ($type: $reason) — present in admin-allow"
   elif ipset test manual-block "$ip" &>/dev/null; then
-    echo "  ALREADY BLOCKED  $ip ($reason)"
+    echo "  ALREADY BLOCKED  $ip ($type: $reason)"
   else
-    echo "  ADDING           $ip ($reason)"
+    echo "  ADDING           $ip ($type: $reason)"
     /usr/local/sbin/block-ip.sh "$ip" > /dev/null
-    NEWLY_ADDED+="$ip ($reason)"$'\n'
+    NEWLY_ADDED+="$ip ($type: $reason)"$'\n'
   fi
-done <<< "$MATCHES"
+done <<< "$DECISIONS"
 
 if [ -n "$NEWLY_ADDED" ]; then
   curl -sf -H "Title: New permanent IP block — $(hostname)" \
@@ -409,7 +418,7 @@ fi
 EOF
 $ sudo chmod +x /usr/local/sbin/auto-promote-crowdsec-bans.sh
 ```
-***Both loops feed from `<<< "$MATCHES"` (a here-string) rather than `echo "$MATCHES" | while ...`***
+***Both loops feed from `<<< "$DECISIONS"` (a here-string) rather than `echo "$DECISIONS" | while ...`***
 — piping into the loop runs its body in a subshell, so `NEWLY_ADDED` set inside it would vanish the
 moment the loop ends, and the `curl` push afterward would never see anything to send. A here-string
 runs the loop in the current shell instead, so the variable actually persists past `done`.
@@ -420,7 +429,7 @@ replace `<your-private-topic-name>` with that same topic rather than generating 
 permanent block lands in the same channel you're already watching instead of a second, easy-to-forget
 subscription.
 
-Drop the `PANGOLIN_JSON` line (and its `find_matches` call below) if this VPS doesn't run Pangolin —
+Drop the `PANGOLIN_JSON` line (and its `find_decisions` call below) if this VPS doesn't run Pangolin —
 there's no dockerized Crowdsec engine to query in that case; `HOST_JSON` alone is sufficient.
 
 **Test it manually before scheduling** — confirms the script actually matches and promotes against
@@ -435,7 +444,7 @@ $ sudo ipset list manual-block
 ```bash
 $ sudo tee /etc/systemd/system/auto-promote-crowdsec-bans.timer > /dev/null <<'EOF'
 [Unit]
-Description=Promote confirmed-exploit CrowdSec decisions to permanent manual-block
+Description=Promote all active CrowdSec decisions to permanent manual-block
 
 [Timer]
 OnBootSec=5min
@@ -446,7 +455,7 @@ WantedBy=timers.target
 EOF
 $ sudo tee /etc/systemd/system/auto-promote-crowdsec-bans.service > /dev/null <<'EOF'
 [Unit]
-Description=Promote confirmed-exploit CrowdSec decisions to manual-block
+Description=Promote all active CrowdSec decisions to manual-block
 
 [Service]
 Type=oneshot
