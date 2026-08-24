@@ -44,8 +44,9 @@ the app) the Pangolin Client, then relaunch and reconnect.
 ### Configure Pangolin VPN Client
 1. Launch the app
 2. Hit `Self-hosted or dedicated instance` button
-3. Add the self-hosted server address e.g. `https://vault-vpn.example.com`
-4. Login with your Email and Password and any 2FA you enabled
+3. Add the self-hosted server address e.g. `https://pangolin.example.com`
+4. Copy the device code to entered later
+4. Login with your Email and Password and any 2FA when prompted
 5. Trust your device and flip the toggle to connect
 6. Allow the app to start a VPN
 7. Allow the app to run in the background

@@ -35,6 +35,7 @@ Brief description of the topic.
 - [.. up dir](..)
 - [Section One](#section-one)
   - [Subsection](#subsection)
+    - [Subsubsection](#subsubsection)
 - [Another Section](#another-section)
 
 ### Linked pages
@@ -63,6 +64,7 @@ Brief description of the topic.
 - `#` — page title only (one per file)
 - `##` — major sections
 - `###` — subsections (also used for `Quick links` and `Linked pages` nav blocks)
+- `####` — subsubsections
 
 **Formatting conventions:**
 - `***term***` — bold-italic for key terms and strong emphasis
@@ -79,6 +81,7 @@ current outline. The block must reflect the page as it exists after the edit —
 Rules:
 - Every `##` heading gets a top-level entry
 - Every `###` heading gets an indented entry under its parent `##`
+- Every `####` heading gets an indented entry under its parent `###`
 - `[.. up dir](..)` stays as the first entry, always
 - Anchor format follows the [GitHub Flavored Markdown spec](https://github.github.com/gfm/#links): lowercase, spaces replaced with hyphens, punctuation stripped
 - Remove entries for headings that were deleted; add entries for headings that were added

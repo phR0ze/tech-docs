@@ -10,3 +10,4 @@
 * [Fail2ban](fail2ban/README.md)
 * [IAM](iam/README.md)
 * [Password Managers](password_managers/README.md)
+* [Safety](safety/README.md)

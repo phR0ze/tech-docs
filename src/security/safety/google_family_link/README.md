@@ -1,22 +1,24 @@
-# Google Family link <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
+# Google Family link <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
 [Google Family Link](https://families.google/familylink/) is advertised as helping keep your family 
 safer online. It provides tools for parents and children to create healthy, positive digital habits.
 
 ### Quick links
-* [.. up dir](../README.md)
+* [.. up dir](..)
 * [Overview](#overview)
-  * [Features](#features)
+  * [Supported](#supported)
   * [Not Supported](#not-supported)
 * [Getting started](#getting-started)
   * [Linking a child device](#linking-a-child-device)
-  * [Play a sound](#play-a-sound)
+  * [Stopping supervision on a child's account](#stopping-supervision-on-a-childs-account)
+* [Features](#features)
+  * [Play sound](#play-sound)
 
 ## Overview
 Google's Family Link provides controls for helping keep your family safer online.
 * [Youtube Family Center](https://families.youtube.com)
 
-### Features
+### Supported
 * Manage account settings & controls
   * Control which devices or apps child signs in to with their Google Account
   * Manage Web and App activity and location history
@@ -76,6 +78,25 @@ the same for the parent. Both account holders need to be present.
    9. Activate and `Allow` supervision
 2. On parent's device launch `Family Link`
    1. Configure settings as desired for the child account
+
+### Stopping supervision on a child's account
+Stopping supervision removes Family Link controls from the account entirely, across all of the
+child's devices, rather than just unlinking one device. A child under 18 needs a parent's
+approval to stop supervision, and it's only available once the child reaches 13 (or the
+applicable age in your country).
+
+**References**
+* [Stop supervision on a child's Google Account](https://support.google.com/families/answer/9055704)
+
+### Via Family Link app (parent's device)**
+1. Open `Family Link` on the parent device
+2. At the top left, select the child's profile
+3. Tap `Controls` then `Account Settings`
+4. Tap `Stop supervision`
+5. Scroll to the bottom and check `I understand...`
+6. Finally tap `Stop supervision`
+
+## Features
 
 ### Play sound
 In the Family Link app there is an option to `Play sound`. This will play a simple beep on the 

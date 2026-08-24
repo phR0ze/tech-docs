@@ -176,5 +176,5 @@ switch over to use them instead of the default LineageOS apps.
   * Better integration with Google Gmail
 
 ### Google Family Link
-see [Google Family Link > Linking a child device](../../../networking/google_family_link/README.md#linking-a-child-device)
+see [Google Family Link > Linking a child device](../../../security/safety/google_family_link/README.md#linking-a-child-device)
 
