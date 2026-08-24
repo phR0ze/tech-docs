@@ -8,6 +8,7 @@
   * [Install and configure in NixOS](#install-and-configure-in-nixos)
 * [Networking](#networking)
   * [Static IP for Container](#static-ip-for-container)
+  * [Stale Hostport NAT Rules After Restart](#stale-hostport-nat-rules-after-restart)
 
 ## Overview
 
@@ -187,6 +188,107 @@ service with the host macvlan having an assigned IP.
      image = "docker.io/frooodle/s-pdf:latest";
      ports = [ "192.168.1.60:80:8080" ];
    };
+   ```
+
+### Stale Hostport NAT Rules After Restart
+Podman/netavark have a long-standing, still-open bug:
+[containers/podman#27516](https://github.com/containers/podman/issues/27516)
+(originally [containers/netavark#302](https://github.com/containers/netavark/issues/302)). When a
+container with a published port (`ports = [ "127.0.0.1:8082:8080" ]`) is stopped, netavark fails to
+remove its hostport DNAT rule from the `ip nat` table — the cleanup step throws something like:
+
+```
+Error: cleaning up container <id>: removing container <id> network: netavark: setns: IO error: Invalid argument (os error 22)
+```
+
+On restart, netavark just appends a *new* DNAT rule for the same port rather than replacing the old
+one. `nftables` evaluates rules top-down and the **first match wins** for NAT decisions, so the
+stale rule — pointing at the now-dead IP of the previous container instance — keeps winning.
+Symptoms: the container is healthy, `podman ps` looks fine, but the published port is unreachable
+(connection times out, or `no route to host` if the old bridge/subnet is gone too). Worse: if the
+whole podman *network* gets recreated (not just the container), it can land on a different
+auto-assigned `10.89.X.0/24` subnet than before, leaving the host bridge interface holding a
+leftover address for a subnet nothing routes to anymore.
+
+No maintainer-side fix exists as of this writing — this is a workaround, not a resolution.
+
+**Durable mitigation: pin the subnet and the container's IP**
+
+If a container's IP never changes across restarts, a stale rule netavark fails to clean up ends up
+*identical* to the fresh one — a harmless duplicate instead of a dead route. Pin both the network's
+subnet and each container's address instead of relying on netavark's auto-IPAM:
+
+```nix
+# Pin the network to a fixed subnet instead of auto-IPAM
+systemd.services."podman-network-myapp" = {
+  serviceConfig = { Type = "oneshot"; RemainAfterExit = true;
+    ExecStop = [ "${pkgs.podman}/bin/podman network rm -f myapp" ]; };
+  script = ''
+    if ! ${pkgs.podman}/bin/podman network exists myapp; then
+      ${pkgs.podman}/bin/podman network create --interface-name myapp --subnet 10.89.101.0/24 myapp
+    fi
+  '';
+};
+
+virtualisation.oci-containers.containers.myapp = {
+  networks = [ "myapp" ];
+  ports = [ "127.0.0.1:8082:8080" ];
+  extraOptions = [ "--ip=10.89.101.2" ];  # fixed IP within the pinned subnet
+};
+```
+
+With this in place, ordinary restarts (`systemctl restart`, reboots, redeploys) stop being a problem
+— the same IP gets re-requested every time, so there's nothing for a stale rule to conflict with.
+
+**One-time manual fix after actually changing a network's subnet**
+
+Changing `subnet`/`ip` in code (or migrating an existing service onto this pattern for the first
+time) still requires a one-time manual reset, because the *old* subnet's rule is still sitting in
+the NAT table pointing at a dead address. Simply removing and recreating the podman network does
+**not** clean this up — the hostport DNAT rule lives in a separate chain keyed to the
+container/port, not to the network, so `podman network rm` never touches it.
+
+```
+NAME=myapp
+PORT=8082   # published host port; skip steps 4-5 if the service publishes no port
+```
+
+1. Stop the container and its network unit:
+   ```bash
+   sudo systemctl stop podman-$NAME podman-network-$NAME
+   ```
+2. Remove the podman network:
+   ```bash
+   sudo podman network rm -f $NAME
+   ```
+3. Force-delete the bridge interface if it's still lingering (network rm doesn't always clean this
+   up either):
+   ```bash
+   ip -br addr show $NAME
+   sudo ip link delete $NAME 2>/dev/null
+   ```
+4. Start the container — this recreates the network fresh on the new pinned subnet:
+   ```bash
+   sudo systemctl start podman-$NAME
+   sudo podman network inspect $NAME --format '{{(index .subnets 0).subnet}}'  # sanity check
+   ```
+5. Find the stale rule — the actual fix. It's in the same `NETAVARK-DN-<hash>` chain as the fresh
+   one:
+   ```bash
+   sudo nft -a list ruleset | grep -B1 -A1 "dport $PORT"
+   ```
+   The `jump` line names the chain (`NETAVARK-DN-<hash>`). Listing that chain shows **two**
+   `dnat to` lines — one to the new pinned IP (correct), one to some other `10.89.X.NN` address
+   (stale, from the old subnet). Note the `# handle N` on the stale `dnat to` line and the matching
+   `saddr <old-subnet> ... jump NETAVARK-HOSTPORT-SETMARK` line just above it.
+6. Delete the stale rule's two handles — this is what actually restores connectivity, not steps 1-4:
+   ```bash
+   sudo nft delete rule ip nat NETAVARK-DN-<hash> handle <stale-dnat-handle>
+   sudo nft delete rule ip nat NETAVARK-DN-<hash> handle <stale-saddr-handle>
+   ```
+7. Verify:
+   ```bash
+   curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:$PORT --max-time 3
    ```
 
 ### NixOS notes
