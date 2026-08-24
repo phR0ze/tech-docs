@@ -260,7 +260,9 @@
     - [Vaultwarden](security/password_managers/vaultwarden/README.md)
   - [Safety](security/safety/README.md)
     - [Google Family Link](security/safety/google_family_link/README.md)
-    - [Life360](security/safety/life360/README.md)
+    - [Location Sharing](security/safety/location_sharing/README.md)
+      - [Dawarich](security/safety/location_sharing/dawarich/README.md)
+      - [OwnTracks](security/safety/location_sharing/owntracks/README.md)
 
 - [System](system/README.md)
   - [Android](system/android/README.md)

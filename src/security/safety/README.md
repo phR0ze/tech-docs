@@ -7,4 +7,4 @@ Tools and services for keeping family members safer online and tracking their lo
 
 ### Linked pages
 * [Google Family Link](google_family_link/README.md)
-* [Life360](life360/README.md)
+* [Location Sharing](location_sharing/README.md)

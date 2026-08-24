@@ -502,14 +502,26 @@ leaves the set half-populated. This is what actually parses `manual-block-list.t
 the live `manual-block` set — it also writes `/etc/ipset/manual-block.conf`, a separate,
 machine-generated file in `ipset save` format used only for boot persistence (step 4), not something
 you edit by hand:
+***`admin-allow` is filtered out at rebuild time***, not just at the point an IP gets added — a
+second layer behind [`block-ip.sh`](#5-add-a-helper-script-for-the-recurring-workflow)'s own check,
+so a hand-edited `manual-block-list.txt` entry (or any future caller that writes to the list file
+directly) can't slip an admin IP into the live set either. `ADMIN_IPS` is captured once up front;
+the `WARNING` goes to stderr specifically so it doesn't leak into the `ipset restore` pipe on stdin:
 ```bash
 $ sudo tee /usr/local/sbin/update-manual-block.sh > /dev/null <<'EOF'
 #!/bin/bash
 set -euo pipefail
 ipset destroy manual-block-tmp 2>/dev/null || true
+ADMIN_IPS=$(ipset list admin-allow | awk '/^[0-9]/{print $1}')
 {
   echo "create manual-block-tmp hash:ip maxelem 65536"
-  grep -vE '^\s*(#|$)' /etc/ipset/manual-block-list.txt | sed 's/^/add manual-block-tmp /'
+  grep -vE '^\s*(#|$)' /etc/ipset/manual-block-list.txt | while read -r ip; do
+    if grep -qxF "$ip" <<< "$ADMIN_IPS"; then
+      echo "WARNING: $ip is in admin-allow — refusing to add to manual-block" >&2
+    else
+      echo "add manual-block-tmp $ip"
+    fi
+  done
 } | ipset restore
 ipset create manual-block hash:ip -exist
 ipset swap manual-block-tmp manual-block
@@ -550,13 +562,22 @@ set it up now: a `manual-block` entry with no `DOCKER-USER` mirror in place sile
 **5. Add a helper script for the recurring workflow** — wraps the append-then-rebuild sequence into
 one command instead of hand-editing the list file each time. `grep -qxF` does an exact, whole-line,
 fixed-string match rather than a substring search, so adding `1.2.3.4` doesn't false-positive against
-an existing `11.2.3.4` entry:
+an existing `11.2.3.4` entry. ***This is the primary guard against ever blocking your own IP*** — every
+automated block path in this doc ([Alert Recon's suggestions](../../../security/alert_recon/README.md),
+[auto-promoted Crowdsec decisions](../../../security/alert_recon/README.md#automatically-promoting-all-crowdsec-flagged-ips))
+ultimately calls this one script, so the `admin-allow` check lives here rather than duplicated in
+each caller — `update-manual-block.sh`'s own filter above is defense-in-depth for the list file
+itself, not a substitute for this check:
 ```bash
 $ sudo tee /usr/local/sbin/block-ip.sh > /dev/null <<'EOF'
 #!/bin/bash
 set -euo pipefail
 IP="${1:?Usage: block-ip.sh <ip>}"
 LIST=/etc/ipset/manual-block-list.txt
+if ipset test admin-allow "$IP" &>/dev/null; then
+  echo "REFUSING: $IP is in admin-allow — not adding to manual-block" >&2
+  exit 1
+fi
 if grep -qxF "$IP" "$LIST"; then
   echo "$IP is already in $LIST"
   exit 0
