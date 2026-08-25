@@ -1,4 +1,4 @@
-# Ruby
+# VSCode Ruby
 
 ### Quick links
 * [Config Ruby](#config-ruby)

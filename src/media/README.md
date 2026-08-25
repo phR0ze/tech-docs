@@ -5,6 +5,7 @@ Documenting various multimedia technologies
 ### Quick links
 * [.. up dir](../README.md)
 * [Screen Recorder](#screen-recorder)
+  * [Strip GPS Location](#strip-gps-location)
 
 ### Linked pages
 - [Audio](audio/README.md)
@@ -13,7 +14,7 @@ Documenting various multimedia technologies
 - [Encoding](encoding/README.md)
 - [Image](image/README.md)
  
-# Screen Recorder
+## Screen Recorder
 The two best are ***SimpleScreenRecorder*** and ***RecordMyDesktop***
 
 1. Install: `sudo pacman -S simplescreenrecorder`
@@ -29,7 +30,7 @@ The two best are ***SimpleScreenRecorder*** and ***RecordMyDesktop***
 11. Click ***Continue***
 12. Click ***Start Recording***
 
-## Strip GPS Location
+### Strip GPS Location
 1. Install: `sudo pacman -S perl-image-exiftool`
 2. List out the existing exif info: `exiftool <file>`
 3. Remove gps exif data: `exiftool -all= <file>`

@@ -1,4 +1,4 @@
-# Android <img align="left" width="48" height="48" src="../../data/images/logo_256x256.png">
+# Android Development <img align="left" width="48" height="48" src="../../data/images/logo_256x256.png">
 
 Android is finally morphing into something that might be worthwhile. The advent of NixOS, Flutter and 
 Rust's move into the mobile space have finally built out a platform that is removed from the taint of 

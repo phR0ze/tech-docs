@@ -7,11 +7,15 @@ How to recover from a failing boot process.
 - [Disable drive](#disable-drive)
 - [Disable display manager](#disable-display-manager)
 - [chroot into target disk](#chroot-into-target-disk)
+  - [Read the system logs](#read-the-system-logs)
 - [Troubleshooting Upgrades](#troubleshooting-upgrades)
+  - [2024.01.31](#20240131)
+    - [Failed to connect to system bus](#failed-to-connect-to-system-bus)
+    - [Thunar failed to start](#thunar-failed-to-start)
 
 ### Linked pages
 
-## Disble drive
+## Disable drive
 A failed drive can be disabled during the boot process by:
 
 1. Waiting until the system boots to recovery mode
@@ -36,7 +40,7 @@ A failed drive can be disabled during the boot process by:
    $ reboot
    ```
 
-## Disble display manager
+## Disable display manager
 Often it is X11 that gets messed up on an upgrade and you can get more information by disabling the 
 display manger via ssh or chrooting in.
 
@@ -59,14 +63,14 @@ troubleshoot the issue further
 $ journalctl --list-boots
 ```
 
-# Troubleshooting Upgrades
+## Troubleshooting Upgrades
 All my issue happen on upgrades with Arch Linux. It isn't every time but it happens enough that I 
 loath upgrades, which most likely makes it worse since I put off upgrading until I need some new 
 software that needs a core lib upgraded to work correctly.
 
-## 2024.01.31
+### 2024.01.31
 
-### Failed to connect to system bus
+#### Failed to connect to system bus
 Upon attempting to login in I was confronted by the popup message `Unable to contact settings server` 
 and was unable to login. Similar to the error message https://github.com/neutrinolabs/xrdp/issues/2646
 
@@ -118,7 +122,7 @@ need the `dbus-broker-units` to be installed to get it working again.
    $ sudo reboot
    ```
 
-### Thunar failed to start
+#### Thunar failed to start
 The next thing I noticed when I checked the logs `journalctl -b` Thunar had failures on start 
 due to missing `libjbig.so.2.1`.
 ```

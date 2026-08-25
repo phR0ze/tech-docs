@@ -1,4 +1,4 @@
-# Android
+# Rust Android
 
 Researching Rust on Android. I'd really like to see a full Rust app on Android.
 

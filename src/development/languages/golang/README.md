@@ -2,9 +2,12 @@
 
 ### Quick links
 - [.. up dir](../README.md)
+* [Build](#build)
 * [Package Management](#package-management)
   * [Updating dependencies](#updating-dependencies)
-* [Configuration](#Configuration)
+    * [Update a specific dependency](#update-a-specific-dependency)
+    * [Update all dependencies](#update-all-dependencies)
+* [Configuration](#configuration)
   * [goformat](#goformat)
     * [indent spaces](#indent-spaces)
 * [Relational databases](#relational-databases)
@@ -13,23 +16,23 @@
   * [Concurrancy](#concurrancy)
     * [Consuming connections](#consuming-connections)
     * [Transactions](#transactions)
-    * [Deadlock with Transactions](#deadlock-with-transactions)
+    * [Deadlock with transactions](#deadlock-with-transactions)
 
 ### Linked pages
 * [Web](web/README.md)
 
-# Build
+## Build
 
-## Build example
+### Build example
 ```bash
 $ go build examples/
 ```
 
-# Package Management
+## Package Management
 
-## Updating dependencies
+### Updating dependencies
 
-### Update a specific dependency
+#### Update a specific dependency
 * `-m` list modules instead of packages
 * `-u` include available upgrade information
 
@@ -52,16 +55,16 @@ $ go build examples/
    $ go mod tidy
    ```
 
-### Update all dependencies
+#### Update all dependencies
 ```bash
 $ go get -u
 $ go mod tidy
 $ make
 ```
 
-# Configuration
+## Configuration
 
-## goformat
+### goformat
 Typically these days most devs use VSCode and the `gopls` language server which automatically calls 
 teh `gofmt` option to format your code. The only issue is that `gofmt` automatically uses tabs 
 instead of spaces.
@@ -70,7 +73,7 @@ instead of spaces.
 * [goformat by mbenkmann](https://github.com/mbenkmann/goformat)
 * [gopls format setting](https://github.com/golang/vscode-go/blob/master/docs/settings.md#goformattool)
 
-### indent spaces
+#### indent spaces
 Visual Studio Code has its own tab and space settings that I prefer to goformats. So we need to 
 align the two. `go fmt` provides hooks for editors and version control systems that allow for 
 overrides when autoformat it applied.
@@ -80,7 +83,7 @@ overrides when autoformat it applied.
 goformat -r "indent=4"
 ```
 
-# Relational databases
+## Relational databases
 Golang provides a standard library `database/sql` package to access relational databases.
 
 Resources:
@@ -94,13 +97,13 @@ simplifies database access by reducing the need for you to manage connections. J
 handle e.g. `var db *sql.DB` and access the db as needed; calling `Close` only when needed to free 
 resources, such as those held by retrieved rows or prpared statements.
 
-## Getting started
+### Getting started
 The [Go.dev tutorial](https://go.dev/doc/tutorial/database-access) walks through the basics
 
 Declaring `var Db *sql.DB` global simplifies things for the example but in production you'd want to 
 pass the variable to functions that need it or wrap it in a configuration struct.
 
-### Freeing resources
+#### Freeing resources
 Typically you close resources by deferring a call to a `Close` function so that resources are 
 released before the enclosing function exists.
 ```go
@@ -113,7 +116,7 @@ defer rows.Close()
 // Loop through returned rows.
 ```
 
-## Concurrancy
+### Concurrancy
 Fro the vast majority of programs, you needn't adjust the `sql.DB` connection pool defaults.
 
 The `sql.DB` database handle is safe for concurrent use by multiple goroutines (meaning the handle is 
@@ -122,7 +125,7 @@ connections to the underlying database, creating new ones as needed for parallel
 program. When you make a `sql.DBQuery` or `Exec` call `sql.DB` retrieves the available connection 
 from the pool or, if needed, creates one.
 
-### Consuming connections
+#### Consuming connections
 Failing to `Close` db results for `db.Query()` e.g. `defer rows.Close()` will leave the connection 
 open and unavailable to other connection pool requests. `rows.Close()` is a idempotent i.e. harmless 
 to call repeatedly. Don't `defer` within a loop
@@ -130,7 +133,7 @@ to call repeatedly. Don't `defer` within a loop
 * [Golang DB SQL](https://medium.com/remotepanda-blog/golang-database-sql-chapter-9-540782555838)
 * [Using Query for a statement that doesn't return rows](http://go-database-sql.org/surprises.html)
 
-### Transactions
+#### Transactions
 The `database/sql` package includes functions you can use when a database may assign implicit meaning 
 to a sequence of operations executed on a particular connection. The most common example is 
 transactions, which typically start with a `BEGIN` command and end with a `COMMIT` or `ROLLBACK` 
@@ -143,7 +146,7 @@ When finished with the dedicated connection, your code MUST release it using `co
 
 * [Dedicated Connections](https://go.dev/doc/database/manage-connections#dedicated_connections)
 
-### Deadlock with transactions
+#### Deadlock with transactions
 When using a transaction, take care not to call the non-transaction `sql.DB` methods directly, too, 
 as those will execute outside the transaction, giving your code an inconsistent view of the state of 
 the database or even causing `deadlocks` [see Best practices section](https://go.dev/doc/database/execute-transactions).

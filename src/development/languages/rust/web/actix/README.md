@@ -1,10 +1,13 @@
-<img align="left" width="48" height="48" src="../../../../../data/images/logo_256x256.png">
-Actix
+# Actix <img style="margin: 6px 13px 0px 0px" align="left" src="../../../../../data/images/logo_36x36.png" />
+
 Actix development research
 
 ### Quick links
+- [.. up dir](..)
+- [Getting Started](#getting-started)
+- [Actix application](#actix-application)
 
-# Getting Started
+## Getting Started
 [Actix getting started guide](https://actix.rs/docs/getting-started/)
 
 1. [see ../rust/README.md#create-new-project](../rust/README.md#create-new-project)
@@ -32,7 +35,7 @@ Actix development research
    }
    ```
 
-# Actix application
+## Actix application
 Actix provides all the primitives needed to build robust web applications in Rust. It provides:
 * Routing
 * Middleware

@@ -8,12 +8,16 @@ components. Development specific technologies are in the top level
 - [.. up dir](..)
 - [Distros](distros)
 - [Desktop components](#desktop-components)
-- [inital ramdisk](#initial-ramdisk)
+- [Desktop features](#desktop-features)
+- [Desktop settings](#desktop-settings)
+- [initial ramdisk](#initial-ramdisk)
   - [mkinitcpio](#mkinitcpio)
+    - [Build customized image](#build-customized-image)
   - [tput colored output](#tput-colored-output)
+    - [Debugging tput color issues](#debugging-tput-color-issues)
 - [Powerline](#powerline)
-  - [Installing Powerling](#installing-powerline)
-  - [Powerline GitStatus](#powerline-git-status)
+  - [Installing Powerline](#installing-powerline)
+  - [Powerline Git Status](#powerline-git-status)
   - [Troubleshooting Powerline](#troubleshooting-powerline)
 - [Starship](#starship)
   - [Installing Starship](#installing-starship)
@@ -97,9 +101,9 @@ handled by a standalone appliation or simply a feature of a larger application.
 Another typical desktop environment feature is 
 
 
-# initial ramdisk
+## initial ramdisk
 
-## mkinitcpio
+### mkinitcpio
 mkinitcpio is a bash script used to create an initial ramdisk environment. This is a small early 
 userspace environment which loads various kernel modules and sets up necessary things before handing 
 over control to init.
@@ -107,7 +111,7 @@ over control to init.
 Resources:
 * [Arch linux docs](https://wiki.archlinux.org/title/Mkinitcpio)
 
-### Build customized image
+#### Build customized image
 You can build a customized early boot environment image with custom hooks by specifying them with the 
 `mkinitcpio.conf` and the `HOOKS` call outs.
 
@@ -120,7 +124,7 @@ assemblying a stacked block device.
 $ mkinitcpio --config /etc/mkinitcpio-custom.conf --generate /boot/initramfs-custom.img
 ```
 
-## tput colored output
+### tput colored output
 `tput` is part of the ncurses package and is supplied with most Linux distributions and is used to 
 send advanced instructions to the terminal for things like color or moving the cursor.
 
@@ -135,7 +139,7 @@ To configure color with tput inside the early boot environment
    export TERMINFO=/usr/lib/terminfo
    ```
 
-### Debugging tput color issues
+#### Debugging tput color issues
 [ncurses root environment access was disabled to fix CVE-2023-29491](https://gitlab.archlinux.org/archlinux/packaging/packages/ncurses/-/commit/3c2606603aa4a5a3b2d29e560a1bc14986153f49) thus no support for 
 
 1. First check that the terminfo files end up in the image
@@ -143,10 +147,10 @@ To configure color with tput inside the early boot environment
    lsinitcpio ~/Projects/cyberlinux/temp/iso/boot/installer | grep usr/lib/terminfo/l/linux
    ```
 
-# Powerline
+## Powerline
 https://powerline.readthedocs.io/en/latest/usage/shell-prompts.html#bash-prompt
 
-## Installing Powerline
+### Installing Powerline
 1. Install powerline scripts
    ```bash
    $ sudo pacman -S powerline
@@ -161,7 +165,7 @@ https://powerline.readthedocs.io/en/latest/usage/shell-prompts.html#bash-prompt
    fi
    ```
 
-## Powerline Git Status
+### Powerline Git Status
 When the version of python rolls the gitstatus libraries are not findable and you get error messages 
 like below indicating that the corresponding site-package doesn't exist.
 ```
@@ -177,7 +181,7 @@ Solution is to re-build the package:
 4. Run: `makepkg -s`
 5. Upgrade: `sudo pacman -U powerline-gitstatus-1.3.1-3-any.pkg.tar.zst`
 
-## Toubleshooting Powerline
+### Troubleshooting Powerline
 Try linting the configuration:
 ```bash
 $ powerline-lint
@@ -208,12 +212,12 @@ Try killing the daemon then running a command in a shell with powerline already 
 3. Notice that the `powerline_gitstatus` module is missing for python 3.9
 4. To get a clean bash terminal you'll need to disable powerline in `~/.bashrc` then open a new shell
 
-# Starship
+## Starship
 [Starship](https://starship.rs/guide/#%F0%9F%9A%80-installation) is a cross-shell prompt that 
 replaces powerline. Some would ask why? The reason is that I can't count the number of times an 
 upgrade has broken Powerline. Enough is enough. Rust always works.
 
-## Installing Starship
+### Installing Starship
 1. Download the configs
    ```bash
    $ sudo pacman -S starship
@@ -223,7 +227,7 @@ upgrade has broken Powerline. Enough is enough. Rust always works.
    eval "$(starship init bash)"
    ```
 
-# System Update <a name="system-update"></a>
+## System Update <a name="system-update"></a>
 1. Update keyring first
    ```bash
    $ sudo pacman -Sy archlinux-keyring
@@ -239,9 +243,9 @@ upgrade has broken Powerline. Enough is enough. Rust always works.
    $ sudo pacman -Syu
    ```
 
-# Systemd
+## Systemd
 
-## Systemd Status
+### Systemd Status
 
 ```bash
 # By leaving off a specific unit to get status about we see the status of the entire system
@@ -251,17 +255,17 @@ $ systemctl status
 $ systemctl
 ```
 
-## Systemd Boot Performance
+### Systemd Boot Performance
 https://wiki.archlinux.org/index.php/Improving_performance/Boot_process
 
-### See How long boot takes
+#### See How long boot takes
 ```bash
 $ systemd-analyze
 Startup finished in 4.800s (kernel) + 2min 3.457s (userspace) = 2min 8.258s 
 graphical.target reached after 2min 3.457s in userspace
 ```
 
-### Rank services by startup time
+#### Rank services by startup time
 ```bash
 $ systemd-analyze blame
 2min 200ms systemd-networkd-wait-online.service
@@ -321,7 +325,7 @@ graphical.target @2min 3.457s
                       └─-.slice @183ms
 ```
 
-### Remove lvm2 service
+#### Remove lvm2 service
 If you're not using the lvm2 service, which has never seemed a useful feature, then disabling it
 will clean up your boot slightly especially since it seems to be trying to start and failing for me.
 Unfortunately due to actual useful tools depending on it i.e. `libblockdev` which in turn is
@@ -347,7 +351,7 @@ static
 $ sudo systemctl mask lvm2-monitor --now
 ```
 
-## Systemd Debug Shell
+### Systemd Debug Shell
 ```bash
 $ sudo systemctl enable debug-shell
 
@@ -357,7 +361,7 @@ $ systemctl status
 # See which apps are hanging
 ```
 
-## Systemd Timers
+### Systemd Timers
 Timers are `systemd` unit files with a `.timer` suffix and are systemd's replacement for cron. 
 `Realtime timers` activate on a calendar event similar to cronjobs. The `OnCalendar=` option is used 
 to define them. Transient timer units can be used via `systemd-run` to run a command without having 
@@ -378,7 +382,7 @@ $ systemctl cat <timer>.timer
 $ sudo systemctl start <timer>.timer
 ```
 
-### Shutdown Timer
+#### Shutdown Timer
 We can create a timer to shutdown the system at a particular time on week days.
 Test with `systemd-analyze calendar "Mon..Fri 14:00"`
 Note: the timer unit and the service unit must have the same name.
@@ -417,9 +421,9 @@ sudo systemctl enable shutdown.timer
 sudo systemctl start shutdown.timer
 ```
 
-# Thunar
+## Thunar
 
-## Thunar webp thumbnails
+### Thunar webp thumbnails
 * [Preview WebP in Thunar](https://spacebums.co.uk/thunar-webp-thumbnails/)
 
 1. Install prerequisites

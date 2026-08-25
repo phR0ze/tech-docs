@@ -7,16 +7,21 @@
 - [Key Bindings](#key-bindings)
   - [Session Management](#session-management)
   - [Window Management](#window-management)
-  - [Pane Management](#pane-mangement)
+  - [Pane Management](#pane-management)
   - [Copy Mode & Navigation](#copy-mode-navigation)
   - [Help](#help)
+- [Plugins](#plugins)
+  - [The Essentials](#the-essentials)
+  - [Session & Workflow Management](#session-workflow-management)
+  - [Aesthetics & Themes](#aesthetics-themes)
+  - [Advanced Productivity](#advanced-productivity)
 - [Troubleshooting](#troubleshooting)
   - [Garbled Starship](#garbled-starship)
 
 ### Linked pages
 - [TMUX](tmux/README.md)
 
-## Sesions
+## Session
 
 ### Attach
 ```bash
@@ -91,18 +96,18 @@ The tmux plugin ecosystem is built around TPM (Tmux Plugin Manager). Below are t
 
 Example configuration snippet (~/.tmux.conf):
 
-# List of plugins
 ```
+# List of plugins
 set -g @plugin 'tmux-plugins/tpm'
 set -g @plugin 'tmux-plugins/tmux-sensible'
 set -g @plugin 'catppuccin/tmux'
 set -g @plugin 'tmux-plugins/tmux-resurrect'
 set -g @plugin 'tmux-plugins/tmux-continuum'
 set -g @plugin 'tmux-plugins/tmux-yank'
-```
 
 # Initialize TMUX plugin manager (keep this line at the very bottom)
 run '~/.tmux/plugins/tpm/tpm'
+```
 
 ## Troubleshooting
 

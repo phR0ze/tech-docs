@@ -1,4 +1,4 @@
-# Backup <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
+# Synology Backup <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
 Standard best practice is the 3-2-1 method:
 * 3 copies of your data

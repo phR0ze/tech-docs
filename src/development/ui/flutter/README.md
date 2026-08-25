@@ -60,28 +60,33 @@ are written primarily in C/C++ giving it performance.
   * [Create a new Flutter project](#create-a-new-flutter-project)
   * [Setup vscode for Flutter](#setup-vscode-for-flutter)
   * [Add standard packages to project](#add-standard-packages-to-project)
-  * [Run on Android Emulator](#run-on-android-emulator)
+* [Run on Android Emulator](#run-on-android-emulator)
 * [Publish app](#publish-app)
   * [Build release](#build-release)
 * [Packages](#packages)
+  * [Used and found useful](#used-and-found-useful)
+  * [Didn’t end up using](#didnt-end-up-using)
+  * [Interesting packages](#interesting-packages)
+  * [Deprecated packages](#deprecated-packages)
 * [Flutter app examples](#flutter-app-examples)
-  * [AuthPass](#auth-pass)
+  * [AuthPass](#authpass)
 * [Flutter Patterns](#flutter-patterns)
   * [Android permissions](#android-permissions)
-  * [Launch Screen](#launch-screen)
-  * [Responsive](#responsive)
   * [Build methods](#build-methods)
   * [Custom Widgets](#custom-widgets)
   * [Launch Screen](#launch-screen)
+  * [Custom Scroll Controler](#custom-scroll-controler)
+  * [Responsive](#responsive)
 * [Project](#project)
   * [Project ID](#project-id)
-  * [pubspec.yaml](#pubspec-yaml)
+  * [pubspec](#pubspec)
+    * [version](#version)
     * [Dependencies](#dependencies)
 * [Flutter platform](#flutter-platform)
   * [Basic widgets](#basic-widgets)
   * [Future Builder](#future-builder)
   * [Layout](#layout)
-  * [Keyboard Input](#keyboard-input)
+  * [Keyboard input](#keyboard-input)
   * [MediaQuery](#mediaquery)
   * [Navigation](#navigation)
   * [Persist configuration](#persist-configuration)
@@ -89,18 +94,18 @@ are written primarily in C/C++ giving it performance.
   * [Themes](#themes)
   * [Window decorations](#window-decorations)
 * [Scrolling](#scrolling)
+  * [Shrink wrap](#shrink-wrap)
   * [Efficient scrolling](#efficient-scrolling)
   * [Infinite scrolling easy](#infinite-scrolling-easy)
   * [Infinite scrolling with scroll controller](#infinite-scrolling-with-scroll-controller)
   * [Fancy scrolling](#fancy-scrolling)
-  * [Resume position](#resume-position)
 * [Dart](#dart)
   * [Parameters](#parameters)
   * [static vs final vs const](#static-vs-final-vs-const)
+* [Rust Integration](#rust-integration)
 
 ### Linked pages
 - [Dart](dart/README.md)
-
 ## Getting Started
 In my opinion the best approach to Flutter application development uses the flutter cli for creating 
 and interacting with your project and a desktop environment with vscode to run and test your 
@@ -229,17 +234,17 @@ I wanted to try it out on Android.
    $ avdmanager delete avd -n android30
    ```
 
-# Publish app
+## Publish app
 
-## Build release
+### Build release
 Build a release apk for testing with:
 ```bash
 $ flutter build apk --release
 ```
 
-# Packages
+## Packages
 
-## Used and found useful
+### Used and found useful
 A list of packages I've found to be helpful and have used in applications I've written.
 
 * [`device_info_plus`](https://pub.dev/packages/device_info_plus)
@@ -257,7 +262,7 @@ A list of packages I've found to be helpful and have used in applications I've w
   * Provides easy access to paths for storing state and caching
   * Flutter favorite
 
-## Didn't end up using
+### Didn't end up using
 * [`easy_image_viewer`](https://pub.dev/packages/easy_image_viewer)
   * License: MIT
   * Provides the ability to display an image with typical image features
@@ -266,7 +271,7 @@ A list of packages I've found to be helpful and have used in applications I've w
     * Pinch to zoom, pan
   * Unable to use it as the page swiping and dimissing interfer with pinch to zoom
 
-## Interesting packages
+### Interesting packages
 
 * [`vm_service`](https://pub.dev/packages/vm_service)
   * The `extended_image` package example uses this to show a really slick sub-window that shows 
@@ -349,27 +354,27 @@ A list of packages I've found to be helpful and have used in applications I've w
 * [`flutter_animate`](https://pub.dev/packages/flutter_animate)
 * [`universal_platform`](https://pub.dev/packages/universal_platform)
 
-## Deprecated packages
+### Deprecated packages
 * [`provider`](https://pub.dev/packages/provider)
   * Use Riverpod instead i.e. the 2.0 version from the same author
 
-# Flutter app examples
+## Flutter app examples
 
-## AuthPass
+### AuthPass
 [AuthPass](https://authpass.app/) is a Free and Open Source password manager for Android, iOS, macOS, 
 Linux and Windows that is compatible with KeePass.
 
 **References**
 * [authpass - Github](https://github.com/authpass/authpass)
 
-# Flutter Patterns
+## Flutter Patterns
 * ***Custom Widgets*** are a best practice for reusability
 * ***Pass Widgets*** widgets as parameters to other widgets is a standard practice
 * Keep state as close to the area of concern as possible
   * Keep it in the widget if that is all that needs it
   * Keep it at the lowest level in the widget tree that ensures it lives long enough to be useful
 
-## Android permissions
+### Android permissions
 see [android/permissions](../../../android/permissions/index.html) for Android permission specifics. 
 I'll just cover the Flutter side here.
 
@@ -445,16 +450,16 @@ To qualify to use the Manage External Storage permission you need to:
    await Permission.manageExternalStorage.request();
    ```
 
-## Build methods
+### Build methods
 In Flutter when a parent widget receives a callback and updates its internal state it will then 
 trigger a rebuild which will then rebuild all the widgets below it if they have changed. The 
 framework does this by comparing the newly built widgets with the previously built widgets and only 
 applying the differences to the underlying RenderObject.
 
-## Custom Widgets
+### Custom Widgets
 Reduce your widgets to only accept what they use as parameters not all app state.
 
-## Launch Screen
+### Launch Screen
 Launch screens, a.k.a splash screens, provide a simple initial experience while your app loads. They 
 set the stage for your application, while allowing time for the app engine to load and your app to 
 initialize.
@@ -462,9 +467,9 @@ initialize.
 **References**
 * [Flutter docs - Splash screen](https://docs.flutter.dev/platform-integration/android/splash-screen)
 
-## Custom Scroll Controler
+### Custom Scroll Controler
 
-## Responsive
+### Responsive
 Flutter apps might appear on screens of many different sizes. Ideally you want your app to be both 
 ***adaptive*** and ***responsive***. Flutter's primary means of handling responsiveness is to use the 
 `LayoutBuilder` which will redraw the UI whever the size constraints change providing the ability for 
@@ -504,7 +509,7 @@ devices e.g. keyboard and mouse vs touch.
 * [Building adaptive apps](https://docs.flutter.dev/ui/layout/responsive/building-adaptive-apps)
 
 
-# Project
+## Project
 Every app has a `main()` which runs your root widget. Every widget has a `build` which must return a 
 widget or tree of widgets so that Flutter nows what to draw. Widgets can be nested as desired.
 
@@ -514,7 +519,7 @@ widget or tree of widgets so that Flutter nows what to draw. Widgets can be nest
 * [Material 3 docs](https://docs.flutter.dev/ui/widgets/material)
 * [Material 3 Icons](https://fonts.google.com/icons)
 
-## Project ID
+### Project ID
 When using the package `path_provider` and other tools for resolving paths on disk etc... that use 
 your project name as an identifier it will default to something like `com.example.riverpod_moview`. 
 You can change this for the different platforms with:
@@ -525,11 +530,11 @@ You can change this for the different platforms with:
   * to `set(APPLICATION_ID "riverpod_movies")`
   * This makes `getApplicationSupportDirectory` resolve to `/home/<user>/.local/share/riverpod_movies`
 
-## pubspec
+### pubspec
 The `pubspec.yaml` in the root of your Flutter project is the main project file tracking dependencies 
 and configuration for your project
 
-### version
+#### version
 The app version called out in the `pubspec.yaml` uses the typical semver format `major.minor.patch` 
 but then adds on an optional build number separated by the plus sign `+`
 
@@ -538,7 +543,7 @@ Example:
 1.0.0+1
 ```
 
-### Dependencies
+#### Dependencies
 Flutter/dart dependencies can be specified by git repo as well
 ```yaml
 dependencies:
@@ -548,16 +553,16 @@ dependencies:
       ref: main
 ```
 
-# Flutter platform
+## Flutter platform
 
-## Basic widgets
+### Basic widgets
 * ***Text*** styled text
 
-## Future Builder
+### Future Builder
 The `FutureBuilder` widget will take a future and handle the different states of the future i.e. 
 completed, failed and waiting.
 
-## Layout
+### Layout
 
 * ***BoxDecoration*** lets you decorate the `Container` widget
 * ***Column*** takes any number of children and puts them in a column from top to bottom
@@ -571,9 +576,9 @@ completed, failed and waiting.
 * ***Placeholder()*** fantastic idea for building out layouts without any content yet
 * ***Positioned*** can be used on children of a `Stack` to position them relative to it
 
-## Keyboard input
+### Keyboard input
 
-## MediaQuery
+### MediaQuery
 [MediaQuery](https://api.flutter.dev/flutter/widgets/MediaQuery-class.html) provides a way to 
 interact with your device to make it more responsive.
 
@@ -585,7 +590,7 @@ interact with your device to make it more responsive.
 * Check areas that are obscured by cameras
 
 
-## Navigation
+### Navigation
 Flutter's Material 3 implementation provides several navigation options:
 * ***AppBar*** - advanced navigation and actions bar at top
 * ***BottomAppBar*** -  advanced navigation and actions bar at bottom
@@ -624,7 +629,7 @@ onPressed: () {
 }
 ```
 
-## Persist configuration
+### Persist configuration
 Persisting data can be done in a variety of ways in Flutter. I'm looking for:
 * Standard Linux convention `~/.config/<app>.yaml` convention
 * Automatically convert into a singleton class in the app
@@ -659,7 +664,7 @@ Persisting data can be done in a variety of ways in Flutter. I'm looking for:
   * not sure what that resoves to on linux but doesn't fit conventions as is for sure
   * Could be modified to fit linux conventions though without much effort, although I'd use yaml
 
-## Slivers
+### Slivers
 A sliver is a portion of a scrollable area inside a CustomScrollView that can be configured 
 accordingly to behave in a certain way. Using slivers we can create a plethora of different scrolling 
 effects. Slivers lazy build their views when the widgets come into the viewport. This makes it ideal 
@@ -682,7 +687,7 @@ A widget that uses multiple Slivers rather than just one.
 * `SliverOpacity` - sliver makes its sliver child partially transparent
 * `SliverPadding` - sliver that creates empty space around another sliver
 
-## Themes
+### Themes
 You can choose any color with `Color.fromRGB0(0, 255, 0, 1.0)` or `Color(0xFF00FF00)`. Flutter uses 
 an app wide Theme that all widgets respect to provide a matching suite of colors.
 
@@ -706,7 +711,7 @@ final style = theme.textTheme.displayMedium!.copyWith(
 final theme = Theme.of(context);
 ```
 
-## Window decorations
+### Window decorations
 the `bitsdojo_window` package provides support for creating your own window decorations. The bits 
 window package has an interesting side affect. Because it is hiding the initial window and only 
 showing it once it is draw you get a very smooth window creation that doesn't start at a default size 
@@ -749,7 +754,7 @@ displayed when ready.
    ```
 
 
-# Scrolling
+## Scrolling
 Flutter has many built-in widgets that automatically scroll and also offers a variety of widgets that 
 you can customize to create specific scrolling behaviors. Many Flutter widgets support scrolling out 
 of the box and do most of the work for you. For example the `SingleChildScrollView` automatically 
@@ -758,13 +763,13 @@ scrolls its child when necessary.
 * [Scrolling - docs](https://docs.flutter.dev/ui/layout/scrolling)
 * [Sliver workshop](flutter.dev/go/sliver-workshop)
 
-## Shrink wrap
+### Shrink wrap
 Shrink wrap forces a nested view to evaluate its entire item list size to then show properly in the 
 parent and can be a performance issue. If you have large sets of items in your inner lists your going 
 to get dropped frames and stutters in your UI. In this case use the `CustomScrollView` and `Slivers` 
 to solve the issue.
 
-## Efficient scrolling
+### Efficient scrolling
 More advanced widgets like the `ListView` and `GridView` display multiple items and provide a 
 constructor that requires a builder method to build the child items on demand i.e. lazy loading. This 
 is important because they only create those widgets that are visible or will soon become visible. In 
@@ -775,7 +780,7 @@ Switching to the `CustomScrollView` and the `SliverGrid` and `SliverChildDelegat
 thing as the `GridView.builder` efficiency wise and complexity really, but you get more options on 
 how to customize it. The `ListView` and `GridView` just simplify it a little.
 
-## Infinite scrolling easy
+### Infinite scrolling easy
 A simpler way to get infinite scrolling is to simply add to trigger a fetch of new data when you are 
 at some number of items from the end. This will asynchronously retrieve the data and load it into the 
 list of items and then populate it on the screen as you scroll to it.
@@ -815,7 +820,7 @@ list of items and then populate it on the screen as you scroll to it.
    }
    ```
 
-## Infinite scrolling with scroll controller
+### Infinite scrolling with scroll controller
 For advanced features like infinite scrolling or resuming scrolling you'll need to use your own 
 scroll controller and implemente logic to handle these use cases for your app. Best practice is to 
 fetch the data in advance to the user requesting it thus by the time the user makes the fetch request 
@@ -858,7 +863,7 @@ by scrolling the data is already available to view.
 
 2. Use the `jumpTo` method to resume your position
 
-## Fancy scrolling
+### Fancy scrolling
 Provides options for fancy scrolling in the UI with `SliverList`, `SliverGrid`, or `SliverAppBar`. 
 These provide the same functionality as their non-sliver version, but you can customize their 
 scrolling behavior inside the `CustomScrollView` and combine them.
@@ -878,9 +883,9 @@ little crisper and faster than a regular scroll would. We can also use the expan
 more room in the begining for a background image or something that will fold up when scrolled.
 
 
-# Dart
+## Dart
 
-## Parameters
+### Parameters
 * [Dart functions docs](https://dart.dev/language/functions)
 
 The parameters of a class constructor or fucntion are required by default.
@@ -891,12 +896,12 @@ class Test {
 }
 ```
 
-## static vs final vs const
+### static vs final vs const
 * ***static*** means a member is available on the class itself instead of on instances of the class
 * ***final*** means single-assignment i.e. it must be initialized and cannot be changed
 * ***const*** means that the object can be determined completely at compile time and frozen
 
-# Rust Integration
+## Rust Integration
 
 See [Rust GUI > Dioxus vs Flutter](../../languages/rust/gui/README.md#dioxus-vs-flutter) for a direct
 comparison against Dioxus for this same Linux/Android/Web target set, including real-world adoption

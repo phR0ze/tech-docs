@@ -5,17 +5,23 @@ Documenting my experience with Office applications in the Linux world
 ### Quick links
 - [.. up dir](..)
 * [mdbook](#mdbook)
+  * [mdbook overview](#mdbook-overview)
+    * [mdbook install](#mdbook-install)
+    * [mdbook organization](#mdbook-organization)
+  * [Getting started](#getting-started)
+    * [Create your book](#create-your-book)
+    * [Publish your book](#publish-your-book)
 
 ### Linked pages
 - [Emoji](emoji/README.md)
 - [PDFs](pdfs/README.md)
 
-# mdbook
+## mdbook
 [mdbook](https://github.com/rust-lang/mdBook) is a Rust utility to create modern online books from 
 Markdown files. It's [documentation is self-hosted](https://rust-lang.github.io/mdBook/). Its clean, 
 easy to navgate and customizable for product documentaton, tutorals, course materlas etc...
 
-## mdbook overview
+### mdbook overview
 ***Features***
 * Lightweight Markdown syntax that helps you focus on the content
 * Integrated search support
@@ -24,13 +30,13 @@ easy to navgate and customizable for product documentaton, tutorals, course mate
 * Preproccessor for custom syntax and content modification extensions
 * Automated testing of Rust code samples
 
-### mdbook install
+#### mdbook install
 1. Install with
    ```bash
    $ cargo install mdbook
    ```
 
-### mdbook organization
+#### mdbook organization
 The top level output is a `book` which is organized into `chapters` with each chapter on a separate 
 page. Chapters can be nested into a hierarchy of sub-chapters. Typically each chapter will be 
 organized into a series of headings to subdivide a chapter.
@@ -43,9 +49,9 @@ book.
 Adding a new chapter to the summary will automatically create the associated file. Each chapter is a 
 separate markdown file.
 
-## Getting started
+### Getting started
 
-### Create your book
+#### Create your book
 1. Create a new book by executing init and answering the questions
    ```bash
    $ mdbook init tech-docs
@@ -56,6 +62,6 @@ separate markdown file.
    $ mdbook serve --open
    ```
 
-### Publish your book
+#### Publish your book
 Once created you'll want to host your book somewhere. Thus you need to build it which will generate 
 HTML in the `book` directory that cna be used on any web server.

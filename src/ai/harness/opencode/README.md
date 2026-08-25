@@ -15,8 +15,10 @@ others have.
   - [Change the leader key sequence](#change-the-leader-key-sequence)
   - [State options](#state-options)
 - [Providers](#providers)
-  - [Google Vertex](#google-vertex)
   - [OpenRouter](#openrouter)
+  - [Google Vertex](#google-vertex)
+- [Model Comparisons](#model-comparisons)
+  - [Kimi](#kimi)
 
 ## Overview
 OpenCode being open source has some really neat options:
@@ -114,6 +116,25 @@ Wildcards: `*` maches any characters, `?` matches one character
 ## Providers
 OpenCode supports a plethera of different LLM providers.
 
+### OpenRouter
+Historically reliable free slots on OpenRouter have been available for DeepSeek/Qwen releases:
+- DeepSeek usually keeps a :free variant of its latest V3.x/R1 line
+- Qwen usually keeps a :free variant of a mid-size Qwen3.x model
+- Meituan's LongCat and some MiniMax models have had aggressive free-tier pushes
+
+#### Configure OpenRouter
+To configure OpenCode with OpenRouter, you're essentially replacing OpenCode's bac
+
+1. Create your API key in OpenRouter
+   1. Navigate to the [OpenRouter dashboard](https://openrouter.ai/settings/keys)
+   2. Click `Create API Key` and copy the key
+2. Configure OpenCode
+   1. Launch OpenCode and run `/connect`
+   2. Search for and select `OpenRouter` 
+   3. Enter the API key
+3. Choose your model
+   1. Search for `free`
+
 ### Google Vertex
 OpenCode has the ability to connect to Google's Vertex AI models.
 
@@ -143,15 +164,21 @@ OpenCode has the ability to connect to Google's Vertex AI models.
    1. Run `/models`
    2. Choose any model under the `Vertex` sections
 
-### OpenRouter
-To configure OpenCode with OpenRouter, you're essentially replacing OpenCode's bac
+## Model Comparisons
 
-1. Create your API key in OpenRouter
-   1. Navigate to the [OpenRouter dashboard](https://openrouter.ai/settings/keys)
-   2. Click `Create API Key` and copy the key
-2. Configure OpenCode
-   1. Launch OpenCode and run `/connect`
-   2. Search for and select `OpenRouter` 
-   3. Enter the API key
-3. Choose your model
-   1. Search for `free`
+### Kimi
+1. Kimi K2.6 — the standout pick. Its distinguishing benchmark is agentic stability: 4,000+ tool calls sustained over a 13-hour uninterrupted session, plus 80.2% SWE-Bench Verified and 58.6% SWE-Bench Pro (best of the group). APK RE/recompile loops are exactly this kind of long, multi-step, tool-heavy workflow (apktool/jadx → edit → gradle/apktool build → zipalign → sign → retest, repeat on failures) — a model that degrades over long sessions will drift or forget earlier constraints partway through.
+
+### Qwen
+2. Qwen3-Coder(-Next) — close second. Efficient MoE (only ~3B active params), 256K native context, Apache 2.0, and it's the most battle-tested in the wild (most-downloaded coding model as of Jan 2026) — strong for the raw code-editing/smali-diffing part, slightly less proven on very long agentic sessions than Kimi K2.6.
+
+### GLM
+3. GLM-5.1/4.6 — good agentic front-end/dev preference (Code Arena Elo 1,530) but less specifically benchmarked for sustained tool-call marathons.
+
+If you're building an actual pipeline (harness driving apktool/jadx/gradle), Kimi K2.6 is the better bet specifically because of tool-call endurance; if you want something leaner to self-host, Qwen3-Coder-Next.
+
+Sources:
+- Kimi K2.6 vs GLM 5.1 vs Qwen 3.6 Plus vs MiniMax M2.7: Which Open Source Model Wins for Coding in 2026 - Atlas Cloud Blog (https://www.atlascloud.ai/blog/guides/kimi-k2-6-vs-glm-5-1-vs-qwen-3-6-plus-vs-minimax-m2-7-coding-2026)
+- Best Open-Source Coding Model 2026: Kimi K3 vs GLM-5.2 vs DeepSeek V4 vs Qwen3 | Morph (https://www.morphllm.com/best-open-source-coding-model-2026)
+- Qwen3-Coder-Next Technical Report (https://arxiv.org/html/2603.00729v1)
+- Kimmy K2.6 and Qwen 3.6: The Open-Source Models Closing the Frontier Gap | MindStudio (https://www.mindstudio.ai/blog/kimmy-k2-6-qwen-3-6-open-source-frontier-models)

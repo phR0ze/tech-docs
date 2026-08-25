@@ -5,35 +5,40 @@ Web development research
 ### Quick links
 - [.. up dir](../README.md)
 * [Hosting](#hosting)
-  * [Free static project website hosting](#free-static-project-website-hosting)
-    * [Bitbucket Static Pages](../git/README.md#bitbucket-static-pages)
-    * [Github Static Pages](../git/README.md#github-static-pages)
-    * [Gitlab Static Pages](../git/README.md#gitlab-static-pages)
+  * [Bitbucket Static Pages](../version_control/bitbucket/README.md#bitbucket-static-pages)
+  * [Github Pages](../version_control/github/README.md#github-pages)
+  * [GitLab Pages](../version_control/gitlab/README.md#gitlab-pages)
 * [Single Page App](#single-page-app)
   * [App Shell Model](#app-shell-model)
-  * [SEO issues with SPAs](#seo-issues-with-spas)
+  * [Progressive enhancement](#progressive-enhancement)
+    * [SEO issues with SPAs](#seo-issues-with-spas)
+    * [Social sharing issues with SPAs](#social-sharing-issues-with-spas)
+    * [Caching issues with SPAs](#caching-issues-with-spas)
 * [Web Framework](#web-framework)
   * [Overview](#overview)
+    * [Considerations](#considerations)
+    * [Features](#features)
   * [Frontend](#frontend)
     * [Dioxus frontend](#dioxus-frontend)
-    * [Yew frontend](YEW.md)
+    * [Yew frontend](#yew-frontend)
   * [Backend](#backend)
-    * [Actix](ACTIX.md)
+    * [Actix](#actix)
 * [WASM](#wasm)
   * [Setup Rust for WASM](#setup-rust-for-wasm)
   * [WASM Bundlers](#wasm-bundlers)
   * [WASM with Macroquad](#wasm-with-macroquad)
   * [Dioxus](#dioxus)
+    * [Dioxus setup](#dioxus-setup)
   * [Yew](#yew)
 * [Web Platform](#web-platform)
-  * [Wordpress](#wordpress)
+  * [WordPress](#wordpress)
 
 ### Linked pages
 * [BFF](bff/README.md)
 
-# Hosting
+## Hosting
 
-# Single Page App
+## Single Page App
 
 **Resources**:
 * [What I wish I had known about SPAs](https://stackoverflow.blog/2021/12/28/what-i-wish-i-had-known-about-single-page-applications/)
@@ -45,7 +50,7 @@ Web development research
 * The capability to work offline with caching
 * Fast responsive design
 
-## App Shell Model
+### App Shell Model
 The app shell model is the minimal HTML, CSS, and JavaScript that is required to power the user 
 interface of a progressive web app and one of the components of a app with reliably good performance. 
 The app shell is loaded once from the server by the user and cached locally then used from there for 
@@ -53,7 +58,7 @@ super fast startup times. A service worker then gets the app running. Dynamic co
 each page using JavaScript. The app shell model results in blazing fast repeat visits and native-like 
 interactions.
 
-## Progressive enhancement
+### Progressive enhancement
 A progressive web app (PWA) is one that functions without JavaScript and progressively layers 
 additional enhancements over the top to make the app more efficient and performant.
 
@@ -67,46 +72,46 @@ rendered that will still work if JavaScript is disabled. Once the first load fin
 router's browser router takes over control of the navigation triggering client side rendering 
 instead.
 
-### SEO issues with SPAs
+#### SEO issues with SPAs
 Search Engine Optimization (SEO) is the process of building your web application such that Google's 
 crawlers are able to understand and correctly track and index it and rank it according to content. 
 Single Page Applications are difficult for Google to understand and have a low SEO score.
 
 One workaround for this is to serve different content for web crawlers to help them out.
 
-### Social sharing issues with SPAs
+#### Social sharing issues with SPAs
 Social networks when given a link will pull the webpage and uses the metadata inside the HTML header 
 to generate a preview. This means often all links for an SPA will look the same and have an 
 incomplete view.
 
-### Caching issues with SPAs
+#### Caching issues with SPAs
 Caching via CloudFlare or other reverse proxies can ease the load on your server and give end users a 
 faster response. Because CloudFlare and other proxies don't execute JavaScript SPAs don't get the 
 same caching that a traditional web application receives.
 
-# Web Framework
+## Web Framework
 A web framework is software tools that support the development of web applications; a web framework 
 can range from a small codebase for micro apps to a large codebase for enterprise apps.
 
 **References**
 * [Complete Rust Web App](https://medium.com/@saschagrunert/a-web-application-completely-in-rust-6f6bdb6c4471)
 
-## Overview
+### Overview
 
-### Considerations
+#### Considerations
 * Security
 * Flexibility
 * Community growth
 * Project size
 
-### Features
+#### Features
 Web frameworks typically provide support for:
 * Databases
 * Templating
 * Sessions
 * Migrations
 
-## Frontend
+### Frontend
 There is a growing ecosystem for frontend wasm. This means using Rust in the browser instead of or at 
 least alongside of Javascript for SPA type web applications. Wasm output is run alongside JavaScript 
 and can be published to npm and other packages. Rust uses a tool called `wasm-pack` to assemble and 
@@ -133,7 +138,7 @@ package crates that target Wasm.
 * [MoonZoon 1.3k](https://github.com/MoonZoon/MoonZoon)
 * Tauri
 
-### Dioxus frontend
+#### Dioxus frontend
 [Dioxus 6.6k](https://github.com/DioxusLabs/dioxus/) has a rapidly growing community.
 * a virtual DOM-based UI with React-like design
 * cross platform for web, mobile, and desktop.
@@ -144,16 +149,16 @@ package crates that target Wasm.
 * Cross platform support, but mobile is weak
 * `Uses unstable Rust`
 
-### Yew frontend
+#### Yew frontend
 Yew is a web app only framework and doesn't have desktop support
 
 * [Trunk](https://trunkrs.dev/)
 * [Ybc](https://github.com/thedodd/ybc)
 * [Bulma](https://bulma.io/)
 
-## Backend
+### Backend
 
-### Actix
+#### Actix
 * Rust stable
 
 * Rocket
@@ -166,7 +171,7 @@ Yew is a web app only framework and doesn't have desktop support
 * Tide
 * Dropshot
 
-# WASM
+## WASM
 Rust's zero runtime (small binary) no garbage collection (reliable speed) approach makes it ideal for 
 WebAssembly. There are two main uses for Rust and WebAssembly: building an entire web app in Rust and 
 building part of a web app in Rust using an existing JavaScript frontend. I'm targeting the first 
@@ -176,20 +181,20 @@ option i.e. pure Rust.
 * [EGUI Macroquad Demo](https://github.com/not-fl3/egui-miniquad)
 * [Are We Web Yet](https://www.arewewebyet.org/topics/frameworks/#frontend)
 
-## Setup Rust for WASM
+### Setup Rust for WASM
 
 1. Install WASM tooling
    ```
    $ rustup target add wasm32-unknown-unknown
    ```
 
-## WASM Bundlers
+### WASM Bundlers
 * [Trunk](https://trunkrs.dev/)
   * Builds and Wasm apps and provides a local dev server simplifying Wasm dev in Rust
 * [wasm-pack](https://rustwasm.github.io/wasm-pack/)
   * Build rust-generated WebAssembly packages that you could publish to the NPM alongside Javascript
 
-## WASM with Macroquad
+### WASM with Macroquad
 
 1. Install WASM target
    ```
@@ -242,7 +247,7 @@ option i.e. pure Rust.
    ```
 4. Open a browser to `127.0.0.1:8080`
 
-## Dioxus
+### Dioxus
 [Dioxus 6.6k](https://github.com/DioxusLabs/dioxus/) has a rapidly growing community.
 * React like design maps extremely well into Rust
 * Cross platform for web, mobile, and desktop
@@ -255,7 +260,7 @@ References:
 * [Dioxus recommends Trunk](https://trunkrs.dev/)
   * Builds wasm apps
 
-### Dioxus setup
+#### Dioxus setup
 1. Install WAM target
    ```
    $ rustup target add wasm32-unknown-unknown
@@ -305,18 +310,18 @@ References:
    ```
 7. Navigate in a browser to `localhost:8080`
 
-## Yew
+### Yew
 Yew is a web app only framework and doesn't have desktop support
 
 * [Trunk](https://trunkrs.dev/)
 * [Ybc](https://github.com/thedodd/ybc)
 * [Bulma](https://bulma.io/)
 
-# Web Platform
+## Web Platform
 A web platform is a turn key style blog or content mangement system that only requires content. Which 
 is different than a web framework which requires development to create the components needed to put  
 together a web platform.
 
-## WordPress
+### WordPress
 Workpress is the oldest and most widely used content management system for blogging out there. Its 
 plugin system makes it highly configurable to suite any purpose.

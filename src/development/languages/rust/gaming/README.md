@@ -1,1 +1,1 @@
-# Gaming
+# Rust Gaming

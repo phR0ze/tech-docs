@@ -1,4 +1,4 @@
-# NixOS <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
+# NixOS Orchestration <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
 NixOS has the ability to configure and manage a number of different containerization technologies 
 directly through Nix using the `containers` directive.

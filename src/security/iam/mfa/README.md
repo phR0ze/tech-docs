@@ -14,12 +14,12 @@ Multi-factor authentication
 
 ### Linked pages
 
-# Authenticator Apps
+## Authenticator Apps
 Authenticator apps are used to generate random codes used for two-factor authentication (2FA). To use 
 one you need to install the app, add an account and the authenticator will generate a time-based 
 six-digit code to use for 2FA for the site or service in question.
 
-## Authenticator
+### Authenticator
 GTK based linux desktop app that supports over 200 providers. Any site or service that supports 
 tokens should be able to work with it.
 
@@ -38,7 +38,7 @@ Fork of the original [Authenticator](https://launchpad.net/authenticator)
 * Dark and light themes
 * No cloud sync your data stays on your computer
 
-## Authme
+### Authme
 
 **References**
 * [Github project](https://github.com/Levminer/authme)
@@ -58,7 +58,7 @@ Fork of the original [Authenticator](https://launchpad.net/authenticator)
 * No Android version
 * No NixOS package
 
-## Authy
+### Authy
 Authy is one of the best authenticator apps out there and has a Linux version as well. Unfortunately 
 the purpose of a desktop authenticator in my opinion is to avoid your phone being a single point of 
 failure in your authentication and Authy ties your account to a phone number complicated this use 
@@ -71,7 +71,7 @@ case.
 * SNAP only package management
 * Ties your account to your phone number which will be a problem if you change phones
 
-## Keysmith
+### Keysmith
 KDE based desktop application to generate two-factor authentication (2FA) tokens when loggin into 
 your online accounts.
 
@@ -90,7 +90,7 @@ application by Rodney Dawes and Michael Zanetti for Ubuntu Touch.
 * QR code scanning not yet supported
 * Backup and restore accounts not yet supported
 
-## Maurborgne
+### Maurborgne
 Maurborgne is a 2FA OTP generator that can generate HTOP and TOTP codes in order to access various 
 services similar to other authenticator apps.
 
@@ -111,7 +111,7 @@ services similar to other authenticator apps.
 * Odd toolchain Vala, meson, ninja
 * Not available in the AUR
 
-## OTPClient
+### OTPClient
 
 **References**
 * [Blog review](https://opensourcemusings.com/3-multi-factor-authentication-apps-for-the-linux-desktop)

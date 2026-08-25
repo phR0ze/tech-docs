@@ -1,23 +1,33 @@
-<img align="left" width="48" height="48" src="../../../art/logo_256x256.png"> Blog Software
+# Blog Software <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
 ### Quick links
+* [.. up dir](..)
 * [WordPress](#wordpress)
+* [Containerized WordPress](#containerized-wordpress)
+  * [Install Dependencies](#install-dependencies)
+  * [Deploying WordPress](#deploying-wordpress)
+* [WordPress plugins](#wordpress-plugins)
+  * [Security](#security)
+  * [Search Engine Optimization (SEO)](#search-engine-optimization-seo)
+  * [Starter Templates](#starter-templates)
+  * [Video players](#video-players)
+  * [Utility](#utility)
 
-# Wordpress
+## WordPress
 WordPress is the oldest and most widely used content management system for blogging out there. Its 
 plugin system makes it highly configurable to suite any purpose.
 
-# Containerized WordPress
+## Containerized WordPress
 Running WordPress in Docker requires two separate containers, a web container running Apache and PHP 
 and a database container hosting MySQL. You must set up Docker Volumes for the WordPress data 
 directories.
 
-## Install Dependencies
+### Install Dependencies
 ```bash
 $ sudo pacman -S docker-compose
 ```
 
-## Deploying WordPress
+### Deploying WordPress
 1. Create a new project directory
    ```bash
    $ mkdir wordpress
@@ -60,29 +70,29 @@ $ sudo pacman -S docker-compose
    $ docker-compose --no-ansi -d
    ```
 
-# WordPress plugins
+## WordPress plugins
 
-## Security
+### Security
 * Sucuri Security
 * WordFence
 * Cloudflare
 
-## Search Engine Optimization (SEO)
+### Search Engine Optimization (SEO)
 * Yoast SEO
 * SEOPress
 * All in One SEO Pack
 * Rank Math
 
-## Starter Templates
+### Starter Templates
 * Astra Starter Templates
 * Gutenberg Templates Library
 * WPZoom Beaver Builder Templates
 
-## Video players
+### Video players
 * Presto Player
 * Easy Video Player
 
-## Utility
+### Utility
 * Jetpack
 
 * Ultimate Addons for Gutenburg

@@ -1,4 +1,4 @@
-# NeoVim <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
+# OSX NeoVim <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
 Nix can be used to configure and build applications for your OSX system. It can also be used for
 custom user configuration. To do so you simply need to install home-manager drop in your flake

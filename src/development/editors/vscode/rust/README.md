@@ -1,4 +1,4 @@
-# Rust
+# VSCode Rust
 
 ### Quick links
 * [Install Rust](#install-rust)

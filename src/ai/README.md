@@ -15,6 +15,8 @@ AI technology is moving fast.
 ### Linked pages
 - [Strategies](strategies/README.md)
 - [Harness](harness/README.md)
+- [Models](models/README.md)
+- [Providers](providers/README.md)
  
 ## Overview
 AI is predicted to be a golden age of innovation rivaling Cloud, Mobile possibly Internet:

@@ -6,7 +6,6 @@
 * [Wifi Networking](#wifi-networking-systemd-networkd)
 * [systemd-networkd-wait-online](#systemd-networkd-wait-online)
 
-# systemd-networkd
 `systemd-networkd` is a bare bones, light and simple networking configuration. In conjunction with 
 `wpa_supplicant` and `WPA_UI` I've got by just fine. However it does lack some of the elegance 
 heavier weight solutions like Network Manager provide.

@@ -3,10 +3,13 @@
 Researching Rust's async mechanisms
 
 ### Quick links
+- [.. up dir](..)
+- [Projects](#projects)
+  - [Tokio](#tokio)
 
-# Projects
+## Projects
 
-## Tokio
+### Tokio
 Read a file async using `tokio::fs::read`
 
 ```rust

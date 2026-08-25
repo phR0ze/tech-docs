@@ -1,9 +1,7 @@
-Rust GUI
-====================================================================================================
-<img align="left" width="48" height="48" src="../../../art/logo_256x256.png">
+# GUI <img style="margin: 6px 13px 0px 0px" align="left" src="../../../../data/images/logo_36x36.png" />
+
 Documenting my learning experience with Rust GUIs. Specifically I'm looking for cross-platform i.e. 
 Android, WASM and Linux support using NixOS as my development environment.
-<br><br>
 
 ### Quick links
 * [.. up dir](..)
@@ -29,15 +27,15 @@ Android, WASM and Linux support using NixOS as my development environment.
 * [Daisy UI](#daisy-ui)
 * [BULMA CSS](#bulma-css)
 
-# Overview
+## Overview
 
-## Requirements
+### Requirements
 * Low power consumption
 * Media processing capabiliies
 * As much pure Rust as possible
 * Cross-platform support including Android, Linux and WASM
 
-## Landscape shift in 2026
+### Landscape shift in 2026
 Since this research started, the field moved from "cross-platform Rust GUI" almost always meaning
 "Rust backend + system webview" (Tauri, and Dioxus built on top of Tauri) towards native, GPU-rendered
 UI written entirely in Rust. The biggest single change is **Dioxus 0.7**, which replaced its
@@ -46,18 +44,18 @@ webview-based renderer with a native `Blitz` (HTML/CSS layout) + `Vello` (WGPU v
 that works across desktop, web and mobile. That's a much closer match to the "as much pure Rust as
 possible" requirement above than the old Tauri-webview architecture this page used to describe.
 
-## General UI Design
+### General UI Design
 
 **References**
 * [UI Glossary](https://www.uxdesigninstitute.com/blog/ui-glossary/)
 * [React Icons for lookup](https://react-icons.github.io/react-icons/search?q=arrow)
 
-# Install pre-requisites
+## Install pre-requisites
 
-## Install Rust
+### Install Rust
 see [README.md/#install-rust](README.md/#install-rust)
 
-## Install Rust Android targets
+### Install Rust Android targets
 ```bash
 $ rustup target add aarch64-linux-android
 $ rustup target add armv7-linux-androideabi
@@ -65,7 +63,7 @@ $ rustup target add i686-linux-android
 $ rustup target add x86_64-linux-android
 ```
 
-## Tauri
+### Tauri
 Tauri is a lot like Electron only faster and smaller. While Electron uses the Chromium engine with 
 Node.js bundled together producing fat 150MB+ binaries, Tauri is a Rust engine that uses the 
 operating system's WebView libraries, making it faster and smaller as its uding dynamic libraries 
@@ -86,7 +84,7 @@ rather than the old Arch/pacman steps this page used to list — those version n
 **References**
 * [Tauri docs](https://v2.tauri.app/start/prerequisites/)
 
-## Dioxus
+### Dioxus
 Dioxus is a React-inspired portable, performant and ergonomic framework for building cross-platform 
 user interfaces in Rust. As of Dioxus 0.7 it is no longer just a layer over Tauri's webview — it ships
 a native renderer (`Blitz` + `Vello`, GPU-accelerated via WGPU) as an alternative to the webview-based
@@ -97,7 +95,7 @@ requirements (pure Rust, low power, cross-platform, media-capable via `image`/`w
 see [Dioxus in the development/ui section](../../../ui/dioxus/README.md) for setup details and current
 status of the native renderer.
 
-## Freya
+### Freya
 [Freya](https://freyaui.dev/) is a cross-platform, non-web GUI library for Rust rendered with
 [Skia](https://skia.org/) (via `skia-safe`) rather than HTML/CSS. It originally used Dioxus as its
 reactive/component engine but has since been rewritten standalone for better type safety and to
@@ -106,7 +104,7 @@ tailor the engine to Freya's own needs. It renders directly to native windows wi
 WASM/web-target maturity is unclear as of this writing — treat that as an open question to verify
 before committing to Freya if a web target is required.
 
-## egui
+### egui
 [egui](https://github.com/emilk/egui) (via `eframe`) is one of the oldest and most widely used pure-Rust
 immediate-mode GUI toolkits — mature and stable on Linux desktop and Web/WASM, which are `eframe`'s
 original and strongest target platforms.
@@ -135,17 +133,17 @@ Web**, but its Android story is rougher and less turnkey than Dioxus 0.7's (whic
 official first-party mobile tooling, bugs and all). For the full three-platform requirement it sits at
 the same fallback tier as Tauri/Freya rather than displacing Dioxus as the primary recommendation.
 
-## Emerging / Watch List
+### Emerging / Watch List
 Frameworks that are technically interesting for this requirement set but not yet production-ready —
 worth tracking, not building on top of yet.
 
-### Xilem
+#### Xilem
 [Xilem](https://github.com/linebender/xilem) is Linebender's (the Druid successor) reactive Rust UI
 framework, built as a layer on top of the `Masonry` widget toolkit, with `Vello` for rendering. It has
 a web backend in addition to the native Masonry backend. Status is explicitly pre-alpha/alpha —
 improving rapidly but with significant known issues. No clear Android story yet.
 
-### GPUI
+#### GPUI
 [GPUI](https://github.com/zed-industries/zed/tree/main/crates/gpui) is the GPU-accelerated, native
 Rust UI framework built for and open-sourced alongside the [Zed](https://zed.dev/) editor. Officially
 supported platforms are macOS, Linux and Windows. Mobile (iOS/Android) support exists only via an
@@ -153,7 +151,7 @@ early-stage third-party crate, [`gpui-mobile`](https://github.com/itsbalamurali/
 itself depends on upstream Zed crates (`gpui`, `gpui_wgpu`) not yet published to crates.io. Not viable
 for this requirement set yet.
 
-## Dioxus vs Flutter
+### Dioxus vs Flutter
 Flutter isn't a Rust framework, but it's the other realistic answer to "one codebase, Linux + Android
 + Web" and it's worth a direct comparison against Dioxus rather than dismissing it on language grounds
 alone. See [Flutter](../../../ui/flutter/README.md) for the detailed personal reference.
@@ -168,7 +166,7 @@ alone. See [Flutter](../../../ui/flutter/README.md) for the detailed personal re
 | Ecosystem & backing | Small, venture-backed (Dioxus Labs, YC); rendering stack still stabilizing through 2026 | Google-backed since 2015/GA 2018; huge `pub.dev` package ecosystem, large job market |
 | Dev experience | Hot-patching across all platforms; single language (Rust) throughout | Hot reload; requires Dart, plus Rust+FFI if a hybrid core is used |
 
-### Real-world adoption
+#### Real-world adoption
 The user specifically asked what popular apps prove one way or the other — the picture is more nuanced
 than a single example suggests:
 
@@ -199,7 +197,7 @@ than a single example suggests:
   evidence of a wave of companies replacing Flutter with Dioxus/Tauri/etc.; where movement exists, it's
   individual developers on smaller projects (like the egui case above), not enterprises.
 
-## Recommendation
+### Recommendation
 Given the requirements above (pure Rust, low power, media processing, Linux + Android + WASM):
 
 * **If Android is a near-term must-ship target** (or the Wayland window-chrome gap above isn't a
@@ -221,8 +219,8 @@ Given the requirements above (pure Rust, low power, media processing, Linux + An
     expect turnkey Android packaging.
 * **Not yet viable:** Xilem, GPUI-mobile — keep watching, don't build production apps on them yet.
 
-## Media & Gaming Angle
-The `## Recommendation` above is tuned for general-purpose app UI (forms, navigation, CRUD-style
+### Media & Gaming Angle
+The `### Recommendation` above is tuned for general-purpose app UI (forms, navigation, CRUD-style
 layouts). If the priority shifts to **displaying media/images well, with gaming as an optional
 stretch goal**, the ranking changes — this is a re-weighting, not a reversal.
 
@@ -255,7 +253,7 @@ supported path.
 **Verdict**: for "media/image display first, gaming optional," Macroquad is the closest match to the
 stated requirements; Flutter+Flame is the lower-risk, more mature alternative if pure Rust can flex.
 
-## Tailwind CSS
+### Tailwind CSS
 A utility-first CSS framework packed with utility type classes that can be composed to build any 
 design with infinite flexibility. Nothing is pre-styled; not even headings or links. You have to 
 create everything from scratch, giving you the opportunity to create something unique. Typically a 
@@ -267,11 +265,11 @@ Tailwind CSS. Notably though Tailwind UI is not free. However there are a host o
 `daisyUI` or `Flowbite` that are built on top of Tailwind CSS providing pre-styled components similar 
 to Tailwind UI for free.
 
-## Daisy UI
+### Daisy UI
 Tailwind.css provides the tools to build beautiful UIs with infinite customization. DaisyUI is a 
 Tailwind plugin that provides a number of pre-created components along the lines of Bulma CSS that 
 use Tailwind to allow you to get up and running faster and use fewer class names.
 
-## BULMA CSS
+### BULMA CSS
 Bulma is a free, open source framework that provides ready-to-use frontend components that you can 
 easily combine to build responsive web interfaces.

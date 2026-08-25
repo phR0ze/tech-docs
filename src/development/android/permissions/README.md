@@ -1,11 +1,22 @@
-# Permissions
+# Permissions <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
 ### Quick links
-* [Storage Access](#storage-access)
-  * [Scoped Storage](#scoped-storage)
-  * [Shared Storage](#shared-storage)
+- [.. up dir](..)
+- [Storage Access](#storage-access)
+  - [Scoped Storage](#scoped-storage)
+  - [Shared Storage](#shared-storage)
+    - [Legacy External Storage](#legacy-external-storage)
+    - [Deprecated](#deprecated)
+    - [MediaStore](#mediastore)
+    - [Storage Access Framework](#storage-access-framework)
+    - [Manage External Storage permission](#manage-external-storage-permission)
+    - [Legacy External Storage](#legacy-external-storage-1)
+    - [Opt out of Android 11 API 30 scoped storage access](#opt-out-of-android-11-api-30-scoped-storage-access)
+    - [Request storage permissions](#request-storage-permissions)
+  - [Storage Access Framework](#storage-access-framework-1)
+    - [Grant access to a directory's contents](#grant-access-to-a-directorys-contents)
 
-# Storage Access
+## Storage Access
 Android is an old platform that has been patched and retrofitted many times to deprecate APIs and 
 boltg on new security patterns and as such it is quite confusing to navigate. Additionally there is a 
 lot of documentations and guides that attempt to work around the new security measures by targetting 
@@ -24,7 +35,7 @@ enough and you need to look into `Shared Storage` which is way more complicated.
 
 ***NOTE: requires Android 10 (API level 29) or higher for these instructions to work correctly***
 
-## Scoped Storage
+### Scoped Storage
 Modern Android apps i.e. targeting Android 10 (API level 29) or higher are given scoped access to 
 external storage by default aka `Scoped Storage`. This restricts the app's access to the app-specific 
 directory on external storage or specific types of media the app creates. There are no permissions to 
@@ -36,7 +47,7 @@ another for cached files.
 For this use case an app would simply get the provided storage paths from the system and use the 
 `File` API directly to access and store files as needed to theses app specific provided paths.
 
-## Shared Storage
+### Shared Storage
 Shared storage resides on the external storage device and is wrapped in a number of security 
 constraints. You can access it in three different ways:
 1. `MediaStore`
@@ -45,7 +56,7 @@ constraints. You can access it in three different ways:
 2. `Storage Access Framework` provides access to other file types such as PDFs, epubs etc...
 3. `BlobStoreManager` provides access to large datasets like machine learning or media playback
 
-### Legacy External Storage
+#### Legacy External Storage
 It is possible to opt out of the new scoped storage by targeting the older Android 10 (API level 29) 
 SDK as your target using the [requestLegacyExternalStorage attribute](https://developer.android.com/about/versions/11/privacy/storage).
 This flag allows apps to temporarily opt out of scoped storage and access directories and files 
@@ -58,7 +69,7 @@ attribute.
 </application>
 ```
 
-### Deprecated
+#### Deprecated
 
 **READ_EXTERNAL_STORAGE** - deprecated as of Android 13 (API level 33)
 ```xml
@@ -72,7 +83,7 @@ attribute.
   android:maxSdkVersion="29" />
 ```
 
-### MediaStore
+#### MediaStore
 The Android [MediaStore](https://developer.android.com/training/data-storage/shared/media) 
 automatically scans all external storage and adds any files it finds to well-defined collections 
 separated by MIME type and controlled by specific permissions:
@@ -96,12 +107,12 @@ separated by MIME type and controlled by specific permissions:
 * `MediaStore.Files` - simply allows for viewing the Images, Video or Audio files at the same time 
    rather than calling each colletion separately, but you still need the same permissions.
 
-### Storage Access Framework
+#### Storage Access Framework
 Documents and other files such as PDFs or EPUB formats etc... can be accessed using the Storage 
 Access Framework.
 
 
-### Manage External Storage permission
+#### Manage External Storage permission
 As of `Android 11 (API 30)` [Google Play restricts](https://developer.android.com/training/data-storage/manage-all-files#all-files-access-google-play) the use of `All files access` permission `MANAGE_EXTERNAL_STORAGE` is prohibited.
 If you app does not require acces to the `MANAGE_EXTERNAL_STORAGE` permission, you must remove it 
 from your app's manifest in order to successfully publish your app. Only apps in categories that 
@@ -195,9 +206,9 @@ https://pub.dev/packages/media_store_plus
 
 
 
-### Legacy External Storage
+#### Legacy External Storage
 
-### Opt out of Android 11 API 30 scoped storage access
+#### Opt out of Android 11 API 30 scoped storage access
 You can opt out of the API 30 all files access restrictions by targetting Android 10 API 29 or lower 
 and setting the `requestLegacyExternalStorage="true"` flag.
 
@@ -218,7 +229,7 @@ version your compiling with which doesn't have a runtime impact only compile tim
 3. Edit `build.properties` and set `targetSdk` to `29` for Android 10 maximum
 4. Click `Sync Now` in the top right section
 
-### Request storage permissions
+#### Request storage permissions
 [Request app permissions](https://developer.android.com/training/permissions/requesting)
 Since API 23 you have to request permission at runtime to get access to device capabilities and have 
 remained similar enough to use the same approach up until Android 10 API 29 if you use the opt out 
@@ -247,14 +258,14 @@ flag.
    * `androidx.activity` version `1.2.0` or later
    * `androidx.fragment` version `1.3.0` or later
 
-## Storage Access Framework
+### Storage Access Framework
 Because of the security restrictions in Android 10 and higher we can no longer depend on standard 
 storage permissions to grant access to all file types i.e text files are notably excluded. In order 
 to gain access to all file types including text files we need to make use of the `Storage Access 
 Framework` to request a directory from the user that we can then fully manage. The directory the
 user chooses needs to be something other than `root` and the `Download` directory.
 
-### Grant access to a directory's contents
+#### Grant access to a directory's contents
 The Android team determined that they could improve security by making an application ask the user 
 which directory it can manage using the `ACTION_OPEN_DOCUMENT_TREE` intent action introduced in `API 21`.
 In API 30 further restrictions were made to exclude

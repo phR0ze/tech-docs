@@ -1,4 +1,4 @@
-# Portainer <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
+# Synology Portainer <img style="margin: 6px 13px 0px 0px" align="left" src="../../../data/images/logo_36x36.png" />
 
 Portainer is a lightweight management UI which allows you to easily manage your Docker host. It
 consists of a single container that can run on any Docker engine including `Docker for Synology DSM`.

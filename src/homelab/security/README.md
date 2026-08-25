@@ -1,4 +1,4 @@
-# Security <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
+# Homelab Security <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
 
 Research and practices for securely exposing homelab services to the public internet without
 putting the rest of the home network at risk. The core principle is ***making exposure

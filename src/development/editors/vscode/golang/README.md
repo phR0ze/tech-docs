@@ -1,4 +1,4 @@
-# Golang
+# VSCode Golang
 
 ### Quick links
 * [Install Golang](#install-golang)

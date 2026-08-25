@@ -2,9 +2,9 @@
 
 ### Quick links
 * [.. up dir](..)
-# [Buttercup](#buttercup)
-# [KeepassXC](#keepassxc)
-  # [TOTP Support](#totp-support)
+* [Buttercup](#buttercup)
+* [KeePassXC](#keepassxc)
+  * [TOTP Support](#totp-support)
 
 ### Linked pages
 * [Vaultwarden](vaultwarden/README.md)

@@ -7,13 +7,14 @@ All of the Distros below are being reviewed in a VirtualBox VM with 4GB of RAM a
 myself.
 
 ### Quick links
+* [.. up dir](..)
 * [Arch Linux Distros](#arch-linux-distros)
   * [Arco Linux - Openbox](#arco-linux-openbox)
   * [Hefftor Linux](#hefftor-linux)
 
-# Arch Linux Distros
+## Arch Linux Distros
 
-## Arco Linux - Openbox
+### Arco Linux - Openbox
 **Review**
 * The ArcoLinuxB version as is a live environment you can install from
 * Booting from it gives a minimal Arch Linux type menu then it boots to live and launches Calamares
@@ -77,7 +78,7 @@ myself.
 * Has a delayed bootloader page
 * Display manager login is set to tiny resolution by default
 
-## Hefftor Linux
+### Hefftor Linux
 [Hefftor Linux](https://hefftorlinux.net/) popped up on my radar when I was searching for a better
 lock screen. Apparently Brad Hefferman made his own GUI tool for the `Betterlockscreen` scripts which
 got me curious about what hes was working on. His screen shots look really neat.

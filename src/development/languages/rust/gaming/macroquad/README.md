@@ -1,12 +1,10 @@
-MacroQuad
-====================================================================================================
-<img align="left" width="48" height="48" src="../../../art/logo_256x256.png">
+# Macroquad <img style="margin: 6px 13px 0px 0px" align="left" src="../../../../data/images/logo_36x36.png" />
+
 Documenting my learning experience with Rust GUIs. Specifically I'm looking for cross-platform i.e. 
 Android, WASM and Linux support using NixOS as my development environment. As I delved further 
 into this space I've realized that the kind of custom graphics manipulation that I'm interested is 
 more readily available in the Gaming community. However the immediate mode UI frameworks prevalent in 
 gaming are a battery drain.
-<br><br>
 
 ### Quick links
 * [.. up dir](..)
@@ -14,26 +12,36 @@ gaming are a battery drain.
   * [References](#references)
     * [Example information](#example-information)
     * [Tutorials and learning](#tutorials-and-learning)
-* [Rust prerequisites](#rust-prerequisites)
+* [Rust pre-requisites](#rust-pre-requisites)
   * [Install Rust](#install-rust)
   * [Install Rust Android targets](#install-rust-android-targets)
-* [Macroquad](#macroquad)
+* [Macroquad](#macroquad-1)
   * [Install OpenJDK](#install-openjdk)
   * [Install Android SDK and NDK](#install-android-sdk-and-ndk)
   * [Adding Macroquad to your project](#adding-macroquad-to-your-project)
-  * [Install Cargo plugin for building apks](#install-cargo-plugin-for-building-apks)
+  * [Install Cargo plugin for building Android apks](#install-cargo-plugin-for-building-android-apks)
   * [Macroquad UI](#macroquad-ui)
     * [Margins](#margins)
   * [Debugging in Macroquad](#debugging-in-macroquad)
 * [EGUI](#egui)
   * [EGUI app](#egui-app)
 * [Gaming Ecosystem](#gaming-ecosystem)
-  * [Deprecated or not maintained](#deprecated-or-not-maintained)
-    * [Ame](#deprecated-or-not-maintained)
-* [Gaming Concepts](#gaming-concepts)
+  * [Amethyst - archived](#amethyst---archived)
+  * [Bevy](#bevy)
+  * [Emerald](#emerald)
+  * [Fyrox](#fyrox)
+  * [GGEZ](#ggez)
+  * [Nannou](#nannou)
+  * [Piston](#piston)
+  * [Physics Engines](#physics-engines)
+    * [Circle2D](#circle2d)
+    * [Rapier](#rapier)
+    * [nphysics](#nphysics)
+    * [physx-rs](#physx-rs)
+* [Gaming theory](#gaming-theory)
   * [Entity Component Systems (ECS)](#entity-component-systems-ecs)
 
-# Overview
+## Overview
 Originally I'd gone down the path of writing a Kotlin Android app with Android Studio. However I 
 quickly realized that the complexity involved in cross platform support would be a nightmare. 
 Additionally I found that I disklike the Kotlin/Java ecosystem intensly. Switching gears I determined 
@@ -46,9 +54,9 @@ To this end I'm documenting my journey through this process.
 * As much pure Rust as possible
 * Cross-platform support including Android, Linux and WASM
 
-## References
+### References
 
-### Example information
+#### Example information
 * Rust GUIs
   * [Are we gui yet](https://www.areweguiyet.com/)
   * [Good Web Game](https://github.com/ggez/good-web-game)
@@ -84,7 +92,7 @@ To this end I'm documenting my journey through this process.
   * [Github android-ndk-rs](https://github.com/rust-windowing/android-ndk-rs)
   * [Integrating Rust modules in Android](https://blog.logrocket.com/integrating-rust-module-android-app/)
 
-### Tutorials and learning
+#### Tutorials and learning
 * [Boy Maas - youtube](https://www.youtube.com/channel/UC_GA3MH6UmklIgQX3_fCpLQ)
 * [Bevvy Basics](https://www.youtube.com/c/PhaestusFox)
   * [Episode 1](https://youtu.be/pB3ERI5JtrA)
@@ -93,12 +101,12 @@ To this end I'm documenting my journey through this process.
   * [Episode 4](https://youtu.be/PjLozjlOgJ4)
 * [Integrating Rust modules in Android](https://blog.logrocket.com/integrating-rust-module-android-app/)
 
-# Rust pre-requisites
+## Rust pre-requisites
 
-## Instal Rust
+### Install Rust
 see [README.md/#install-rust](README.md/#install-rust)
 
-## Install Rust Android targets
+### Install Rust Android targets
 ```bash
 $ rustup target add aarch64-linux-android
 $ rustup target add armv7-linux-androideabi
@@ -106,7 +114,7 @@ $ rustup target add i686-linux-android
 $ rustup target add x86_64-linux-android
 ```
 
-# Macroquad
+## Macroquad
 GGEZ reuses the existing rust gamedev ecosystem i.e. winit, wgpu, rodio while Macroquad has 
 re-written most of this in miniquad and doesn't use the standard components.
 
@@ -237,7 +245,7 @@ engine from the ground up in Rust
 * [Ray casting sandbox](https://github.com/nathanielfernandes/ray-casting-sandbox)
   * Neat Wolf 3D type playground
 
-## Install OpenJDK
+### Install OpenJDK
 Macroquad's `cargo-quad-apk` has historically depended on OpenJDK8; verify against the current
 `cargo-quad-apk`/NDK combination you're using before assuming this is still required.
 
@@ -247,7 +255,7 @@ $ nix-shell -p jdk8  # or jdk17/jdk21 if your NDK/SDK combination supports it
 ```
 `JAVA_HOME` is set automatically inside the shell.
 
-## Install Android SDK and NDK
+### Install Android SDK and NDK
 Rather than hand-downloading versioned SDK/NDK zips or building Arch packages (both rot quickly), use
 the [android-nixpkgs](https://github.com/tadfisher/android-nixpkgs) flake to compose a reproducible
 SDK+NDK dev shell, or the NixOS/Nix guidance already recorded at
@@ -255,7 +263,7 @@ SDK+NDK dev shell, or the NixOS/Nix guidance already recorded at
 Verify the exact SDK platform/build-tools and NDK version your `cargo-quad-apk`/Macroquad version
 expects, since these pins have historically been strict.
 
-## Adding Macroquad to your project
+### Adding Macroquad to your project
 Warning: The Cargo plugin `quad-apk` needs to have Macroquad version `0.3.23` or newer to find the 
 `src/native/android/mod_inject.rs` file.
 
@@ -280,7 +288,7 @@ Warning: The Cargo plugin `quad-apk` needs to have Macroquad version `0.3.23` or
    version_code = 1
    ```
 
-## Install Cargo plugin for building Android apks
+### Install Cargo plugin for building Android apks
 * The android build artifacts are located at `target/android-artifacts/debug/bin/<PROJECT>`
 * Android Studio's emulator for a `x86_64` linux machine needs the rust target `i686-linux-android`
 
@@ -329,7 +337,7 @@ Problems to fix:
    $ adb install target/android-artifacts/debug/apk/mrsa.apk
    ```
 
-## Macroquad UI
+### Macroquad UI
 Macroquad provides an intermediate UI that is fully skinnable. In order to get access to the ui 
 components and setup custom skins you need to:
 1. Import `use macroquad::ui::root_ui`
@@ -361,7 +369,7 @@ components and setup custom skins you need to:
    });
    ```
 
-### Margins
+#### Margins
 Macroquad UI has two different optional margin properties settable via the `StyleBuilder`. Access the 
 style builder through the `root_ui()` function e.g. `root_ui().style_builder()`
 
@@ -370,7 +378,7 @@ Note: if `size()` is specified than the `*margin` functions won't take affect
 * `background_margin` - provides similar margin as `margin` but doesn't distort the background image
 * `margin` - provides similar margin as `background_margin` but distorts the backround image
 
-## Debugging in Macroquad
+### Debugging in Macroquad
 All the `warn!`, `info!` and `debug!` MacroQuad messages will go into the android system messages. 
 You can access them with `adb logcat`
 
@@ -379,7 +387,7 @@ Filter by tag
 adb logcat -v brief SAPP:V "*:S"
 ```
 
-# EGUI
+## EGUI
 Highly portable immediate mode GUI library in pure Rust. Their goal is to be a simple way to create a 
 GUI or add a GUI to a game with simple custom widgets.
   * Pure Rust, inspired by Dear ImGui
@@ -401,7 +409,7 @@ for my needs, skinnable.
 * [Simple headlines GUI app walkthrough](https://www.youtube.com/watch?v=NtUkr_z7l84)
 * [Wireframe design tool not EGUI](https://excalidraw.com/)
 
-## EGUI app
+### EGUI app
 [eframe](https://crates.io/crates/eframe) is EGUI's official framework. It uses `egui_glow` and thus
 [glow](https://github.com/grovesNL/glow) by default. To use a different low graphics drawing backend 
 you can use `egui-minigquad`, `equi-macroquad`.
@@ -410,9 +418,9 @@ you can use `egui-minigquad`, `equi-macroquad`.
 $ cargo run egui_demo_app
 ```
 
-# Gaming Ecosystem
+## Gaming Ecosystem
 
-## Amethyst - archived
+### Amethyst - archived
 Data driven and data oriented game engine
 
 * [Docs](https://amethyst.rs/doc)
@@ -420,45 +428,45 @@ Data driven and data oriented game engine
 * Massively parallel architecture
 * Follows the Entity Comonent System (ECS) paradigm
 
-## Bevy
+### Bevy
 * WASM support is mature (asset loading and the rest work like any other platform)
 * Android is possible but not easy, and isn't a project priority yet due to low mobile-dev traffic —
   see [bevyengine/bevy#20998](https://github.com/bevyengine/bevy/discussions/20998)
 * Successor to Amethyst it has a ECS data paradigm
 * Hot asset reloading to allow for runtime changes
 
-## Emerald
+### Emerald
 
-## Fyrox
+### Fyrox
 * Production ready 2D/3D engine
 * Supports Windows, Linux, macOS and Web
 * Extensive documentation and resources and a game editor
 
-## GGEZ
+### GGEZ
 **References**
 * [Github GGEZ](https://github.com/ggez/ggez)
 
-## Nannou
+### Nannou
 * Open source game framework
 * Aims to use only Rust libraries and `cargo build`
 * Full palette of creative tools for graphics, audio, lasers, lighting and more
 
-## Piston
+### Piston
 * Modular collection of 2D and 3D image processing, event programming, GUI, sound and animation libraries
 * Uses a dynamic scripting language called Dyon
 
-## Physics Engines
+### Physics Engines
 
-### Circle2D
+#### Circle2D
 https://github.com/koalefant/circle2d
 
-### Rapier
+#### Rapier
 
-### nphysics
+#### nphysics
 
-### physx-rs
+#### physx-rs
 Wrapper around Nvidia's PhysX
 
-# Gaming theory
+## Gaming theory
 
-## Entity Component Systems (ECS)
+### Entity Component Systems (ECS)

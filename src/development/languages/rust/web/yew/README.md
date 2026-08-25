@@ -1,8 +1,6 @@
-Yew wasm front-end
-====================================================================================================
-<img align="left" width="48" height="48" src="../../../art/logo_256x256.png">
+# Yew <img style="margin: 6px 13px 0px 0px" align="left" src="../../../../../data/images/logo_36x36.png" />
+
 Yew development research
-<br><br>
 
 ### Quick links
 * [.. up dir](..)
@@ -11,15 +9,20 @@ Yew development research
   * [Run Yew examples](#run-yew-examples)
   * [Create new Yew project](#create-new-yew-project)
 * [Yew Basic Concepts](#yew-basic-concepts)
+  * [HTML with html!](#html-with-html)
+  * [CSS with classes!](#css-with-classes)
+  * [JS with RS](#js-with-rs)
+  * [wasm-bingen](#wasm-bingen)
+  * [web-sys](#web-sys)
 
-# Overview
+## Overview
 Yew is a wasm front-end web-app only framework.
 
 * [Trunk](https://trunkrs.dev/)
 * [Ybc](https://github.com/thedodd/ybc)
 * [Bulma](https://bulma.io/)
 
-## Install dependencies
+### Install dependencies
 1. Install WASM target
    ```bash
    $ rustup target add wasm32-unknown-unknown
@@ -30,7 +33,7 @@ Yew is a wasm front-end web-app only framework.
    $ cargo install --locked wasm-bindgen-cli
    ```
 
-## Run Yew examples
+### Run Yew examples
 ```bash
 $ git clone https://github.com/yewstack/yew
 $ cd yew/examples/router
@@ -39,7 +42,7 @@ $ trunk serve --release
 
 Browse to `http://127.0.0.1:8080`
 
-## Create new Yew project
+### Create new Yew project
 1. Create new binary crate
    ```bash
    $ cargo new yew-basic
@@ -93,9 +96,9 @@ Browse to `http://127.0.0.1:8080`
    ```
 6. Browse to `http://127.0.0.1:8080`
 
-# Yew Basic Concepts
+## Yew Basic Concepts
 
-## HTML with html!
+### HTML with html!
 You can write expressions resembling HTML. Yew turns this into rust code representing the DOM to 
 generate. `html!` provides string interpolation such that you can easily embedded variables from 
 surrounding scope.
@@ -130,16 +133,16 @@ html! {
 };
 ```
 
-## CSS with classes!
+### CSS with classes!
 A handy macro to handle classes
 
-## JS with RS
+### JS with RS
 Javascript with Rust
 
-## wasm-bingen
+### wasm-bingen
 Wasm-bingen is a tool allowing for calling to and from Javascript
 
-## web-sys
+### web-sys
 Bindings for web APIs
 
 ```rust

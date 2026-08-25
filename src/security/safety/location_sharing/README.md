@@ -24,70 +24,19 @@ Android. Ideally it would also be less reputation tarnished than life360.
     - [iSharing](#isharing)
 
 ### Linked pages
+- [Life360](life360/README.md)
 - [Dawarich](dawarich/README.md)
 - [OwnTracks](owntracks/README.md)
 
 ## Overview
 
 ### Life360 (baseline)
-[Life360](https://www.life360.com/) is the app every alternative in this page is measured against —
-it meets both hard requirements (free tier, purpose-built always-on background tracking) but
-carries the reputation problems the other options are being evaluated to avoid.
-
-**Free tier** — a full circle can share live location for free, but it's capped at **2 Places
-(geofences) and 2 days of location history**; paid tiers raise those caps and add features:
-Silver ($7.99/mo) gives 5 Places and 7 days, Gold ($14.99/mo) gives unlimited Places, 30 days, and
-driver reports, Platinum ($24.99/mo) adds towing and stolen-funds reimbursement.
-
-**Battery** — Life360 claims ~10% extra drain over 24 hours via an adaptive wake algorithm, but
-battery drain is consistently one of the most common complaints in the category; some Android
-users report 20%+ drain after OS updates broke the optimization.
-
-**Reducing background battery drain** — a lot of "Life360 battery tips" advice online conflates two
-different things, and one of them breaks always-on tracking entirely:
-* **Don't** restrict Life360's Android battery access to "Restricted" or set location permission to
-  "Only while using the app" — this lets Android suspend the background service, so location stops
-  updating when the app isn't open, defeating the point of always-on tracking.
-* **Do** set Life360's Android battery access to **Unrestricted** and location permission to
-  **Allow all the time** — this keeps Android from killing the service, which is what makes
-  tracking reliable in the first place.
-* The actual lever for reducing drain is inside Life360's *own* settings, not Android's: switch
-  Location Settings from the default/"High Accuracy" to **Battery Saving** or **Low** (trades GPS
-  precision for less frequent polling, similar to the Significant Location Change trade-off used by
-  [OwnTracks](owntracks/README.md)), turn off **Drive Detection** if driving reports aren't needed
-  (it keeps motion sensors and GPS active more aggressively to detect trip start/stop), and disable
-  **Motion Detection**/**Analytics Sharing** in Advanced Settings if present.
-* There's a real ceiling here — this reduces drain, it doesn't eliminate the always-on background
-  GPS cost. Life360 doesn't expose the underlying polling thresholds it uses, so unlike OwnTracks
-  this trade-off isn't fully transparent or tunable.
-
-**Data monetization and legal history:**
-* **FTC enforcement (Jan 2025)** — the FTC formally ordered Life360 to stop selling sensitive
-  location data collected from users.
-* **Texas AG lawsuit** — Texas AG Ken Paxton sued Allstate/Arity over unlawful collection and sale
-  of location/driving data from 45M+ consumers via embedded SDKs, naming Life360 as an example of
-  how the data pipeline worked (insurers using it to justify premium increases).
-* **Data breach (Mar–Jul 2024)** — a hacker exploited a Life360 login API vulnerability; by
-  July 2024 a database of 442,519 users' names, phone numbers, and emails was posted publicly.
-* **Original class-action** over data sales without consent was dismissed in Nov 2023 without a
-  settlement — no compensation fund exists, but the underlying practice is what triggered the FTC
-  action above.
-
-**Teen resentment** — the most distinctive reputation problem, separate from the data/privacy
-issues above: Life360 became a TikTok meme for teens to mock and evade, with widely shared
-tutorials on spoofing or disabling it without a parent noticing. Researchers cited in coverage warn
-constant tracking can foster resentment, anxiety, and reduced autonomy in teens specifically.
-
-**Takeaway** — Life360's core problem isn't just "sells data" (now under an FTC stop-order), it's
-a pattern: data monetization + a data breach + documented teen-culture rejection. Every alternative
-compared on this page is being weighed against that bar, not just against Life360's feature set.
-
-**References**
-* [Life360](https://www.life360.com/)
-* [Life360 plans and pricing](https://www.life360.com/plans-pricing)
-* [Life360 Sued for Selling Location Data — The Markup](https://themarkup.org/privacy/2023/06/01/life360-sued-for-selling-location-data)
-* [Life360 and Battery Usage — official support article](https://support.life360.com/hc/en-us/articles/23053716563223-Life360-and-Battery-Usage)
-* [Life360: Turn Off Battery Optimization](https://poweruptips.com/turn-off-battery-optimization-life360/)
+[Life360](life360/README.md) is the app every alternative on this page is measured against — it
+meets both hard requirements (free tier, purpose-built always-on background tracking), but a
+pattern of data monetization, a 2024 data breach, and documented teen-culture rejection are the
+reputation problems the rest of this comparison is trying to avoid. See the
+[Life360](life360/README.md) doc for the full breakdown (pricing tiers, battery-drain tips, legal
+history, teen resentment).
 
 ### Life360 vs GeoZilla
 [GeoZilla](https://geozilla.com/) most closely mirrors Life360's own feature set among the free-tier
@@ -329,7 +278,7 @@ other purpose-built location-sharing apps compared above.
 
 ### Poor Reputation
 The following meet the base free/always-on/Android requirements but don't make it into the
-comparisons above because their reputation is worse than [Life360's](#life360-baseline) — the
+comparisons above because their reputation is worse than [Life360's](life360/README.md) — the
 thing this whole comparison is trying to avoid:
 
 #### iSharing
