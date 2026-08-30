@@ -60,16 +60,21 @@ CHECKPOINT=$CHECKPOINT_DIR/last-reviewed
 mkdir -p "$CHECKPOINT_DIR"
 NOW=$(date +%Y-%m-%dT%H:%M:%S)
 SINCE=$(cat "$CHECKPOINT" 2>/dev/null || echo 1970-01-01T00:00:00)
+# Include rotated logs (oldest first) alongside the live file — a burst that gets rotated out
+# between runs would otherwise vanish from every future grep even though it's newer than $SINCE
+# and still counted in fail2ban-client status's cumulative Total failed.
+FAIL2BAN_LOGS=$(ls -v -r /var/log/fail2ban.log.* 2>/dev/null; echo /var/log/fail2ban.log)
+AUTH_LOGS=$(ls -v -r /var/log/auth.log.* 2>/dev/null; echo /var/log/auth.log)
 
 echo "=== Reviewing since $SINCE ==="
 
 echo
-echo "=== [sshd] Found entries in fail2ban.log ==="
-grep '\[sshd\] Found' /var/log/fail2ban.log | awk -v since="$SINCE" '($1"T"$2) > since' | tail -n 30
+echo "=== [sshd] Found entries in fail2ban.log (incl. rotated) ==="
+zcat -f $FAIL2BAN_LOGS 2>/dev/null | grep '\[sshd\] Found' | awk -v since="$SINCE" '($1"T"$2) > since' | tail -n 30
 
 echo
 echo "=== Total attempts and top offenders ==="
-OFFENDERS=$(grep '\[sshd\] Found' /var/log/fail2ban.log | awk -v since="$SINCE" '($1"T"$2) > since' | \
+OFFENDERS=$(zcat -f $FAIL2BAN_LOGS 2>/dev/null | grep '\[sshd\] Found' | awk -v since="$SINCE" '($1"T"$2) > since' | \
   awk '{
     ip=""; for(i=1;i<=NF;i++) if($i=="Found") ip=$(i+1)
     d=$1; count[ip]++
@@ -85,8 +90,9 @@ echo "=== fail2ban service sanity check ==="
 systemctl is-active fail2ban || echo "WARNING: fail2ban is not active"
 
 echo
-echo "=== auth.log direct check (cross-check against fail2ban.log above) ==="
-grep -E "sshd\[[0-9]+\]: (Failed (password|publickey) for|[Ii]nvalid user .* from)" /var/log/auth.log \
+echo "=== auth.log direct check (incl. rotated, cross-check against fail2ban.log above) ==="
+zcat -f $AUTH_LOGS 2>/dev/null \
+  | grep -E "sshd\[[0-9]+\]: (Failed (password|publickey) for|[Ii]nvalid user .* from)" \
   | awk -v since="$SINCE" '$1 > since' | tail -n 30
 
 echo
@@ -134,6 +140,18 @@ $ sudo /usr/local/sbin/alert-recon.sh
 Review the output, run `sudo /usr/local/sbin/block-ip.sh <ip>` for any suspect worth blocking, then
 copy the `echo ... | sudo tee ...` command the script prints at the end to advance the checkpoint —
 it already has that run's exact timestamp baked in, so nothing gets skipped on the next alert.
+
+***Reads rotated logs too, not just the live file*** — `fail2ban.log`/`auth.log` rotate
+(`logrotate`, weekly/daily by default) independently of when you happen to run this script. A burst
+that lands right before a rotation can end up entirely inside `fail2ban.log.1`/`auth.log.1` (or a
+`.gz` further back) by the time you next check, even though it's newer than `$SINCE` —
+`fail2ban-client status`'s `Total failed` counter (tracked in-memory by the running process,
+unaffected by rotation) still reflects it, but a grep against only the live file would show
+nothing, making the two numbers disagree for no obvious reason. `$FAIL2BAN_LOGS`/`$AUTH_LOGS` glob
+in every rotated file (`ls -v -r` sorts oldest-suffix-first, so concatenation stays chronological)
+and feed them through `zcat -f`, which transparently decompresses `.gz` files and passes plain ones
+through unchanged — so the `since` filter always sees the full window, regardless of where rotation
+happened to fall.
 
 ### Passwordless sudo for the recon script
 The script is read-only end to end (the only write is the checkpoint file itself), so it's safe to
