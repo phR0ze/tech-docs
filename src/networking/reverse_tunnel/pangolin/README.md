@@ -600,7 +600,7 @@ services:
       retries: 15
 
   gerbil:
-    image: docker.io/fosrl/gerbil:1.5.0
+    image: docker.io/fosrl/gerbil:1.5.1
     container_name: gerbil
     restart: unless-stopped
     depends_on:
@@ -690,7 +690,7 @@ e.g. `<homelab-tunnel-ip>:6060:6060`, rather than `0.0.0.0`).
 **All four images are pinned** — the installer's own `docker-compose.yml` template renders
 `fosrl/pangolin:{{.PangolinVersion}}` and `fosrl/gerbil:{{.GerbilVersion}}`, with those version
 strings baked into the installer binary at build time (whatever Pangolin release the installer
-itself shipped with); it never floats `latest` for those two, or for `traefik`. `1.21.1`/`1.5.0`/
+itself shipped with); it never floats `latest` for those two, or for `traefik`. `1.21.1`/`1.5.1`/
 `v3.7` are the current releases as of this doc's last check against
 [Pangolin's](https://github.com/fosrl/pangolin/releases),
 [Gerbil's](https://github.com/fosrl/gerbil/releases), and Traefik's release pages — they *will* go
@@ -1705,9 +1705,15 @@ GERBIL_LATEST=$(latest_tag fosrl/gerbil)
 CROWDSEC_LATEST=$(latest_tag crowdsecurity/crowdsec)
 TRAEFIK_LATEST=$(latest_tag traefik/traefik | grep -oP '^v\d+\.\d+')
 
+# Re-add the ee- prefix for display/comparison if the pinned tag carries one, so the
+# reported target is the actual pullable image tag (ee-1.22.0), not the bare GitHub
+# release number (1.22.0) — which is also a real, but different, CE-only image tag.
+PANGOLIN_LATEST_DISPLAY=$PANGOLIN_LATEST
+[[ "$PANGOLIN_CUR" == ee-* ]] && PANGOLIN_LATEST_DISPLAY="ee-$PANGOLIN_LATEST"
+
 REPORT=""
 if [ "${PANGOLIN_CUR#ee-}" != "$PANGOLIN_LATEST" ]; then
-  REPORT+="pangolin: $PANGOLIN_CUR -> $PANGOLIN_LATEST"$'\n'
+  REPORT+="pangolin: $PANGOLIN_CUR -> $PANGOLIN_LATEST_DISPLAY"$'\n'
 fi
 if [ "$GERBIL_CUR" != "$GERBIL_LATEST" ]; then
   REPORT+="gerbil: $GERBIL_CUR -> $GERBIL_LATEST"$'\n'
@@ -1736,14 +1742,18 @@ every single patch even though `v3.7` already tracks them automatically — only
 series (`v3.8`, `v4.0`) is actually actionable here. `pangolin`, `gerbil`, and `crowdsec` are pinned
 to an exact patch, so those three compare exactly.
 
-***`pangolin`'s `ee-` prefix is stripped before comparing*** — if you've switched to
-[Enterprise Edition](#enable-enterprise-edition), `docker-compose.yml` pins something like
-`ee-1.21.1`, but GitHub's `releases/latest` API for `fosrl/pangolin` reports bare version numbers
-(`1.21.1`, no `ee-`/`v` prefix — EE and CE ship from the same release). Comparing the raw pinned tag
-against that would false-positive every single run, flagging a match as a mismatch forever. The
-`${PANGOLIN_CUR#ee-}` strip handles this while still reporting the actual pinned tag (`ee-1.21.1`)
-in the alert text, not the stripped comparison value — harmless no-op on a CE install, since a CE
-tag has no `ee-` prefix to strip.
+***`pangolin`'s `ee-` prefix is stripped before comparing, but re-added before reporting*** — if
+you've switched to [Enterprise Edition](#enable-enterprise-edition), `docker-compose.yml` pins
+something like `ee-1.21.1`, but GitHub's `releases/latest` API for `fosrl/pangolin` reports bare
+version numbers (`1.21.1`, no `ee-`/`v` prefix — EE and CE ship from the same release, as separate
+image tags for the same version). Comparing the raw pinned tag against that would false-positive
+every single run, flagging a match as a mismatch forever. The `${PANGOLIN_CUR#ee-}` strip handles
+that for the *comparison* — but the target version in the alert text must not reuse the same
+stripped value, since `1.22.0` and `ee-1.22.0` are two different, independently-tagged images and
+only one of them is what an EE install should actually pull. `PANGOLIN_LATEST_DISPLAY` re-adds the
+`ee-` prefix for reporting whenever the pinned tag had one, so the alert reads `ee-1.21.1 ->
+ee-1.22.0` — the exact tag to pull next — not the ambiguous bare `1.22.0`. Harmless no-op on a CE
+install, since a CE tag has no `ee-` prefix to strip or re-add.
 
 **Schedule it** daily — a version check doesn't need the 5-minute cadence the health/failure checks
 use:
