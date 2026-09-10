@@ -19,7 +19,7 @@
   - [Garbled Starship](#garbled-starship)
 
 ### Linked pages
-- [TMUX](tmux/README.md)
+- [TMUX](terminal_multiplexer/tmux/README.md)
 
 ## Session
 

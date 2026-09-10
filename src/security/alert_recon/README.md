@@ -111,6 +111,7 @@ ss -tlnp | grep ssh
 echo
 echo "=== Suspect IPs (every offender above, not already trusted or blocked — review before acting) ==="
 FOUND_SUSPECT=0
+BLOCK_CMDS=""
 while read -r count ip _rest; do
   [ -z "${ip:-}" ] && continue
   if ipset test admin-allow "$ip" &>/dev/null; then
@@ -119,11 +120,18 @@ while read -r count ip _rest; do
   elif ipset test manual-block "$ip" &>/dev/null; then
     echo "  $ip ($count attempts) — already in manual-block, nothing to do"
   else
-    echo "  $ip ($count attempts) — sudo /usr/local/sbin/block-ip.sh $ip"
+    echo "  $ip ($count attempts) — suspect, not yet blocked"
+    BLOCK_CMDS+="sudo /usr/local/sbin/block-ip.sh $ip"$'\n'
     FOUND_SUSPECT=1
   fi
 done <<< "$OFFENDERS"
 [ "$FOUND_SUSPECT" -eq 0 ] && echo "  none"
+
+if [ "$FOUND_SUSPECT" -eq 1 ]; then
+  echo
+  echo "=== Copy/paste block — review the IPs above, then paste this whole block to block all of them ==="
+  printf '%s' "$BLOCK_CMDS"
+fi
 
 echo
 echo "=== Checkpoint NOT advanced — this run is safe to repeat ==="
@@ -137,9 +145,11 @@ $ sudo chmod +x /usr/local/sbin/alert-recon.sh
 ```bash
 $ sudo /usr/local/sbin/alert-recon.sh
 ```
-Review the output, run `sudo /usr/local/sbin/block-ip.sh <ip>` for any suspect worth blocking, then
-copy the `echo ... | sudo tee ...` command the script prints at the end to advance the checkpoint —
-it already has that run's exact timestamp baked in, so nothing gets skipped on the next alert.
+Review the output, then paste the whole `=== Copy/paste block ===` section as-is to block every
+suspect IP in one go — it's a plain list of `sudo /usr/local/sbin/block-ip.sh <ip>` lines with no
+annotations mixed in, so there's nothing to trim or edit out per-IP first. Finally, copy the
+`echo ... | sudo tee ...` command the script prints at the end to advance the checkpoint — it
+already has that run's exact timestamp baked in, so nothing gets skipped on the next alert.
 
 ***Reads rotated logs too, not just the live file*** — `fail2ban.log`/`auth.log` rotate
 (`logrotate`, weekly/daily by default) independently of when you happen to run this script. A burst
