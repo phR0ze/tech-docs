@@ -121,9 +121,11 @@ Here are the most likely fixes for your setup:
    explicitly set to a UTF-8 locale when tmux starts, tmux will fail to render multi-byte characters
    like Nerd Font glyphs, resulting in garbled text.
  * Quick Test: Launch or attach to your tmux session using the -u flag to force UTF-8 support:
-     tmux -u attach
-     # or
-     tmux -u new
+   ```bash
+   tmux -u attach
+   # or
+   tmux -u new
+   ```
  * Permanent Fix: Ensure ``~/.bashrc`` exports a UTF-8 locale before tmux starts:
    ```bash
    export LANG="en_US.UTF-8"
@@ -132,9 +134,11 @@ Here are the most likely fixes for your setup:
 
 2. Fix $TERM Inside tmux - don't hard code `$TERM`
 
-     set -g default-terminal "tmux-256color"
-     set -as terminal-overrides ",xterm-256color*:RGB"
-     # or use: set -ag terminal-overrides ",xterm-256color:Tc"
+   ```bash
+   set -g default-terminal "tmux-256color"
+   set -as terminal-overrides ",xterm-256color*:RGB"
+   # or use: set -ag terminal-overrides ",xterm-256color:Tc"
+   ```
 
 
 Summary of steps to take:

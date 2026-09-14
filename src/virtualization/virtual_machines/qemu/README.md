@@ -33,7 +33,6 @@ hypervisors. Its one downside is that its rather complicated.
   - [Run in Immutable mode](#run-in-immutable-mode)
 
 ### Linked pages
-  - [Quickemu](quickemu/README.md)
   - [NIX QEMU](nix_qemu/README.md)
   - [SPICE](spice/README.md)
 

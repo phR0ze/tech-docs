@@ -43,6 +43,7 @@ ecosystem more unapproachble than prior ecosystems like Arch Linux that I'm comi
 
 ### Linked pages
 * [Build VM](build_vm/README.md)
+* [Provisioning](provisioning/README.md)
 
 ## Overview
 
