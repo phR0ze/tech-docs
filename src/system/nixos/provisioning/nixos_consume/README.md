@@ -8,15 +8,23 @@ This page uses [phR0ze's nixos-consume](https://github.com/phR0ze/nixos-consume)
 rewrite that borrows heavily from [nixos-infect](https://github.com/elitak/nixos-infect) but targets
 the newer kexec-based `NixOS` unstable installer flow and is purely flake based.
 
+### Disclaimer
+***WARNING*** — this is a completely destructive approach to installing `NixOS` on an existing
+foreign Linux system. `nixos-consume` will entirely consume the existing OS, leaving it potentially
+unusable if the conversion fails and you don't have console or other out-of-band access to recover.
+VPS provider tools can typically wipe and re-provision from scratch if that happens, but there is
+inherent risk in overwriting a system in place.
+
 ### Quick links
 - [.. up dir](..)
 - [Overview](#overview)
-- [Prerequisites](#prerequisites)
-  - [Disk space](#disk-space)
-  - [RAM](#ram)
-  - [SSH keys](#ssh-keys)
+  - [Disclaimer](#disclaimer)
+  - [Getting Started](#getting-started)
 - [Usage](#usage)
-  - [Convert your VPS](#convert-your-vps)
+  - [Prerequisites](#prerequisites)
+    - [Disk space](#disk-space)
+    - [RAM](#ram)
+    - [SSH keys](#ssh-keys)
   - [Environment variables](#environment-variables)
   - [Tested Linux distros and VPS providers](#tested-linux-distros-and-vps-providers)
 - [Development](#development)
@@ -32,26 +40,51 @@ directly into it, no reboot necessary. From that ephemeral installer it formats 
 partition, writes out the target flake-based configuration, runs `nixos-install` unattended, and
 reboots into the finished system on success.
 
-***WARNING*** — this is a completely destructive approach to installing `NixOS` on an existing
-foreign Linux system. `nixos-consume` will entirely consume the existing OS, leaving it potentially
-unusable if the conversion fails and you don't have console or other out-of-band access to recover.
-VPS provider tools can typically wipe and re-provision from scratch if that happens, but there is
-inherent risk in overwriting a system in place.
-
 **References**
 * [phR0ze/nixos-consume on GitHub](https://github.com/phR0ze/nixos-consume)
 * [nixos-infect](https://github.com/elitak/nixos-infect) — the project this borrows heavily from
 * [NixOS Manual: Installing from another Linux distro](https://nixos.org/manual/nixos/stable/#sec-installing-from-other-distro)
 
-## Prerequisites
+### Getting Started
+Ensure your host meets the [Disk space](#disk-space) and [RAM](#ram) prerequisites then:
 
-### Disk space
+1. Provision your host using Ubuntu Server 24.04
+
+2. Provision your public keys for ssh:
+   ```bash
+   $ scp ~/.ssh/authorized_keys <user>@<host>:/tmp
+   $ ssh <user>@<host>
+   $ sudo install -m 600 -o root -g root /tmp/authorized_keys /root/.ssh/authorized_keys
+   ```
+
+3. Run the script straight from GitHub:
+   ```bash
+   $ curl https://raw.githubusercontent.com/phR0ze/nixos-consume/master/consume | NIXPKGS=nixos-25.11 bash
+   ```
+
+4. Your SSH session to the original OS drops the moment `kexec` runs (it kills the whole process
+   tree). Reconnect with the same key after a few seconds — you'll land in the ephemeral installer.
+   Watch progress with:
+   ```bash
+   $ journalctl -u consume-install -f
+   ```
+   You'll lose the connection again once that completes and it reboots into the final system.
+
+If the unattended install fails, the `consume-install` unit shows `failed` in `systemctl status` and
+the ephemeral installer's `sshd` stays up (it does **not** auto-reboot on failure) so you can debug
+and re-run `nixos-install --root /mnt ...` by hand.
+
+## Usage
+
+### Prerequisites
+
+#### Disk space
 Plan on **at least a 20GB disk**. The ephemeral kexec installer has to be built into `/nix/store` on
 the *original* filesystem, alongside the foreign Linux, before the `kexec` jump ever happens. In
 testing, a 10GB disk ran out of space mid-build with `nix build` failing outright. If you hit `error:
 ... note: build failure may have been caused by lack of free disk space`, this is why.
 
-### RAM
+#### RAM
 Plan **at least 2GB of RAM** — even that is tight. The kexec installer uses `netboot-minimal.nix`
 (network install, no offline channel copy) instead of the larger `netboot-base.nix`, which failed
 outright on a 2GB test VM (`EINVAL` / kernel page fault). Target VPS systems typically have limited
@@ -64,7 +97,7 @@ zramSwap = { enable = true; memoryPercent = 50; priority = 100; algorithm = "zst
 swapDevices = [{ device = "/var/swapfile"; size = 2048; priority = 5; }];
 ```
 
-### SSH keys
+#### SSH keys
 Ensure the freshly provisioned host has the root account configured to allow SSH via
 `/root/.ssh/authorized_keys`. The resulting `NixOS` system has no accounts other than root and no
 password — SSH'ing in with your key is the only way back into the system:
@@ -73,29 +106,6 @@ $ scp ~/.ssh/authorized_keys <user>@<host>:/tmp
 $ ssh <user>@<host>
 $ sudo install -m 600 -o root -g root /tmp/authorized_keys /root/.ssh/authorized_keys
 ```
-
-## Usage
-
-### Convert your VPS
-Ensure your host meets the [Disk space](#disk-space) and [RAM](#ram) prerequisites and has
-[SSH keys](#ssh-keys) seeded, then:
-
-1. Provision your host using Ubuntu Server 24.04
-2. Run the script straight from GitHub:
-   ```bash
-   $ curl https://raw.githubusercontent.com/phR0ze/nixos-consume/master/consume | NIXPKGS=nixos-25.11 bash
-   ```
-3. Your SSH session to the original OS drops the moment `kexec` runs (it kills the whole process
-   tree). Reconnect with the same key after a few seconds — you'll land in the ephemeral installer.
-   Watch progress with:
-   ```bash
-   $ journalctl -u consume-install -f
-   ```
-   You'll lose the connection again once that completes and it reboots into the final system.
-
-If the unattended install fails, the `consume-install` unit shows `failed` in `systemctl status` and
-the ephemeral installer's `sshd` stays up (it does **not** auto-reboot on failure) so you can debug
-and re-run `nixos-install --root /mnt ...` by hand.
 
 ### Environment variables
 

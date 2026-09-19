@@ -11,12 +11,21 @@ standout capabilities.
   - [GLM](#glm)
   - [Kimi](#kimi)
   - [MiniMax](#minimax)
+- [Model Comparisons](#model-comparisons)
+  - [Coding agent harness](#coding-agent-harness)
 
 ## Chinese LLMs
 Chinese AI labs have converged on open-weight releases as a competitive strategy, trading direct
 API revenue for adoption and mindshare. Most of the models below ship under permissive licenses
 (MIT or Apache 2.0) and are available self-hosted, via the vendor's own API, or through aggregators
 like OpenRouter.
+
+**Open-weight vs. open-source** — "open-weight" means the trained parameters are published for
+anyone to download, self-host, fine-tune, or build on top of. It does not mean "open-source": the
+training data, training code, and full pipeline behind those weights remain proprietary, so the
+model can't be reproduced or audited at the source. None of the models below meet the stricter
+open-source bar, even under a permissive weight license (`MIT`, `Apache 2.0`) with no usage
+restrictions.
 
 ### DeepSeek
 Spun out of the quant trading fund High-Flyer, DeepSeek made its name by training frontier-grade
@@ -81,3 +90,32 @@ as a lower-cost alternative rather than an outright frontier leader.
 * Part of the broader trend of Chinese labs pushing aggressive free/near-free pricing on
   OpenRouter to capture developer mindshare
 * Multimodal roadmap extending beyond text, including earlier speech/voice models
+
+## Model Comparisons
+
+### Coding agent harness
+Comparing `Kimi`, `Qwen`, and `GLM` specifically for driving a coding agent harness through a long,
+multi-step, tool-heavy workflow (e.g. an APK RE/recompile loop: `apktool`/`jadx` → edit →
+`gradle`/`apktool` build → `zipalign` → sign → retest, repeating on failures):
+
+1. **Kimi K2.6** — the standout pick. Its distinguishing benchmark is agentic stability: 4,000+ tool
+   calls sustained over a 13-hour uninterrupted session, plus 80.2% SWE-Bench Verified and 58.6%
+   SWE-Bench Pro (best of the group). Long, multi-step, tool-heavy workflows are exactly the case
+   where a model that degrades over long sessions will drift or forget earlier constraints partway
+   through — K2.6 doesn't.
+2. **Qwen3-Coder(-Next)** — close second. Efficient MoE (only ~3B active params), 256K native
+   context, Apache 2.0, and the most battle-tested in the wild (most-downloaded coding model as of
+   January 2026) — strong for the raw code-editing/smali-diffing part, slightly less proven on very
+   long agentic sessions than Kimi K2.6.
+3. **GLM-5.1/4.6** — good agentic front-end/dev preference (Code Arena Elo 1,530) but less
+   specifically benchmarked for sustained tool-call marathons.
+
+If you're building an actual pipeline (a harness driving `apktool`/`jadx`/`gradle`), Kimi K2.6 is
+the better bet specifically because of tool-call endurance; if you want something leaner to
+self-host, Qwen3-Coder-Next.
+
+**References**
+* [Kimi K2.6 vs GLM 5.1 vs Qwen 3.6 Plus vs MiniMax M2.7: Which Open Source Model Wins for Coding in 2026 - Atlas Cloud Blog](https://www.atlascloud.ai/blog/guides/kimi-k2-6-vs-glm-5-1-vs-qwen-3-6-plus-vs-minimax-m2-7-coding-2026)
+* [Best Open-Source Coding Model 2026: Kimi K3 vs GLM-5.2 vs DeepSeek V4 vs Qwen3 | Morph](https://www.morphllm.com/best-open-source-coding-model-2026)
+* [Qwen3-Coder-Next Technical Report](https://arxiv.org/html/2603.00729v1)
+* [Kimmy K2.6 and Qwen 3.6: The Open-Source Models Closing the Frontier Gap | MindStudio](https://www.mindstudio.ai/blog/kimmy-k2-6-qwen-3-6-open-source-frontier-models)
