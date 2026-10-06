@@ -1,6 +1,6 @@
 # OSX <img style="margin: 6px 13px 0px 0px" align="left" src="../../data/images/logo_36x36.png" />
 
-My highly opionionated configuration for OSX
+My highly opionionated configuration for OSX, which I'm converting over to use nix-darwin.
 
 * Updated
   * 2023.08.21 - Ventura 13.4.1
