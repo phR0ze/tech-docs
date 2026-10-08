@@ -955,9 +955,9 @@ net.ipv4.tcp_syncookies=1
 kernel.dmesg_restrict=1
 ```
 
-Only `send_redirects` (`1` by default) still needs hardening to `0`. `rp_filter=2` (loose mode) being
-the default here happens to line up with the Pangolin loose-mode override noted below anyway, so
-leave it as-is rather than tightening it to `1`
+Only `send_redirects` (`1` by default) still needs hardening to `0`. `rp_filter=2` (loose mode) is
+acceptable as shipped; tightening it to `1` (strict, see below) is optional extra anti-spoofing and
+is safe even if this VPS runs Pangolin (see the note at the end of this section)
 
 **Create `/etc/sysctl.d/99-hardening.conf`**
 ```
@@ -1028,14 +1028,12 @@ Not security-relevant but also present from the same drop-ins: `net.core.default
 (bufferbloat mitigation), `kernel.printk` (console log verbosity), `vm.max_map_count` (per-process
 memory-map limit, relevant to apps like Elasticsearch), and `kernel.pid_max` (max PID value).
 
-**If this VPS runs `Pangolin`**, `rp_filter=1` (strict mode) can drop legitimate return traffic
-through Gerbil's WireGuard tunnels once traffic starts arriving/leaving over multiple interfaces
-(the public NIC vs. the `wg`/tunnel interface). Use loose mode instead:
-```
-net.ipv4.conf.all.rp_filter=2
-net.ipv4.conf.default.rp_filter=2
-```
-Gerbil also needs IP forwarding enabled to route tunneled traffic — this isn't on by default:
+**If this VPS runs `Pangolin`**, `rp_filter` can be either mode — strict (`1`) doesn't drop
+Gerbil's tunnel traffic, despite what earlier versions of this doc said. The reasoning and a way to
+confirm it on your own box are in the Pangolin doc's
+[sysctl flags](../../../networking/reverse_tunnel/pangolin/README.md#sysctl-flags) section. The
+one setting the Pangolin stack does need is IP forwarding, for Docker to forward its published
+ports to Gerbil's container (Docker turns it on itself at startup; pin it so that isn't implicit):
 ```
 net.ipv4.ip_forward=1
 ```

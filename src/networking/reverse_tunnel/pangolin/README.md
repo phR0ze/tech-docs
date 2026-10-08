@@ -8,78 +8,59 @@ URL, log in with Google SSO, and use the service. This is the strongest self-hos
 Cloudflare Tunnel isn't an option for me because of the `100mb` upload limit and the ToS that blocks
 the use of Jellyfin.
 
+Everything here is deployed declaratively from
+[nixos-config](https://github.com/phR0ze/nixos-config) on NixOS - both the VPS running Pangolin and
+the homelab running Newt. There's no hand-written compose file, no `apt`, and no hand-edited config:
+the modules render every file, own every unit, and pull secrets from sops at activation.
+
 ### Quick links
 - [.. up dir](../README.md)
 - [Overview](#overview)
   - [Security Advantage](#security-advantage)
   - [Concepts](#concepts)
-    - [Sites](#sites)
-    - [Resources](#resources)
+  - [How It Maps onto nixos-config](#how-it-maps-onto-nixos-config)
 - [Configure Domain Name](#configure-domain-name)
   - [Purchase Domain Name](#purchase-domain-name)
   - [Configure DNS](#configure-dns)
-    - [Verify the Wildcard Record](#verify-the-wildcard-record)
-- [Configure VPS](#configure-vps)
+  - [Verify the Wildcard Record](#verify-the-wildcard-record)
+  - [Create the Cloudflare API Token](#create-the-cloudflare-api-token)
+- [Configure the VPS Host](#configure-the-vps-host)
   - [Recommended Resources](#recommended-resources)
-  - [OS Requirement](#os-requirement)
+  - [Create the Isolated Host](#create-the-isolated-host)
+  - [Host Args](#host-args)
+  - [Host Secrets](#host-secrets)
+  - [Host Configuration](#host-configuration)
+  - [Build and Deploy](#build-and-deploy)
+- [What the Pangolin Module Deploys](#what-the-pangolin-module-deploys)
+  - [Units and Files](#units-and-files)
+  - [Deviations from Upstream's Installer](#deviations-from-upstreams-installer)
+  - [Ports and Firewall](#ports-and-firewall)
+  - [Kernel Settings](#kernel-settings)
   - [Subnet Conflict Check](#subnet-conflict-check)
-  - [Port Requirements](#port-requirements)
-  - [sysctl flags](#sysctl-flags)
-  - [Install Docker](#install-docker)
-    - [Install the Engine](#install-the-engine)
-    - [Harden the Daemon](#harden-the-daemon)
-    - [Docker and ufw](#docker-and-ufw)
-    - [Traefik's Insecure API Isn't Actually Exposed](#traefiks-insecure-api-isnt-actually-exposed)
-    - [Leave the Right Services Enabled](#leave-the-right-services-enabled)
-    - [Audit with Docker Bench for Security](#audit-with-docker-bench-for-security)
-- [Deploy Pangolin](#deploy-pangolin)
-  - [Pre-Flight Check](#pre-flight-check)
-    - [Enable Enterprise Edition](#enable-enterprise-edition)
-  - [Manual Install (Docker Compose)](#manual-install-docker-compose)
-    - [Create the Install Directory](#create-the-install-directory)
-    - [Write docker-compose.yml](#write-docker-composeyml)
-    - [Write config/traefik/traefik_config.yml](#write-configtraefiktraefik_configyml)
-    - [Write config/traefik/dynamic_config.yml](#write-configtraefikdynamic_configyml)
-    - [Write config/crowdsec Acquisition and Profiles Files](#write-configcrowdsec-acquisition-and-profiles-files)
-    - [Write config/config.yml](#write-configconfigyml)
-    - [Generate the Server Secret](#generate-the-server-secret)
-    - [Download MaxMind GeoLite2 Databases](#download-maxmind-geolite2-databases)
-    - [Start the Stack](#start-the-stack)
-    - [Apply the CrowdSec Bouncer Key](#apply-the-crowdsec-bouncer-key)
-    - [Retrieve the Initial Setup Token](#retrieve-the-initial-setup-token)
-    - [CrowdSec Is Included, Matching Quick Install](#crowdsec-is-included-matching-quick-install)
-  - [Switch to DNS-01 and Close Port 80](#switch-to-dns-01-and-close-port-80)
-  - [Enable Wildcard Certificates](#enable-wildcard-certificates)
-  - [CrowdSec: Two Separate Engines by Design](#crowdsec-two-separate-engines-by-design)
-  - [Log Rotation for Traefik's Access Log](#log-rotation-for-traefiks-access-log)
-  - [Extend Monitoring & Alerts for Pangolin](#extend-monitoring--alerts-for-pangolin)
-    - [Docker Container Health Isn't Covered by check-failed-units.sh](#docker-container-health-isnt-covered-by-check-failed-unitssh)
-    - [The Security Review Digest Only Reports the Host-Level CrowdSec Engine](#the-security-review-digest-only-reports-the-host-level-crowdsec-engine)
-    - [Alert on New Upstream Image Versions](#alert-on-new-upstream-image-versions)
-  - [Troubleshooting](#troubleshooting)
-    - [Updating gerbil Alone Breaks traefik's Networking](#updating-gerbil-alone-breaks-traefiks-networking)
-  - [Harden Beyond the Quick Install Defaults](#harden-beyond-the-quick-install-defaults)
+  - [CrowdSec: Two Separate Engines](#crowdsec-two-separate-engines)
+  - [Geo-Allowlist](#geo-allowlist)
+  - [Enterprise Edition](#enterprise-edition)
+- [Configure the Homelab Newt](#configure-the-homelab-newt)
+  - [Newt Host Args and Secrets](#newt-host-args-and-secrets)
+  - [Egress Containment](#egress-containment)
+  - [Endpoint Pinned to pangolin.ip](#endpoint-pinned-to-pangolinip)
+  - [Why NO_CLOUD Is Not Set](#why-no_cloud-is-not-set)
+- [Local Test Pair (vm-vps1 + vm-homelab)](#local-test-pair-vm-vps1--vm-homelab)
+- [Operations](#operations)
+  - [Health Check](#health-check)
+  - [Alerts](#alerts)
+  - [Updating Images](#updating-images)
+  - [Logs](#logs)
   - [Back Up Pangolin's State](#back-up-pangolins-state)
+- [Troubleshooting](#troubleshooting)
 - [Configure Pangolin](#configure-pangolin)
   - [Create Admin Account](#create-admin-account)
   - [First Run Experience](#first-run-experience)
-    - [Create the initial organization](#create-the-initial-organization)
-    - [Enable MFA on Your Account](#enable-mfa-on-your-account)
-  - [Create a temp service to expose](#create-a-temp-service-to-expose)
-  - [Create a Site describing your server](#create-a-site-describing-your-server)
+  - [Create a Site for the Homelab](#create-a-site-for-the-homelab)
+  - [Verify the Tunnel End-to-End](#verify-the-tunnel-end-to-end)
   - [Access Control](#access-control)
-    - [Expose a public service over Pangolin](#expose-a-public-service-over-pangolin)
-    - [Expose a service fronted by Caddy over Pangolin](#expose-a-service-fronted-by-caddy-over-pangolin)
-    - [Expose a private service over Pangolin](#expose-a-private-service-over-pangolin)
-    - [Require Device Approval on Private Resources](#require-device-approval-on-private-resources)
-    - [Enforce MFA Organization-Wide](#enforce-mfa-organization-wide)
-    - [Remove restrictions from public service](#remove-restrictions-from-public-service)
-    - [Google as OAuth2 provider](#google-as-oauth2-provider)
-    - [Case Study: Locking Down Vaultwarden](#case-study-locking-down-vaultwarden)
   - [Using the Pangolin API](#using-the-pangolin-api)
   - [Configure Pangolin Client](#configure-pangolin-client)
-    - [Android Client](#android-client)
-    - [Linux CLI (NixOS)](#linux-cli-nixos)
 
 ### Linked pages
 * [Android Client](android_client/README.md)
@@ -89,18 +70,17 @@ the use of Jellyfin.
 * [Using the Pangolin API](api/README.md)
 
 ## Overview
-Pangolin uses `Traefik` as its reverse proxy and `Gerbil` for `WireGuard tunnel management`. It can
-be setup on a VPS that has a publically reachable IP that accepts traffic on ports 80/443 and
-securely tunnels it to your server. Your homelab just runs a lightweight `newt` client that makes an
-outbound connection to the VPS. From that point on the VPS bridges internet users to your homelab
-without your home IP ever being exposed. In this way the VPS is essentially playing the same role as
-Cloudflare's edge network tunnel, but you own and control it. A VPS service like Racknerd only costs
-about $4/month.
+Pangolin uses `Traefik` as its reverse proxy and `Gerbil` for `WireGuard tunnel management`. It runs
+on a VPS with a publicly reachable IP that accepts HTTPS on 443 and securely tunnels it to your
+homelab. The homelab just runs a lightweight `newt` client that makes an outbound connection to the
+VPS. From that point on the VPS bridges internet users to your homelab without your home IP ever
+being exposed. The VPS plays the same role as Cloudflare's edge network, but you own and control
+it. A budget VPS like RackNerd costs about $3-4/month.
 
 * [Pangolin - DB Tech](https://www.youtube.com/watch?v=a-a-Xk1hXBQ)
 
 ### Security Advantage
-Pangolin has a security advantage over reverse proxies. 
+Pangolin has a security advantage over exposing a reverse proxy directly.
 
 **Pros**
 * The VPS is the only public-facing endpoint
@@ -108,7 +88,7 @@ Pangolin has a security advantage over reverse proxies.
 * Access control lives at the edge
 * You own the relay, not TLS cracking
 * WireGuard between VPS and homelab
-* Blast radious containment
+* Blast radius containment
 
 **Cons**
 * The VPS is now a target you must maintain
@@ -116,1889 +96,575 @@ Pangolin has a security advantage over reverse proxies.
 * VPS provider is a trust boundary
 * Single point of failure for auth
 * Misconfiguration risk
-* No built-in WAF or bot protection
-  - fail2ban, crowdsec, etc...
+* No built-in WAF or bot protection by default - this setup adds CrowdSec + AppSec for that
 
 ### Concepts
 
 #### Sites
-Sites in Pangolin are tunnels. You'll need a site per subnet you want to expose. The Wireguard tunnel
-is established using `newt` running on your homelab host. 
+Sites in Pangolin are tunnels. You'll need a site per network you want to expose. The WireGuard
+tunnel is established by `newt` running on your homelab host.
 
 #### Resources
-Resources in Pangolin are the services you'd like expose over the tunnel (a.k.a. site).
+Resources in Pangolin are the services you'd like to expose over the tunnel (a.k.a. site).
+
+### How It Maps onto nixos-config
+| Piece                               | Where it lives                                 | Runs on |
+| ----------------------------------- | ---------------------------------------------- | ------- |
+| Pangolin + Gerbil + Traefik + CrowdSec | `services.oci.pangolin` (`modules/services/oci/pangolin.nix`) | VPS |
+| Host hardening, geo-block, sshd     | `layers.console.server.harden`                 | VPS (and any hardened server) |
+| Host-level CrowdSec + firewall bouncer | `services.native.crowdsec`                   | VPS |
+| Alerts (ntfy)                       | `services.native.alerts`                       | Both |
+| Newt site connector                 | `services.oci.newt` (`modules/services/oci/newt.nix`) | Homelab |
+| Caddy (what Newt actually targets)  | `services.native.caddy`                        | Homelab |
+
+The Pangolin stack runs through `podman-compose` rather than one systemd unit per container: its
+inter-container wiring (`network_mode: service:gerbil`, health-gated `depends_on`) is upstream's own
+and already correct, so the module renders upstream's compose file (with the deviations listed
+[below](#deviations-from-upstreams-installer)) instead of reimplementing it.
 
 ## Configure Domain Name
 
 ### Purchase Domain Name
 A domain name is required to route public traffic to the VPS. [Cloudflare](../../dns/cloudflare_dns/README.md)
-is the recommended registrar — it keeps prices steady, has no surprise renewal markups, and the
-domain integrates directly with Cloudflare DNS which handles the rest of the setup.
+is the recommended registrar - it keeps prices steady, has no surprise renewal markups, and the
+domain integrates directly with Cloudflare DNS, which the DNS-01 certificate challenge below uses.
 
 ### Configure DNS
-Pangolin needs a domain name pointing at the VPS's static public IPv4 address. See
+Pangolin needs a wildcard record pointing at the VPS's static public IPv4 address. See
 [Configure DNS for your Domain Name](../../dns/cloudflare_dns/README.md#configure-dns-for-your-domain-name)
-for the full setup — Cloudflare is the recommended registrar and DNS provider as it integrates
-cleanly with Pangolin's auto-SSL and is free for personal use.
+for the general setup.
 
 1. From the Cloudflare console navigate to `Domains >Overview`
 2. Choose the options menu to the right of your domain e.g. `example.com` and click `Configure DNS`
-   * Alternately if your already on the target domain config page use `DNS >Records`
+   * Alternately if you're already on the target domain config page use `DNS >Records`
 3. Click the `Add record` button
 4. Set `Type` to `A` and set `Name` to wildcard `*`
 5. Set the `IPv4 address` to your VPS's public IP address
-6. Flip the `Proxyied` toggle to disable it
-6. Leave `TTL` at `Auto`, that's is fine.
-7. Click `Save`
+6. Flip the `Proxied` toggle to disable it
+7. Leave `TTL` at `Auto`
+8. Click `Save`
 
-***Doesn't clash with existing internal Caddy `A` records for LAN IPs*** — DNS resolution always
-prefers an exact match over a wildcard (RFC 4592), regardless of which record was created first. A
-specific record like `caddy.example.com A 192.168.x.x` will keep resolving to that LAN IP; the `*`
-wildcard only fills in for subdomains that have no explicit record of their own.
+***The public wildcard and the homelab's split-horizon DNS work together*** - LAN clients use the
+homelab's AdGuard (`services.native.adguardhome`), which rewrites `*.<domain>` to the homelab's own
+Caddy, so LAN traffic never hairpins through the VPS. Anything that should reach the VPS from the
+LAN - at minimum the dashboard, `pangolin.<domain>` - needs its own exact rewrite to the VPS IP
+(exact matches beat the wildcard), set through `services.native.adguardhome.dnsRewrites` in the
+homelab's args.
 
-The actual gotcha isn't a clash, it's a silent fallback: any subdomain you *haven't* explicitly
-defined — including a new internal service you spin up later and forget to add a record for — now
-resolves publicly to the VPS instead of failing with `NXDOMAIN`. That request lands on
-Traefik/Pangolin rather than erroring out, so "why isn't my new service reachable on the LAN"
-can quietly turn into "it's resolving to the VPS, not my LAN" — a different failure mode than
-you'd hit without the wildcard in place. Worth checking DNS resolution first if a newly added
-internal service seems unreachable.
+The gotcha with a public wildcard isn't a clash, it's a silent fallback: any subdomain you *haven't*
+explicitly defined resolves publicly to the VPS instead of failing with `NXDOMAIN`, so a newly added
+internal service that "isn't reachable" may simply be resolving to the VPS. Check DNS first.
 
 ### Verify the Wildcard Record
-Before Pangolin is even deployed, you can confirm the DNS layer is correct — this is purely DNS
-resolution, not an HTTP reachability test, since nothing is listening on the VPS yet.
+Before anything is deployed you can confirm the DNS layer - this is purely resolution, not HTTP.
 
-**Confirm the wildcard resolves to your VPS's public IP** — query a public resolver (not your own,
-in case your router/ISP has something cached) for a made-up subdomain that has no explicit record:
+**Confirm the wildcard resolves to your VPS's public IP** from public resolvers (not your own, in
+case something is cached or rewritten locally), for a made-up subdomain with no explicit record:
 ```bash
 $ dig @1.1.1.1 randomtest123.example.com +short
-```
-Should return your VPS's public IP directly.
-
-**Confirm it isn't being Cloudflare-proxied** — since the `Proxied` toggle was disabled, the result
-above should be the real VPS IP, not a Cloudflare edge IP (always within their published ranges,
-e.g. `104.x.x.x`, `172.6x.x.x`). If you see something that isn't your VPS's actual IP, the proxy
-toggle didn't take.
-
-**Check propagation across a couple of resolvers**, since DNS caching means one resolver updating
-doesn't guarantee all have:
-```bash
 $ dig @8.8.8.8 randomtest123.example.com +short
 $ dig @9.9.9.9 randomtest123.example.com +short
 ```
-All three should match.
+All three should return the VPS's real IP. A Cloudflare edge IP (e.g. `104.x.x.x`, `172.6x.x.x`)
+means the `Proxied` toggle didn't take.
 
-**Confirm existing internal Caddy records still win** — test one of those specific hostnames the
-same way, validating the exact-match-over-wildcard behavior noted above:
-```bash
-$ dig @1.1.1.1 caddy.example.com +short
-```
-Should return the LAN IP, not the VPS IP.
+### Create the Cloudflare API Token
+Certificates are issued with the ACME **DNS-01** challenge against Cloudflare, which is what lets
+port 80 stay closed and what makes a wildcard certificate possible. Create a scoped token - see
+[Cloudflare API token](../../dns/cloudflare_dns/README.md#cloudflare-api-token) - with only
+`Zone:DNS:Edit` + `Zone:Zone:Read` on this zone, never the Global API Key. Name it something like
+`Pangolin example.com` so it's identifiable and revocable on its own. It goes into the VPS host's
+secrets as `pangolin/cloudflareApiToken` (see [Host Secrets](#host-secrets)).
 
-Once these check out, HTTP-level testing (`curl -v https://randomtest123.example.com`) isn't
-meaningful yet — that has to wait until Traefik is actually running and listening on 80/443 after
-[Manual Install (Docker Compose)](#manual-install-docker-compose) below.
-
-## Configure VPS
-The first thing we need is a Cloud VPS to host Pangolin on. After some cursory research I landed on
-RackNerd as a budget option.
-
-***Required: complete the [Ubuntu VPS hardening](../../../system/ubuntu/hardening/README.md) doc
-on this VPS before deploying Pangolin.*** Pangolin makes this box the sole public-facing ingress
-point into the homelab, so it needs to already be locked down — SSH hardened, firewall/GeoIP/
-fail2ban/Crowdsec in place — before it starts fronting real traffic. The sysctl and subnet checks
-below assume that hardening pass is already done, not a substitute for it.
+## Configure the VPS Host
+A RackNerd 2GB KVM is the budget option this was sized on: Pangolin is lightweight and the VPS does
+no transcoding or storage, so the binding constraint for media-heavy use is monthly transfer, not
+compute.
 
 ### Recommended Resources
-Pangolin itself is lightweight — the VPS does no transcoding or storage. The binding constraint for
-media-heavy workloads is monthly transfer, not compute.
+**Minimum (per official docs)**: 1 vCPU, 1.5 GB RAM, 8 GB SSD
 
-**Minimum VPS specs (per official docs)**
-- vCPU: 1
-- RAM: 1.5 GB
-- Storage: 8 GB SSD
+**Recommended**: 2 vCPU, 2 GB RAM, 20 GB SSD, transfer sized to your workload (see
+[Cloud Budget Comparison](../../../../cloud/README.md#budget-comparison)). For Jellyfin (3× 1080p
+movies/day) plus Immich browsing, estimated transfer is ~0.85 TB/month (~1.7 TB with 2× headroom).
 
-**Recommended VPS specs**
-- vCPU: 2
-- RAM: 2 GB
-- Storage: 20 GB SSD
-- Transfer: sized to your workload (see [Cloud Budget Comparison](../../../../cloud/README.md#budget-comparison))
+Measured on the 2 GB staging VM with the full stack up: ~1 GB used by the four containers (pangolin
+~500 MB of its 1 GB limit, crowdsec ~230 MB, traefik ~220 MB, gerbil ~30 MB), with ~1.1 GB still
+available - workable, but don't plan on running much else there.
 
-For a homelab serving Jellyfin (3× 1080p movies/day) and Immich photo/video browsing, estimated
-transfer is ~0.85 TB/month (~1.7 TB with 2× headroom). The
-[RackNerd 2 GB KVM](../../../../cloud/racknerd/README.md#pangolin-vps) at $35.99/yr is the
-cheapest option that meets all requirements.
+### Create the Isolated Host
+The VPS is the one public-facing box, so its config is deliberately cut off from the rest of the
+fleet: a compromise of the fleet's shared secrets mustn't expose it, and vice versa.
 
-### OS Requirement
-Per [official docs](https://docs.pangolin.net/self-host/quick-install), Pangolin requires
-`Ubuntu 20.04+` or `Debian 11+`. A fresh RackNerd Ubuntu image comfortably clears this (24.04 LTS
-as of writing) — called out here mainly for anyone following this doc on an older or different
-distro, since the installer doesn't check this for you.
+1. Create `hosts/vps1/` (production) - adding a host is just creating its directory
+2. Add an empty `hosts/vps1/.isolated` marker. The flake then skips both root layers (`args.nix` and
+   `args.dec.yaml`), so the host is fully self-contained
+3. Give it a dedicated age key in `.sops.yaml`, matched before the fleet-wide fallback rule. The
+   existing rule `hosts/(vm-)?vps[0-9]+/.*\.(dec|enc)\.(pem|yaml)$` already covers `vps<N>` and its
+   local staging twin `vm-vps<N>` with the `*vps` key
+
+### Host Args
+Build-time values go in `hosts/vps1/args.enc.yaml` (edit with `sops`). Because the host is isolated,
+everything it needs from args lives here - nothing is inherited from the root args:
+```yaml
+host:
+  network:
+    domain: example.com           # base domain: wildcard cert, dashboard at pangolin.<domain>
+    allowList:                    # trusted IPs/CIDRs: skip geo-block + CrowdSec, never banned
+      - 198.51.100.7              # e.g. the homelab's public IP
+  services:
+    oci:
+      pangolin:
+        acmeEmail: admin@example.com
+```
+`host.network.domain` and `host.network.allowList` are forwarded by `modules/default.nix` into
+`services.oci.pangolin.baseDomain`/`geoblockAllowList`, the host geo-block, and the host CrowdSec
+whitelist. Keep the allowlist to addresses you actually control - never shared/CGNAT ranges, which
+would exempt strangers too. Single addresses and CIDRs can be mixed; the CrowdSec whitelist splits
+them into its separate `ip`/`cidr` fields automatically.
+
+### Host Secrets
+Runtime secrets go in `hosts/vps1/secrets.enc.yaml`. sops-nix decrypts them at activation into
+`/run/secrets` - they never touch the Nix store or git:
+
+| Key                              | What                                                    |
+| -------------------------------- | ------------------------------------------------------- |
+| `pangolin/serverSecret`          | Pangolin's session/token signing key: `openssl rand -base64 32` |
+| `pangolin/cloudflareApiToken`    | The scoped DNS-01 token from above                      |
+| `crowdsec/capiCredentials`       | Host CrowdSec Central API credentials, from a one-time `cscli capi register` |
+| `alerts/ntfyTopic`               | The ntfy.sh topic all alerts push to                    |
+| `users/admin/...`                | The host's admin user, same as any fleet host           |
+
+`server.secret` signs every existing session; rotating it logs everyone out. The module restarts the
+stack automatically when either Pangolin secret changes.
+
+### Host Configuration
+`hosts/vps1/configuration.nix`:
+```nix
+{ ... }:
+{
+  imports = [ ./hardware-configuration.nix ];
+
+  config = {
+    layers.console.server = {
+      enable = true;
+      harden = true;      # boot/kernel/network/sshd/systemd hardening, geo-block, CrowdSec, alerts
+      lowMemory = true;
+    };
+    services.oci.pangolin = {
+      enable = true;
+      pangolinTag = "ee-1.21.1";         # see Enterprise Edition below; plain "1.21.1" for CE
+      gerbilTag = "1.5.1";
+      traefikTag = "v3.7";               # floating minor tag, republished upstream on every patch
+      crowdsecTag = "v1.7.8";
+      badgerPluginVersion = "v1.5.0";
+      crowdsecPluginVersion = "v1.4.4";
+    };
+  };
+}
+```
+Every image tag is required and pinned on purpose: nothing changes under you on a rebuild, and the
+[image update alert](#alerts) tells you when upstream ships something newer.
+
+Other `services.oci.pangolin` options worth knowing (defaults shown):
+
+| Option                          | Default            | Purpose |
+| ------------------------------- | ------------------ | ------- |
+| `dashboardDomain`               | `pangolin.<domain>` | Dashboard hostname |
+| `memoryLimit` / `memoryReservation` | `1g` / `512m`  | Pangolin container memory (upstream's `2g` doesn't fit a 2 GB VPS) |
+| `rateLimitWindowMinutes` / `rateLimitMaxRequests` | `1` / `100` | Global API rate limit (Pangolin's own default is 500/min) |
+| `dashboardSessionLengthHours`   | `24`               | Dashboard login lifetime (Pangolin default 720) |
+| `resourceSessionLengthHours`    | `168`              | Resource login lifetime (Pangolin default 720) |
+| `disableUserCreateOrg`          | `true`             | Only admins create organizations |
+| `crowdsecCollections`           | traefik, http-cve, appsec-virtual-patching, appsec-generic-rules | Container CrowdSec collections |
+
+### Build and Deploy
+Getting NixOS onto the VPS itself depends on the provider (custom ISO + `sudo ./clu install`, or an
+in-place conversion); once it's running, every change after that is the normal flow on the host:
+```bash
+$ ./clu build
+```
+That decrypts only this host's args, evaluates purely, and switches. On a switch the stack restarts
+whenever any rendered config changes (the compose/Traefik/CrowdSec text is hashed into the unit), and
+every stack start begins with `podman-compose down`, so containers are always recreated from the
+current compose file - see [Troubleshooting](#troubleshooting) for why that's not optional.
+
+## What the Pangolin Module Deploys
+
+### Units and Files
+All state lives under `/var/lib/pangolin`:
+
+| Path | What |
+| ---- | ---- |
+| `docker-compose.yml`, `.env` | Rendered compose file and the Cloudflare token env file (symlinked from the store / `/run/secrets-rendered`) |
+| `config/config.yml` | Pangolin's config, including `server.secret` (copied, `0400`) |
+| `config/db/` | Pangolin's SQLite database - users, orgs, sites, resources |
+| `config/letsencrypt/acme.json` | Certificates + ACME account key |
+| `config/traefik/` | Static config, `dynamic/` (file-provider directory), `logs/access.log` |
+| `config/crowdsec/` | Container CrowdSec config, acquisitions, profiles, and its `db/` |
+| `config/GeoLite2-*.mmdb` | MaxMind country/ASN databases for Pangolin's resource rules |
+| `state/` | Bouncer key and the cached US CIDR list |
+
+| Unit | What |
+| ---- | ---- |
+| `pangolin-stack.service` | `podman-compose down` → network check → `up -d`; `down` on stop |
+| `pangolin-crowdsec-bouncer.service` | Registers Traefik's CrowdSec bouncer once and writes its LAPI key into `config/traefik/dynamic/crowdsec.yml` |
+| `pangolin-geolite-refresh.timer` | Weekly MaxMind refresh (no account/license key needed) |
+| `pangolin-geoblock-refresh.timer` | Daily refresh of Traefik's US-only allowlist |
+| `logrotate` (`pangolin-traefik`) | Daily rotation of Traefik's access log, signalling Traefik to reopen it |
+
+Config files bind-mounted into containers are real copies, not store symlinks - a container can't
+resolve a `/nix/store` path - and each is removed and re-copied on every activation so it always
+reflects the current module source.
+
+**Retrieve the initial setup token** after the first start:
+```bash
+$ sudo podman logs pangolin 2>&1 | grep -A 2 -B 2 'SETUP TOKEN'
+```
+
+### Deviations from Upstream's Installer
+The stack starts from upstream's `--crowdsec` installer templates. Everything that differs, and why:
+
+* **DNS-01 + wildcard certificate from the start** - `dnsChallenge: cloudflare`, with
+  `prefer_wildcard_cert` for resources and an explicit `*.<domain>` `domains:` override on all three
+  dashboard routers (`next-router`, `api-router`, `ws-router`). Leaving even one router without the
+  override makes Traefik hold a second, exact-match cert for the dashboard and prefer it.
+* **No port 80 at all** - not published, no `web` entrypoint, no `ping`, no HTTP→HTTPS redirect
+  router. Nothing listens on 80 even inside the container. Any router Pangolin generates on its
+  default `web` entrypoint is skipped with an "entryPoint web doesn't exist" log line - only plain
+  HTTP routes are lost, which is the point.
+* **No HTTP/3** - no `http3` block and no `443/udp` publish. Only `443/tcp` is exposed.
+* **Traefik's API/dashboard off** - upstream ships `api.insecure: true`; nothing here uses it.
+* **No telemetry** - Pangolin `anonymous_usage: false`, Traefik `checkNewVersion`/`sendAnonymousUsage`
+  off.
+* **`aliasHeadersStrategy: delete`** on the HTTPS entrypoint (Traefik 3.7+) - drops headers like
+  `X_Forwarded_For` that backends deriving variable names from headers would confuse with the real
+  ones Traefik manages.
+* **US-only geo-allowlist middleware** first on the entrypoint, ahead of CrowdSec - see
+  [Geo-Allowlist](#geo-allowlist).
+* **CrowdSec bouncer trusts nothing implicitly** - `forwardedHeadersTrustedIPs` is empty (upstream:
+  `0.0.0.0/0`), and the RFC1918 ranges are gone from `clientTrustedIPs` (upstream: 10/8, 172.16/12,
+  192.168/16). Traefik is the edge and sees real client addresses, so the bouncer never needs
+  `X-Forwarded-For` - trusting it from everyone means one spoofed header can skip CrowdSec and
+  AppSec the moment anything loosens the entrypoint. What remains trusted is Gerbil's tunnel range
+  and the host's `allowList`.
+* **`security-headers@file` on every Pangolin-generated router** (`traefik.additional_middlewares`) -
+  otherwise only the dashboard routers get it.
+* **Hardened Pangolin config** - `trust_proxy: 1` (Traefik is the only hop), global rate limit,
+  session lengths, `save_logs`, `log_failed_attempts`. `rate_limits.auth` and `traefik.rate_limit`
+  are deliberately absent: tracing Pangolin's source found nothing that reads either.
+* **Pinned images everywhere**, including CrowdSec (upstream floats `:latest`), and upstream's
+  copy-paste `command: -t` (validate-and-exit) left off CrowdSec.
+* **CrowdSec's Prometheus port (6060) unpublished**, and **IPv6 off** (the fleet disables it).
+* **Pangolin memory limit `1g`** instead of `2g`.
+
+### Ports and Firewall
+| Port    | Protocol | Purpose                                 |
+| ------- | -------- | --------------------------------------- |
+| `443`   | TCP      | Dashboard + HTTPS resources             |
+| `51820` | UDP      | Site tunnels - Newt → Gerbil            |
+| `21820` | UDP      | Pangolin Client (Olm) → Gerbil relay    |
+| `2222`  | TCP      | sshd (hardened)                         |
+
+***`networking.firewall` doesn't gate container ports*** - podman/netavark DNATs published ports in
+its own nftables rules, which traffic reaches regardless of the NixOS firewall. The module still
+lists the ports in `allowedTCPPorts`/`allowedUDPPorts` for consistency, but the real control is what
+the compose file publishes. Likewise the host's nftables geo-block only hooks `input`, which
+forwarded container traffic never traverses - hence the separate Traefik-level geo-allowlist.
+
+Check what's actually listening:
+```bash
+$ sudo ss -tulpn
+```
+Expect `tcp 443`, `udp 51820`, `udp 21820` (owned by `conmon`), sshd, and the host CrowdSec on
+`127.0.0.1:8080`/`6060` only.
+
+### Kernel Settings
+Pangolin doesn't require any. Its [DNS & Networking](https://docs.pangolin.net/self-host/dns-and-networking)
+docs don't mention any, and nothing in the `fosrl/gerbil`, `fosrl/pangolin` or `fosrl/newt` source
+reads or sets `rp_filter` or `ip_forward` (checked against all three, October 2026).
+
+* **`ip_forward`** - needed only for podman to forward published ports to Gerbil's container; the
+  fleet's kernel module already sets it for container hosts.
+* **`rp_filter`** - the hardened kernel sets strict mode (`1`), and that's fine for Gerbil, despite
+  older advice that it needs loose mode (`2`):
+  * WireGuard packets arrive on the container's `eth0` from public addresses; the route back is the
+    default route out that same `eth0`.
+  * Tunnel traffic arrives on `wg0` from site addresses inside the subnet Gerbil assigns to `wg0`
+    itself, so the route back is `wg0` too.
+  * Nothing is routed *between* interfaces in the kernel: Traefik shares Gerbil's network namespace,
+    so tunnel traffic terminates locally, and Gerbil's own firewall drops everything inbound from the
+    tunnel except established connections, ping and 80/443 to its own address. The `21820` relay
+    forwards in userspace over ordinary UDP sockets, which `rp_filter` never sees.
+
+  Measured on vm-vps1 under strict mode with a Newt site connected and passing traffic: the kernel's
+  reverse-path drop counter in Gerbil's namespace stayed at `0`. Check it on your own box:
+  ```bash
+  $ sudo podman exec gerbil awk '/^TcpExt:/{if(!h){split($0,k);h=1}else{split($0,v);for(i in k)if(k[i]=="IPReversePathFilter")print k[i],v[i]}}' /proc/net/netstat
+  ```
+  If it ever climbs while a site is connected, loosen `rp_filter` for Gerbil's container alone
+  (`sysctls:` in the compose file), never the whole host.
 
 ### Subnet Conflict Check
-Gerbil defaults to the CGNAT range `100.89.137.0/20` for its internal tunnel addressing (a `/24`
-block per site, `/30` per-site allocation within that). Pangolin itself reserves two more CGNAT
-ranges alongside it — confirmed in
-[`server/lib/readConfigFile.ts`](https://github.com/fosrl/pangolin/blob/main/server/lib/readConfigFile.ts)'s
-`orgs.subnet_group` (`100.90.128.0/20`) and `orgs.utility_subnet_group` (`100.96.128.0/20`), used
-for org-level networking rather than Gerbil's own site tunnels. None of the three are documented
-together anywhere on the docs site — this is from tracing the actual config schema. All three must
-not overlap with any subnet already in use — your homelab LAN, or any other WireGuard/VPN already
-running that uses CGNAT space (`100.64.0.0/10`). The check below already covers all three at once,
-since it scans the entire `100.64.0.0/10` block rather than just Gerbil's specific `/20`. Check for
-a conflict *before* initial site registration in Pangolin, not after:
+Gerbil addresses site tunnels from `100.89.128.0/20` (`wg0` gets `100.89.128.1/24` for the first
+site); Pangolin also reserves `100.90.128.0/20` (`orgs.subnet_group`) and `100.96.128.0/20`
+(`orgs.utility_subnet_group`). None of them may overlap anything already in use - the homelab LAN
+or any other WireGuard/VPN in CGNAT space. Check before creating the first site, since resubnetting
+an active site means reconfiguring every Newt:
 ```bash
 $ ip route show | grep -E '100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\.'
 ```
-If nothing matches, you're clear. If something does, all three ranges are configurable in
-`config/config.yml` (`gerbil.subnet_group`, `orgs.subnet_group`, `orgs.utility_subnet_group`) —
-change them before creating your first site rather than after, since resubnetting an active site
-means reconfiguring every connected `newt` client.
+The CrowdSec bouncer's trusted range (`100.89.137.0/20` in the module, i.e. `100.89.128.0/20`) must
+be kept in sync with any override.
 
-### Port Requirements
-Per [DNS & Networking](https://docs.pangolin.net/self-host/dns-and-networking#port-configuration),
-not all four ports opened in the [hardening doc's firewall section](../../../system/ubuntu/hardening/README.md#firewall)
-are unconditionally required — two are, two depend on how you use Pangolin:
+### CrowdSec: Two Separate Engines
+Two independent CrowdSec engines run on the VPS, each with its own Local API and decisions:
 
-| Port    | Protocol | Purpose                                 | Required?               | Decision         |
-|---------|----------|-----------------------------------------|-------------------------|------------------|
-| `443`   | TCP      | Dashboard + HTTPS-secured resources     | Always                  | Open             |
-| `51820` | UDP      | Site tunnels — Newt → Gerbil            | Always                  | Open             |
-| `80`    | TCP      | Let's Encrypt HTTP-01 validation        | Conditional — see below | Close use DNS-01 |
-| `21820` | UDP      | Pangolin Client Olm → Gerbil (tunnels)  | Conditional — see below | Open             |
-| `443`   | UDP      | HTTP/3 (QUIC) — on by default in Pangolin's own template | Conditional — see below | Open (matches quick install) |
+|             | Host CrowdSec (`services.native.crowdsec`)    | Container CrowdSec (Pangolin stack) |
+| ----------- | --------------------------------------------- | ----------------------------------- |
+| Watches     | sshd logs, kernel firewall drops (port scans) | Traefik's access log + AppSec (WAF) |
+| Enforces    | nftables firewall bouncer, permanent bans     | Traefik bouncer plugin, 4h bans / captcha for HTTP scenarios |
+| Inspect     | `sudo cscli ...`                              | `sudo podman exec crowdsec cscli ...` |
 
-**`80/tcp` can be closed if you switch to DNS-01 certificate validation.** By default, Traefik's
-ACME resolver uses HTTP-01, which needs port 80 reachable for the challenge. Since this doc already
-recommends Cloudflare as DNS provider, a `dnsChallenge.provider: cloudflare` resolver avoids that
-entirely — validation happens via a DNS TXT record instead of an inbound HTTP request, and it's also
-the only way to get a wildcard cert. See
-[Wildcard Domains](https://docs.pangolin.net/self-host/advanced/wild-card-domains) for the
-`cert_resolver`/`prefer_wildcard_cert` config, and
-[Switch to DNS-01 and Close Port 80](#switch-to-dns-01-and-close-port-80) below for the concrete
-steps against this doc's own compose/Traefik files — ***`sudo ufw delete allow 80/tcp` alone does
-not close it***, since `gerbil` publishes `80:80` straight through Docker, which bypasses `ufw`
-entirely; that section covers removing the actual port mapping.
-Skip this if you're not ready to reconfigure the cert resolver — HTTP-01 on port 80 is the default
-and works fine, this is purely an optional attack-surface reduction.
-
-**`21820/udp` is only needed if you expose Private/ZTNA resources** — it's the port the Pangolin
-Client (Olm) app uses to reach Gerbil. The [Vaultwarden case study](#case-study-locking-down-vaultwarden)
-below relies on it (Alice's phone uses the Pangolin Client to reach a Private resource), so it stays
-open for *this* deployment. For a Pangolin instance that only ever exposes Public resources
-(browser-based, no client app), this port isn't needed and can stay closed.
-
-**`443/udp` is only needed if HTTP/3 stays enabled.** Pangolin's own installer ships
-`http3.advertisedPort: 443` uncommented in `traefik_config.yml` and `443:443/udp` uncommented in
-`docker-compose.yml` unconditionally — on for a plain install, CrowdSec or not. (The manual install
-docs page shows both commented out; that page is stale relative to the actual
-[`install/config/*`](https://github.com/fosrl/pangolin/tree/main/install/config) source this doc
-was checked against.) Since [Manual Install](#manual-install-docker-compose) below matches that
-source for a like-for-like starting point, this doc opens `443/udp` too. If you'd rather not run
-HTTP/3, comment the `http3` block back out in `traefik_config.yml` and the matching `443:443/udp`
-line in `docker-compose.yml`, then:
+Neither sees the other's traffic, so keep both. Useful commands:
 ```bash
-$ sudo ufw delete allow 443/udp
+$ sudo cscli decisions list
+$ sudo cscli bouncers list
+$ sudo podman exec crowdsec cscli decisions list
+$ sudo podman exec crowdsec cscli metrics show acquisition   # confirms access.log is being read
+```
+`traefik-bouncer` shows an empty `last_pull` - expected: the plugin runs in `live` mode, querying
+the LAPI per request rather than pulling. Removing a ban on yourself:
+```bash
+$ sudo podman exec crowdsec cscli decisions delete --ip <your-ip>
+```
+Addresses in `host.network.allowList` are never banned by either engine.
+
+### Geo-Allowlist
+Traefik's `us-allowlist@file` middleware runs first on the HTTPS entrypoint and rejects non-US
+clients before CrowdSec's synchronous LAPI/AppSec round-trip. Its source is the same
+`ipverse/country-ip-blocks` US list the host geo-block uses, refreshed daily into
+`config/traefik/dynamic/geo-allowlist.yml`. A failed fetch falls back to the last cached list, and
+the `allowList` entries are always included, so a trusted address can't be locked out even before
+the first fetch. The file holds thousands of entries when healthy - only a handful means the US list
+hasn't been fetched yet.
+
+### Enterprise Edition
+Pangolin's Enterprise Edition (EE) is free for personal use and for businesses under $100K gross
+annual revenue. It's the same codebase as Community Edition behind a different image tag, so
+switching is a tag change plus a license key. EE-only features used below include
+[device approval](#require-device-approval-on-private-resources) and
+[org-wide MFA](#enforce-mfa-organization-wide).
+
+1. Create an account at `app.pangolin.net`, create an organization there, then
+   `ORGANIZATION >Billing & Licensing >Licenses` → `+Generate License Key` → check
+   `Personal use only (free license - no checkout)`
+2. Set `pangolinTag = "ee-<version>";` (pin an exact `ee-` tag, never `ee-latest`) and `./clu build`
+3. In the dashboard, `Server Admin >License` (`/admin/license`) → enter the key and activate
+
+***EE behaves differently from CE in one place this setup hit*** - see
+[Why NO_CLOUD Is Not Set](#why-no_cloud-is-not-set).
+
+## Configure the Homelab Newt
+Newt runs on the homelab as an OCI container (`services.oci.newt`): fully userspace WireGuard, so it
+needs no capabilities and no `/dev/net/tun`, runs non-root with `--cap-drop=ALL`, `no-new-privileges`
+and a read-only rootfs. Its client tunnels (`DISABLE_CLIENTS`) and SSH auth daemon (`DISABLE_SSH`)
+are off, so the Pangolin server can't open more paths into the homelab than the Resources defined
+for the site.
+
+```nix
+services.oci.newt = { enable = true; user.uid = 2005; tag = "1.16.0"; };
 ```
 
-### sysctl flags
-Gerbil (Pangolin's WireGuard tunnel manager) needs two kernel network settings that aren't part of
-a stock Ubuntu install. See [Kernel Parameters](../../../system/ubuntu/hardening/README.md#kernel-parameters)
-for the general hardening pass this builds on — the table below is scoped to just what Pangolin
-itself requires.
-
-
-| Flag                               | Required value  | RackNerd default  | Status                         |
-| ---------------------------------- | --------------- | ----------------- | ------------------------------ |
-| `net.ipv4.conf.all.rp_filter`      | `2` (loose)     | `2`               | Already set — no action needed |
-| `net.ipv4.conf.default.rp_filter`  | `2` (loose)     | `2`               | Already set — no action needed |
-| `net.ipv4.ip_forward`              | `1`             | `0`               | **Missing — needs override**   |
-
-* **`rp_filter=2`** — strict mode (`1`) drops a packet whenever its source address wouldn't be
-  routed back out the same interface it arrived on. Once Gerbil is running, return traffic for a
-  tunneled connection legitimately arrives on one interface (the public NIC) and leaves on another
-  (the `wg`/tunnel interface), so strict mode drops it as spoofed. Loose mode (`2`) still filters
-  obviously bogus source addresses but tolerates asymmetric routing across interfaces — RackNerd's
-  image already ships this way, so nothing to change here.
-* **`ip_forward=1`** — without it, the kernel won't forward packets between interfaces at all, so
-  Gerbil can't route traffic between the public-facing side and the WireGuard tunnel back to your
-  homelab. This is off by default on a standard Ubuntu server (it's not a router), so it's the one
-  flag every fresh RackNerd VPS needs explicitly turned on for Pangolin to work.
-
-**Check current values**
-```bash
-$ sysctl net.ipv4.conf.all.rp_filter net.ipv4.conf.default.rp_filter net.ipv4.ip_forward
-```
-
-**Create an override for anything missing** — don't edit RackNerd's existing drop-ins under
-`/etc/sysctl.d/`; add a new file so this survives image updates:
-```bash
-$ sudo tee /etc/sysctl.d/98-pangolin.conf > /dev/null <<'EOF'
-net.ipv4.ip_forward=1
-EOF
-$ sudo sysctl --system
-```
-
-**Verify it applied**
-```bash
-$ sysctl net.ipv4.ip_forward
-```
-If a flag you expect doesn't reflect the value you set, see the
-[precedence note](../../../system/ubuntu/hardening/README.md#kernel-parameters) in the hardening
-doc — a later-processed file (`99-sysctl.conf`, `/etc/sysctl.conf`) can silently override an
-earlier one for the same key.
-
-### Install Docker
-Pangolin's [Manual Install](#manual-install-docker-compose) step below runs `docker compose`
-directly, so Docker Engine needs to be present first — a stock Ubuntu image doesn't ship it.
-
-#### Install the Engine
-**Install via Docker's official `apt` repo** (not the `docker.io` Ubuntu-archive package, which
-lags upstream releases):
-```bash
-$ sudo apt update
-$ sudo apt install -y ca-certificates curl gnupg
-$ sudo install -m 0755 -d /etc/apt/keyrings
-$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-$ sudo chmod a+r /etc/apt/keyrings/docker.gpg
-$ echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-$ sudo apt update
-$ sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-```
-
-**Verify**
-```bash
-$ sudo docker run --rm hello-world
-$ docker compose version
-```
-
-#### Harden the Daemon
-`dockerd`'s defaults are tuned for a dev laptop, not an internet-facing host. Add a `daemon.json`
-before the Pangolin stack goes live:
-```bash
-$ sudo tee /etc/docker/daemon.json > /dev/null <<'EOF'
-{
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "10m",
-    "max-file": "3"
-  },
-  "live-restore": true,
-  "no-new-privileges": true,
-  "icc": false,
-  "userland-proxy": false
-}
-EOF
-$ sudo systemctl restart docker
-```
-* **`log-opts`** — the default `json-file` driver has no size cap, so container stdout/stderr
-  (`docker logs`) grows unbounded. This is separate from
-  [Traefik's own access log](#log-rotation-for-traefiks-access-log) below, which writes to a file
-  on disk rather than through `docker logs` and needs its own `logrotate` config regardless.
-* **`live-restore`** — keeps containers running if `dockerd` itself restarts (e.g. a Docker
-  package upgrade via [Automatic Updates](../../../system/ubuntu/hardening/README.md#automatic-updates)),
-  instead of stopping them and waiting for the daemon to come back before `restart: unless-stopped`
-  can kick in. This is distinct from surviving a full host reboot, which `restart: unless-stopped`
-  already handles on its own.
-* **`no-new-privileges`** — blocks any process inside a container from gaining privileges it
-  didn't start with (e.g. via a setuid binary), the container-runtime counterpart to the
-  privilege-escalation-limiting sysctls (`yama.ptrace_scope`, `apparmor_restrict_unprivileged_userns`)
-  the [hardening doc](../../../system/ubuntu/hardening/README.md#already-hardened-by-racknerds-image)
-  already noted RackNerd ships at the host level — different mechanism, same goal. This is a
-  default, not a hard block — it doesn't strip the capabilities Gerbil is explicitly granted below,
-  it only stops it from acquiring more at runtime than what `cap_add` already gave it.
-* **`icc`** — disables inter-container communication on Docker's default `bridge` network. Doesn't
-  affect Pangolin at all: the compose file below defines its own user-defined network (`name:
-  pangolin`), and containers on a user-defined network can always reach each other by name
-  regardless of this setting — `icc` only ever governed the legacy default bridge. This closes that
-  legacy network off in case any *other* container ever lands on it unintentionally.
-* **`userland-proxy`** — turns off `docker-proxy`, the per-published-port userland process Docker
-  otherwise runs to forward traffic; with it disabled, `iptables`/`nftables` handles the forwarding
-  directly. One less unprivileged process per published port for an attacker to target, and one
-  less thing to intersect with the `DOCKER-USER` chain rules from the
-  [hardening doc's Firewall section](../../../system/ubuntu/hardening/README.md#firewall).
-
-#### Docker and ufw
-Docker still bypasses `ufw` the same way noted in the
-[hardening doc's Firewall section](../../../system/ubuntu/hardening/README.md#firewall) — nothing
-to do differently for Pangolin's own ports specifically, since 80/443/51820/21820 are meant to be
-public anyway, but keep it in mind for any *other* container you add to this host later that
-shouldn't be internet-reachable; that one needs `ufw-docker` or an explicit `DOCKER-USER` rule, not
-a plain `ufw deny`.
-
-#### Traefik's Insecure API Isn't Actually Exposed
-The manual compose's `traefik_config.yml` sets `api.insecure: true` (no auth in front of Traefik's
-own dashboard/API, normally bound to `:8080`). This is safe here specifically because `gerbil` —
-the only container in the stack that publishes ports to the host — only publishes
-`51820/udp`, `21820/udp`, `443`, and `80`; `8080` is never in that list, so the insecure API has no
-path to the internet. ***Don't add `8080` to `gerbil`'s `ports:` in `docker-compose.yml`*** without
-also locking the API down (`api.insecure: false` plus its own auth), or this becomes an
-unauthenticated view into Traefik's routing config and, depending on Traefik version/config, more.
-
-#### Leave the Right Services Enabled
-`docker.service` and `containerd.service` are already called out in the hardening doc's
-[Never disable](../../../system/ubuntu/hardening/README.md#never-disable) list — repeated here
-since this is the point in the setup where they actually start being load-bearing.
-
-#### Audit with Docker Bench for Security
-Same idea as [Lynis](../../../system/ubuntu/hardening/README.md#auditing-with-lynis) for the host,
-scoped to Docker specifically — checks daemon config, container runtime settings, and image/build
-practices against the CIS Docker Benchmark. Run it after the daemon hardening above and again once
-the Pangolin stack is up, since some checks (e.g. per-container `no-new-privileges`,
-capability grants) only evaluate running containers.
-
-***Run it natively, not via the `docker/docker-bench-security` image*** — that image bundles its
-own Docker CLI, and it hasn't been rebuilt in years (`18.06.1-ce`, API `1.38`). A current Docker
-Engine (this doc was validated against `29.7.2`) refuses clients below API `1.40`, so the
-containerized form fails outright with `client version ... is too old` before it ever reaches a
-daemon connection — no amount of mount/flag tweaking fixes a stale CLI baked into the image itself.
-The maintained path is the same script run directly against the host's own (current) `docker`
-binary:
-```bash
-$ git clone https://github.com/docker/docker-bench-security.git
-$ cd docker-bench-security
-$ sudo ./docker-bench-security.sh
-```
-Expect some findings that don't apply here (e.g. warnings about Swarm, which this deployment
-doesn't use, or a separate partition for containers, unusual on a small VPS) — treat it as a
-checklist to review, not a score to blindly chase to 100%. The `daemon.json` settings above should
-already show as `PASS`: *"Ensure containers are restricted from acquiring new privileges"*,
-*"Ensure live restore is enabled"*, *"Ensure Userland Proxy is Disabled"*, and *"Ensure network
-traffic is restricted between containers on the default bridge"* — if any of those come back `WARN`
-instead, re-check `daemon.json` landed and `docker` was restarted.
-
-## Deploy Pangolin
-
-* [Thomas Wilde - Pangolin guide](https://www.youtube.com/watch?v=ISEP6SIrEVE)
-* [Official Quick Install docs](https://docs.pangolin.net/self-host/quick-install)
-
-### Pre-Flight Check
-Confirm nothing is already bound to 80/443 before running the installer — a leftover web server or
-another container can silently make Traefik fail to bind without an obvious error pointing at why:
-```bash
-$ sudo ss -tulpn | grep -E ':80|:443'
-```
-Empty output means you're clear to install.
-
-#### Enable Enterprise Edition
-Pangolin's Enterprise Edition (EE) is free for personal/hobbyist use, and for businesses under
-$100K USD gross annual revenue — a paid commercial license is only required above that revenue
-threshold. It's the same codebase as Community Edition (CE) behind a different image tag, so
-switching is a container swap plus a license key, not a reinstall. Decide before or after the
-[Manual Install](#manual-install-docker-compose) below — both orders work, since this only touches
-the `pangolin` service's image tag and a license key entered later in the dashboard, nothing that
-the rest of this doc's compose/config files depend on.
-
-**1. Obtain a free license key**
-1. Create an account at `app.pangolin.net`
-2. Create an organization there — required before a license application can be submitted
-3. Navigate to the `ORGANIZATION >Billing & Licensing >Licenses` from the left hand nav
-4. Click `+Generate License Key`
-5. Check the `Personal use only (free license - no checkout)`
-6. Fill out your other details
-7. Click `Generate License Key`
-
-**2. Point `docker-compose.yml` at the EE image** — same file as
-[Write docker-compose.yml](#write-docker-composeyml) below, just the `pangolin` service's `image:`
-line:
+### Newt Host Args and Secrets
+In the homelab host's `args.enc.yaml`:
 ```yaml
-services:
-  pangolin:
-    image: docker.io/fosrl/pangolin:ee-<version>   # was fosrl/pangolin:<CE version>
-```
-Pin an explicit `ee-<version>` tag rather than `ee-latest` — consistent with this doc's choice to
-pin `gerbil`/`traefik`/`crowdsec` and CE `pangolin` alike (see the pinning rationale after
-[Write docker-compose.yml](#write-docker-composeyml)) rather than floating `latest` and losing the
-reproducibility guarantee.
-
-**3. Restart the stack**
-```bash
-$ cd /opt/pangolin
-$ sudo docker compose down && sudo docker compose up -d
-$ sudo docker compose ps   # confirm all four containers are Up/healthy on the new image
-```
-
-**4. Activate the license in the dashboard**
-1. Log in with server admin credentials
-2. Open the Server Admin panel → License section (`/admin/license`)
-3. Enter the key and activate
-
-**5. Verify** Enterprise-only features are now visible/usable in the dashboard.
-
-**Reverting to Community Edition later** — swap the image tag back to a CE `fosrl/pangolin:<version>`
-release and restart. Enterprise-only UI elements stay visible but locked once EE features are no
-longer licensed; hide them instead by adding to
-[`config/config.yml`](#write-configconfigyml):
-```yaml
-flags:
-  disable_enterprise_features: true
-```
-
-***References***
-* [Enterprise Edition - Pangolin Docs](https://docs.pangolin.net/self-host/enterprise-edition)
-
-### Manual Install (Docker Compose)
-Per [Pangolin's Manual Installation docs](https://docs.pangolin.net/self-host/manual/docker-compose),
-this is the same file layout the bash installer script generates from `install/config/*`, just
-written by hand instead of prompted for interactively. Chosen over the [Quick Install
-script](https://docs.pangolin.net/self-host/quick-install) for full visibility into every config
-value before any container starts, the ability to pin image tags instead of trusting `latest`, and
-straightforward toggling of optional features (e.g. CrowdSec, see the caveat below) without fighting
-installer flags.
-
-#### Create the Install Directory
-`/opt/pangolin` is the location referenced elsewhere in this doc (log rotation, container-health
-checks). Matches every directory [`main.go`'s `createConfigFiles`](https://github.com/fosrl/pangolin/blob/main/install/main.go)
-and [`crowdsec.go`](https://github.com/fosrl/pangolin/blob/main/install/crowdsec.go) create between
-them — including `config/logs`, which the installer creates but nothing in this doc's compose file
-actually mounts (Pangolin's own general log path, distinct from `config/traefik/logs`) — plus
-`config/crowdsec/db` and `config/crowdsec/acquis.d` for the CrowdSec merge documented below (see
-[Port Requirements](#port-requirements) and
-[CrowdSec Is Included](#crowdsec-is-included-matching-quick-install)):
-```bash
-$ sudo mkdir -p /opt/pangolin/config/db /opt/pangolin/config/letsencrypt \
-  /opt/pangolin/config/logs /opt/pangolin/config/traefik/logs \
-  /opt/pangolin/config/crowdsec/db /opt/pangolin/config/crowdsec/acquis.d
-$ cd /opt/pangolin
-```
-
-#### Write docker-compose.yml
-Defines four containers (`pangolin`, `gerbil`, `traefik`, `crowdsec`) — the same set the installer's
-`--crowdsec` flag produces, sourced directly from
-[`install/config/docker-compose.yml`](https://github.com/fosrl/pangolin/blob/main/install/config/docker-compose.yml)
-and [`install/config/crowdsec/docker-compose.yml`](https://github.com/fosrl/pangolin/blob/main/install/config/crowdsec/docker-compose.yml)
-in Pangolin's own repo, not the (stale in places — see the `v3.6`/network-name/HTTP-3 notes below)
-[manual install docs page](https://docs.pangolin.net/self-host/manual/docker-compose). `gerbil`
-opens the tunnel/HTTP(S) ports on the host on `traefik`'s behalf via `network_mode:
-service:gerbil`, so `traefik` itself publishes no ports of its own; `crowdsec` publishes nothing to
-the host at all, since Traefik reaches it over the compose network by container name — its
-Prometheus metrics port (`6060`) is left unpublished by default (see the note below the compose
-file):
-```bash
-$ sudo tee docker-compose.yml > /dev/null <<'EOF'
-name: pangolin
-services:
-  pangolin:
-    image: docker.io/fosrl/pangolin:ee-1.21.1
-    container_name: pangolin
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 1g
-        reservations:
-          memory: 512m
-    volumes:
-      - ./config:/app/config
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/api/v1/"]
-      interval: "10s"
-      timeout: "10s"
-      retries: 15
-
-  gerbil:
-    image: docker.io/fosrl/gerbil:1.5.1
-    container_name: gerbil
-    restart: unless-stopped
-    depends_on:
-      pangolin:
-        condition: service_healthy
-    command:
-      - --reachableAt=http://gerbil:3004
-      - --generateAndSaveKeyTo=/var/config/key
-      - --remoteConfig=http://pangolin:3001/api/v1/
-    volumes:
-      - ./config/:/var/config
-    cap_add:
-      - NET_ADMIN
-      - SYS_MODULE
-    ports:
-      - 51820:51820/udp
-      - 21820:21820/udp
-      - 443:443
-      - 443:443/udp # For HTTP/3 (QUIC) — on by default in Pangolin's own template, unrelated to CrowdSec.
-      - 80:80
-
-  traefik:
-    image: docker.io/traefik:v3.7
-    container_name: traefik
-    restart: unless-stopped
-    network_mode: service:gerbil
-    depends_on:
-      pangolin:
-        condition: service_healthy
-      crowdsec:
-        condition: service_healthy
-    command:
-      - --configFile=/etc/traefik/traefik_config.yml
-    volumes:
-      - ./config/traefik:/etc/traefik:ro
-      - ./config/letsencrypt:/letsencrypt
-      - ./config/traefik/logs:/var/log/traefik
-
-  crowdsec:
-    image: docker.io/crowdsecurity/crowdsec:v1.7.8
-    container_name: crowdsec
-    restart: unless-stopped
-    environment:
-      GID: "1000"
-      COLLECTIONS: crowdsecurity/traefik crowdsecurity/appsec-virtual-patching crowdsecurity/appsec-generic-rules
-      ENROLL_INSTANCE_NAME: "pangolin-crowdsec"
-      PARSERS: crowdsecurity/whitelists
-      ENROLL_TAGS: docker
-    healthcheck:
-      test: ["CMD", "cscli", "lapi", "status"]
-      interval: "10s"
-      timeout: "5s"
-      retries: 3
-      start_period: "30s"
-    labels:
-      - "traefik.enable=false"
-    volumes:
-      - ./config/crowdsec:/etc/crowdsec
-      - ./config/crowdsec/db:/var/lib/crowdsec/data
-      - ./config/traefik/logs:/var/log/traefik
-
-networks:
-  default:
-    driver: bridge
-    name: pangolin_frontend
-    # enable_ipv6: true
-EOF
-```
-***`crowdsec`'s Prometheus metrics port (`6060`) is deliberately left unpublished*** — the
-installer's own `--crowdsec` template includes `6060:6060` in `ports:` (marked optional there too:
-"not required, drop if unused"), but this doc drops it by default rather than including it commented
-out. Reason: `6060/tcp` is a common bind target for other tooling (a host-level Prometheus
-`node_exporter`, a leftover process from earlier testing, etc.), and a collision surfaces as an
-opaque `docker compose up` failure — `failed to bind host port 0.0.0.0:6060/tcp: address already in
-use` — with `crowdsec` itself shown `Healthy` and no indication which container's port mapping is at
-fault. Traefik still reaches CrowdSec fine over the internal `pangolin_frontend` compose network by
-container name (`crowdsec:8080` for the LAPI, `crowdsec:7422` for AppSec) regardless of whether this
-port is published — nothing else in this stack depends on `6060` being reachable from the host. If
-you do want to scrape these metrics externally (e.g. a homelab Prometheus), first confirm nothing
-else already owns the port before re-adding the mapping:
-```bash
-$ sudo ss -tulpn | grep 6060
-```
-then add `- 6060:6060` back to `crowdsec`'s `ports:` above (or bind it to a private address only,
-e.g. `<homelab-tunnel-ip>:6060:6060`, rather than `0.0.0.0`).
-
-**All four images are pinned** — the installer's own `docker-compose.yml` template renders
-`fosrl/pangolin:{{.PangolinVersion}}` and `fosrl/gerbil:{{.GerbilVersion}}`, with those version
-strings baked into the installer binary at build time (whatever Pangolin release the installer
-itself shipped with); it never floats `latest` for those two, or for `traefik`. `1.21.1`/`1.5.1`/
-`v3.7` are the current releases as of this doc's last check against
-[Pangolin's](https://github.com/fosrl/pangolin/releases),
-[Gerbil's](https://github.com/fosrl/gerbil/releases), and Traefik's release pages — they *will* go
-stale as new versions ship, since nothing here re-checks them automatically. Update the tags by
-hand when you next touch this file, the same way you'd re-run the installer to pick up a new
-release. The `pangolin` service's `deploy.resources` block is a soft memory cap/reservation
-concept the installer sets by default too, not something this doc invented — but the installer's
-own default limit (`2g`) is tightened to `1g` here specifically because a `2GB`-class VPS (per
-[Recommended Resources](#recommended-resources) above) doesn't have room to spare for one of four
-containers to claim a limit at or above total system RAM; a `2g` ceiling on a ~1.9GiB-total host
-protects nothing; `gerbil`/`traefik`/`crowdsec` and the host OS all need to fit in the same physical
-memory too. Check your own box's actual total before trusting either number: `free -h`.
-
-***`crowdsec` deviates from the installer here, and deliberately so*** — the installer's own
-[`install/config/crowdsec/docker-compose.yml`](https://github.com/fosrl/pangolin/blob/main/install/config/crowdsec/docker-compose.yml)
-floats `crowdsecurity/crowdsec:latest` rather than pinning, trading reproducibility for automatic
-detection-rule/engine updates — arguably a more defensible tradeoff for a security-detection
-component than for infra glue like Traefik. This doc pins it instead (`v1.7.8`, the version already
-running as of this pin — not an upgrade, just locking in what was already deployed), matching the
-other three images' reproducibility guarantee: `docker compose pull` can't silently change what's
-running, and an upstream breaking change doesn't land on the VPS unannounced. The cost is the
-inverse — `crowdsec` now goes stale exactly like the other three unless you update the tag by hand.
-See [Alert on New Upstream Image Versions](#alert-on-new-upstream-image-versions) below for closing
-that gap with an `ntfy` push instead of finding out by accident.
-
-***One installer prompt this doc's default intentionally doesn't match*** — `Is your server IPv6
-capable?` defaults to `Yes` in the interactive installer and controls the commented-out
-`enable_ipv6: true` line above, but this doc leaves it off. Docker's own IPv6 support has had
-version-dependent quirks (daemon-level config, address pools), and an accepted-but-wrong "yes" here
-can keep `docker compose up` from bringing the network up at all. Confirm your VPS actually has
-IPv6 (`ip -6 addr`, `curl -6 ifconfig.me`) before uncommenting it — don't just match the installer's
-default because it's the default. (The other default-`Yes` prompt, MaxMind GeoLite2, *is* matched —
-see [Download MaxMind GeoLite2 Databases](#download-maxmind-geolite2-databases) below.)
-
-***`command: -t` on the upstream `crowdsec` service is a validate-and-exit flag, not left in
-here*** — the installer's own template
-([`install/config/crowdsec/docker-compose.yml`](https://github.com/fosrl/pangolin/blob/main/install/config/crowdsec/docker-compose.yml))
-sets `command: -t`, which is `crowdsec`'s "test config, then exit" flag. Since the service also has
-`restart: unless-stopped`, that combination would just restart-loop the container rather than run
-it as a daemon — almost certainly a copy-paste bug in the upstream template rather than intentional,
-so it's left off here. If you diff against the installer output and see it, that's expected — don't
-add it back without first confirming `crowdsec` actually stays `Up` in `docker compose ps` with it
-present.
-
-**Validate the file parses** before moving on — this only checks YAML syntax/compose schema at this
-point, not whether the files `traefik`/`crowdsec` reference actually exist yet (those come next),
-but it catches a typo or bad indentation immediately instead of at `docker compose up` time:
-```bash
-$ sudo docker compose config --quiet && echo "OK — compose file is valid" || echo "FAILED — see error above"
-```
-
-#### Write config/traefik/traefik_config.yml
-Traefik's static config: entry points, ACME/Let's Encrypt, HTTP/3 (on by default in Pangolin's own
-base template — nothing to do with CrowdSec), the `badger` plugin Pangolin uses for forward-auth,
-and (this part *is* specifically from the `--crowdsec` installer template) the `crowdsec` bouncer
-plugin plus a JSON `accessLog` — CrowdSec needs that access log to have anything to parse, which is
-also why the [Log Rotation for Traefik's Access Log](#log-rotation-for-traefiks-access-log) section
-below exists. Sourced from
-[`install/config/traefik/traefik_config.yml`](https://github.com/fosrl/pangolin/blob/main/install/config/traefik/traefik_config.yml)
-merged with [`install/config/crowdsec/traefik_config.yml`](https://github.com/fosrl/pangolin/blob/main/install/config/crowdsec/traefik_config.yml) —
-not the manual install docs page, which shows the HTTP/3 block commented out; that's stale relative
-to the actual installer source. Replace the `email` placeholder with your own before applying:
-```bash
-$ sudo tee config/traefik/traefik_config.yml > /dev/null <<'EOF'
-api:
-  insecure: true
-  dashboard: true
-
-providers:
-  http:
-    endpoint: "http://pangolin:3001/api/v1/traefik-config"
-    pollInterval: "5s"
-  file:
-    filename: "/etc/traefik/dynamic_config.yml"
-
-experimental:
-  plugins:
-    badger:
-      moduleName: "github.com/fosrl/badger"
-      version: "v1.5.0" # Check github.com/fosrl/badger for the latest release.
-    crowdsec:
-      moduleName: "github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
-      version: "v1.4.4"
-
-log:
-  level: "INFO"
-  format: "json"
-  maxSize: 100
-  maxBackups: 3
-  maxAge: 3
-  compress: true
-
-accessLog:
-  filePath: "/var/log/traefik/access.log"
-  format: json
-  filters:
-    statusCodes:
-      - "200-299"
-      - "400-499"
-      - "500-599"
-    retryAttempts: true
-    minDuration: "100ms"
-  bufferingSize: 100
-  fields:
-    defaultMode: drop
-    names:
-      ClientAddr: keep
-      ClientHost: keep
-      RequestMethod: keep
-      RequestPath: keep
-      RequestProtocol: keep
-      DownstreamStatus: keep
-      DownstreamContentSize: keep
-      Duration: keep
-      ServiceName: keep
-      StartUTC: keep
-      TLSVersion: keep
-      TLSCipher: keep
-      RetryAttempts: keep
-    headers:
-      defaultMode: drop
-      names:
-        User-Agent: keep
-        X-Real-Ip: keep
-        X-Forwarded-For: keep
-        X-Forwarded-Proto: keep
-        Content-Type: keep
-        Authorization: redact
-        Cookie: redact
-
-certificatesResolvers:
-  letsencrypt:
-    acme:
-      httpChallenge:
-        entryPoint: web
-      email: "admin@example.com" # REPLACE
-      storage: "/letsencrypt/acme.json"
-      caServer: "https://acme-v02.api.letsencrypt.org/directory"
-
-entryPoints:
-  web:
-    address: ":80"
-  websecure:
-    address: ":443"
-    transport:
-      respondingTimeouts:
-        readTimeout: "30m"
-    http3:
-      advertisedPort: 443
-    http:
-      tls:
-        certResolver: "letsencrypt"
-      middlewares:
-        - crowdsec@file
-      encodedCharacters:
-        allowEncodedSlash: true
-        allowEncodedQuestionMark: true
-
-serversTransport:
-  insecureSkipVerify: true
-
-ping:
-  entryPoint: "web"
-EOF
-```
-The `certificatesResolvers.letsencrypt` block is HTTP-01 by default — this is what needs `80/tcp`
-open per [Port Requirements](#port-requirements) above. See
-[Switch to DNS-01 and Close Port 80](#switch-to-dns-01-and-close-port-80) if you want `80/tcp`
-closed or a wildcard cert instead. The `http3` block is what
-needs `443/udp` open, per the same section — comment it out (and drop the matching port line in
-`docker-compose.yml`) if you'd rather not run HTTP/3 yet.
-
-**Confirm the email placeholder was actually replaced** — checks a boolean, doesn't print the value
-back to you:
-```bash
-$ grep -q 'admin@example.com' config/traefik/traefik_config.yml && echo "STILL HAS PLACEHOLDER — go edit it" || echo "OK — email replaced"
-```
-
-**Validate the YAML itself** — there's no `docker compose config` equivalent for a plain Traefik
-config file, and Traefik itself has no standalone "check config and exit" flag, so parse it with a
-throwaway container instead of waiting to find out at `docker compose up` time:
-```bash
-$ sudo docker run --rm -v "$PWD/config/traefik/traefik_config.yml:/f.yml:ro" mikefarah/yq \
-  eval '.' /f.yml > /dev/null && echo "OK — valid YAML"
-```
-This only confirms well-formed YAML, not that Traefik will accept every key/value in it — a plugin
-version that doesn't exist or a typo'd key name would still pass this check and only surface once
-`traefik` actually starts. Worth knowing the limit of this check rather than treating it as a full
-guarantee.
-
-#### Write config/traefik/dynamic_config.yml
-Routers/services wiring the dashboard hostname to Pangolin's internal ports. Replace every
-`pangolin.example.com` with your actual dashboard domain. Also matching the `--crowdsec` installer
-template: a `default-whitelist`/`security-headers` middleware pair, and the `crowdsec` middleware
-itself with a placeholder LAPI key — [Apply the CrowdSec Bouncer Key](#apply-the-crowdsec-bouncer-key)
-below replaces that placeholder once the stack is running and a real key can be generated:
-```bash
-$ sudo tee config/traefik/dynamic_config.yml > /dev/null <<'EOF'
-http:
-  middlewares:
-    badger:
-      plugin:
-        badger:
-          disableForwardAuth: true
-    redirect-to-https:
-      redirectScheme:
-        scheme: https
-    default-whitelist: # Whitelist middleware for internal IPs — not applied to any router below by default
-      ipWhiteList:
-        sourceRange:
-          - "10.0.0.0/8"
-          - "192.168.0.0/16"
-          - "172.16.0.0/12"
-    security-headers:
-      headers:
-        customResponseHeaders:
-          Server: ""
-          X-Powered-By: ""
-          X-Forwarded-Proto: "https"
-        sslProxyHeaders:
-          X-Forwarded-Proto: "https"
-        hostsProxyHeaders:
-          - "X-Forwarded-Host"
-        contentTypeNosniff: true
-        customFrameOptionsValue: "SAMEORIGIN"
-        referrerPolicy: "strict-origin-when-cross-origin"
-        forceSTSHeader: true
-        stsIncludeSubdomains: true
-        stsSeconds: 63072000
-        stsPreload: true
-    crowdsec:
-      plugin:
-        crowdsec:
-          enabled: true
-          logLevel: INFO
-          updateIntervalSeconds: 15
-          updateMaxFailure: 0
-          defaultDecisionSeconds: 15
-          httpTimeoutSeconds: 10
-          crowdsecMode: live
-          crowdsecAppsecEnabled: true
-          crowdsecAppsecHost: crowdsec:7422
-          crowdsecAppsecFailureBlock: true
-          crowdsecAppsecUnreachableBlock: true
-          crowdsecAppsecBodyLimit: 10485760
-          crowdsecLapiKey: "PUT_YOUR_BOUNCER_KEY_HERE_OR_IT_WILL_NOT_WORK"
-          crowdsecLapiHost: crowdsec:8080
-          crowdsecLapiScheme: http
-          forwardedHeadersTrustedIPs:
-            - "0.0.0.0/0"
-          clientTrustedIPs:
-            - "10.0.0.0/8"
-            - "172.16.0.0/12"
-            - "192.168.0.0/16"
-            - "100.89.137.0/20" # Gerbil's default site-tunnel CGNAT range, see Subnet Conflict Check above
-
-  routers:
-    main-app-router-redirect:
-      rule: "Host(`pangolin.example.com`)"
-      service: next-service
-      entryPoints:
-        - web
-      middlewares:
-        - redirect-to-https
-        - badger
-
-    next-router:
-      rule: "Host(`pangolin.example.com`) && !PathPrefix(`/api/v1`)"
-      service: next-service
-      entryPoints:
-        - websecure
-      middlewares:
-        - security-headers
-        - badger
-      tls:
-        certResolver: letsencrypt
-
-    api-router:
-      rule: "Host(`pangolin.example.com`) && PathPrefix(`/api/v1`)"
-      service: api-service
-      entryPoints:
-        - websecure
-      middlewares:
-        - security-headers
-        - badger
-      tls:
-        certResolver: letsencrypt
-
-    ws-router:
-      rule: "Host(`pangolin.example.com`)"
-      service: api-service
-      entryPoints:
-        - websecure
-      middlewares:
-        - security-headers
-        - badger
-      tls:
-        certResolver: letsencrypt
-
+host:
   services:
-    next-service:
-      loadBalancer:
-        servers:
-          - url: "http://pangolin:3002"
-
-    api-service:
-      loadBalancer:
-        servers:
-          - url: "http://pangolin:3000"
-
-tcp:
-  serversTransports:
-    pp-transport-v1:
-      proxyProtocol:
-        version: 1
-    pp-transport-v2:
-      proxyProtocol:
-        version: 2
-EOF
+    oci:
+      newt:
+        pangolin:
+          url: https://pangolin.example.com   # the site's "Endpoint"
+          ip: 203.0.113.10                    # the VPS's IPv4 - see the next two sections
+        id: <newt id>                         # the site's "ID"
+        subnet: 10.89.110.0/24                # Newt's own isolated podman network (/24, .0)
+        ip: 10.89.110.2                       # Newt's fixed address in it
 ```
-`crowdsec` here is applied per-entry-point (`websecure`'s `middlewares: [crowdsec@file]` in
-`traefik_config.yml` above) rather than per-router, so it isn't listed again in any router's own
-`middlewares` list — adding it there too would just evaluate it twice.
-
-**Confirm the domain placeholder was replaced** and **validate the YAML**, same pattern as the
-previous two files:
-```bash
-$ grep -q 'pangolin.example.com' config/traefik/dynamic_config.yml && echo "STILL HAS PLACEHOLDER — go edit it" || echo "OK — domain replaced"
-$ sudo docker run --rm -v "$PWD/config/traefik/dynamic_config.yml:/f.yml:ro" mikefarah/yq \
-  eval '.' /f.yml > /dev/null && echo "OK — valid YAML"
-```
-
-#### Write config/crowdsec Acquisition and Profiles Files
-`docker-compose.yml`'s `crowdsec` service bind-mounts `./config/crowdsec` straight onto `/etc/crowdsec`
-— CrowdSec's own config root — so this directory needs to hold real config, not just the `db/` and
-`acquis.d/` directories [created earlier](#create-the-install-directory). Checked directly against the
-installer's own [`install/config/crowdsec/`](https://github.com/fosrl/pangolin/tree/main/install/config/crowdsec)
-template: three files land there that this doc hadn't written yet.
-
-Without them:
-* **No acquisition config** (`acquis.d/traefik.yaml`) means CrowdSec never actually reads Traefik's
-  access log — the `crowdsecurity/traefik` collection installed via `COLLECTIONS` in
-  `docker-compose.yml` ships parsers/scenarios for that log format, not a data source telling
-  CrowdSec where to find it. Without this file, `cscli decisions list` will stay empty forever no
-  matter how much traffic Traefik sees.
-* **No `acquis.d/appsec.yaml`** means nothing listens on `7422` — the exact address
-  `dynamic_config.yml`'s `crowdsecAppsecHost: crowdsec:7422` already points the AppSec middleware
-  at. With `crowdsecAppsecUnreachableBlock: true` also set there, every request would get blocked
-  once CrowdSec can't reach a component that was never started.
-* **No `profiles.yaml`** means CrowdSec falls back to its package defaults for what happens once a
-  scenario actually fires, instead of these explicit remediation rules (ban on IP/range match,
-  captcha on HTTP-scenario matches).
-
-Write all three, sourced verbatim from the installer's own templates:
-```bash
-$ sudo tee config/crowdsec/acquis.d/traefik.yaml > /dev/null <<'EOF'
-poll_without_inotify: false
-filenames:
-  - /var/log/traefik/*.log
-labels:
-  type: traefik
-EOF
-$ sudo tee config/crowdsec/acquis.d/appsec.yaml > /dev/null <<'EOF'
-listen_addr: 0.0.0.0:7422
-appsec_config: crowdsecurity/appsec-default
-name: myAppSecComponent
-source: appsec
-labels:
-  type: appsec
-EOF
-$ sudo tee config/crowdsec/profiles.yaml > /dev/null <<'EOF'
-name: captcha_remediation
-filters:
-  - Alert.Remediation == true && Alert.GetScope() == "Ip" && Alert.GetScenario() contains "http"
-decisions:
-  - type: captcha
-    duration: 4h
-on_success: break
-
----
-name: default_ip_remediation
-filters:
- - Alert.Remediation == true && Alert.GetScope() == "Ip"
-decisions:
- - type: ban
-   duration: 4h
-on_success: break
-
----
-name: default_range_remediation
-filters:
- - Alert.Remediation == true && Alert.GetScope() == "Range"
-decisions:
- - type: ban
-   duration: 4h
-on_success: break
-EOF
-```
-
-**Validate all three parse as YAML** — `profiles.yaml` is a multi-document stream (`---`-separated),
-which `yq eval '.'` handles fine since it prints each document in turn rather than erroring on the
-separator:
-```bash
-$ for f in config/crowdsec/acquis.d/traefik.yaml config/crowdsec/acquis.d/appsec.yaml config/crowdsec/profiles.yaml; do
-    sudo docker run --rm -v "$PWD/$f:/f.yml:ro" mikefarah/yq eval '.' /f.yml > /dev/null \
-      && echo "OK — $f valid YAML" || echo "FAILED — $f"
-  done
-```
-
-#### Write config/config.yml
-Pangolin's own app config. Replace the two domain placeholders now (dashboard domain — three spots:
-`gerbil.base_endpoint`, `app.dashboard_url`, `server.cors.origins` — and base domain), and the
-`server.secret` placeholder using [Generate the Server Secret](#generate-the-server-secret) directly
-below. Includes `maxmind_db_path`/`maxmind_asn_path` under `server:`, matching the installer's
-default-`Yes` answer to its MaxMind prompt —
-[Download MaxMind GeoLite2 Databases](#download-maxmind-geolite2-databases) below is what actually
-puts those two `.mmdb` files in place:
-```bash
-$ sudo tee config/config.yml > /dev/null <<'EOF'
-# To see all available options, please visit the docs:
-# https://docs.pangolin.net/
-
-gerbil:
-    start_port: 51820
-    base_endpoint: "pangolin.example.com" # REPLACE WITH YOUR DASHBOARD DOMAIN
-
-app:
-    dashboard_url: "https://pangolin.example.com" # REPLACE WITH YOUR DASHBOARD DOMAIN
-    log_level: "info"
-    telemetry:
-        anonymous_usage: true
-
-domains:
-    domain1:
-        base_domain: "example.com" # REPLACE WITH YOUR BASE DOMAIN
-
-server:
-    secret: "replace-with-a-long-random-secret" # REPLACE WITH SECURE SECRET
-    maxmind_db_path: "./config/GeoLite2-Country.mmdb"
-    maxmind_asn_path: "./config/GeoLite2-ASN.mmdb"
-    cors:
-        origins: ["https://pangolin.example.com"] # REPLACE WITH YOUR DASHBOARD DOMAIN
-        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
-        allowed_headers: ["X-CSRF-Token", "Content-Type"]
-        credentials: false
-
-flags:
-    require_email_verification: false
-    disable_signup_without_invite: true
-    disable_user_create_org: false
-    allow_raw_resources: true
-EOF
-```
-
-#### Generate the Server Secret
-Paste the output into `config/config.yml`'s `server.secret` in place of the placeholder — this
-signs sessions/tokens, so it needs real entropy, not a memorable string. `-base64` rather than
-`-hex` to match `generateRandomSecretKey()` in the installer's own
-[`main.go`](https://github.com/fosrl/pangolin/blob/main/install/main.go), which base64-encodes 32
-random bytes rather than hex-encoding them — both are 256 bits of entropy either way, this is a
-format match, not a security difference:
-```bash
-$ openssl rand -base64 32
-```
-
-**Confirm every placeholder was replaced** — five separate `grep`s since they're different literal
-strings, each just a pass/fail check that doesn't print your actual domain/secret back out. Run from
-`/opt/pangolin` (the [Create the Install Directory](#create-the-install-directory) `cd` earlier in
-this doc), since both this and the YAML check below use the `config/` path relative to it:
-```bash
-$ cd /opt/pangolin
-$ for p in 'pangolin.example.com' '"example.com"' 'replace-with-a-long-random-secret'; do
-    grep -qF "$p" config/config.yml && echo "STILL HAS PLACEHOLDER: $p" || echo "OK: $p replaced"
-  done
-```
-**Validate the YAML**, same throwaway-container approach as `traefik_config.yml` above:
-```bash
-$ sudo docker run --rm -v "$PWD/config/config.yml:/f.yml:ro" mikefarah/yq \
-  eval '.' /f.yml > /dev/null && echo "OK — valid YAML"
-```
-
-#### Download MaxMind GeoLite2 Databases
-Matches the installer's default-`Yes` answer to *"Do you want to download the MaxMind GeoLite2
-Country and ASN databases for blocking functionality?"* — powers the geography/ASN filter types in
-Pangolin's own per-resource [Resource Rules](#how-access-control-works), independent of the
-host-level `ipset`-based [GeoIP Blocking](../../../system/ubuntu/hardening/README.md#geoip-blocking)
-already in the hardening doc. Same GitHub mirror the installer itself pulls from (no MaxMind
-account/license key needed):
-
-***Run the `curl`/`tar` steps from a directory your user can write to (e.g. your home directory),
-not from `/opt/pangolin`*** — that directory is `root:root` mode `755` (see
-[Create the Install Directory](#create-the-install-directory)), so a plain-user `curl -o` there
-fails with `Permission denied` even though `ls`/`cd` into it still works. Only the final `mv` into
-`config/` needs `sudo`, since that's the one step actually writing into the root-owned tree:
-```bash
-$ cd ~/temp
-$ curl -L -o GeoLite2-Country.tar.gz https://github.com/GitSquared/node-geolite2-redist/raw/refs/heads/master/redist/GeoLite2-Country.tar.gz
-$ curl -L -o GeoLite2-ASN.tar.gz https://github.com/GitSquared/node-geolite2-redist/raw/refs/heads/master/redist/GeoLite2-ASN.tar.gz
-$ tar -xzf GeoLite2-Country.tar.gz
-$ tar -xzf GeoLite2-ASN.tar.gz
-$ sudo mv GeoLite2-Country_*/GeoLite2-Country.mmdb /opt/pangolin/config/
-$ sudo mv GeoLite2-ASN_*/GeoLite2-ASN.mmdb /opt/pangolin/config/
-$ rm -rf GeoLite2-Country.tar.gz GeoLite2-Country_* GeoLite2-ASN.tar.gz GeoLite2-ASN_*
-```
-**Verify both files landed**:
-```bash
-$ sudo ls -lah /opt/pangolin/config/GeoLite2-Country.mmdb /opt/pangolin/config/GeoLite2-ASN.mmdb
-```
-These are point-in-time snapshots, not a live lookup service — IP-to-country/ASN mappings drift as
-address blocks get reallocated, so re-run this same block periodically to refresh them (there's no
-cron job wired up here; the installer doesn't set one up either, so this is a manual, occasional
-task either way).
-
-#### Start the Stack
-Run from `/opt/pangolin` — `docker compose` picks up `docker-compose.yml` from the current
-directory, same as every other relative-path command in this doc:
-```bash
-$ cd /opt/pangolin
-$ sudo docker run --rm -v "$PWD/config/config.yml:/f.yml:ro" mikefarah/yq \
-    eval '.' /f.yml > /dev/null && echo "OK — valid YAML"
-$ sudo docker compose up -d
-```
-
-**Watch startup** — the same couple of minutes the installer script would take, just without its
-progress output:
-```bash
-$ sudo docker compose logs -f pangolin traefik gerbil crowdsec
-```
-
-**Verify all four containers are healthy**:
-```bash
-$ sudo docker compose ps
-```
-`traefik` won't report itself as unhealthy from an invalid CrowdSec key at this point — the
-`crowdsecLapiKey` placeholder just makes the bouncer plugin fail its calls to `crowdsec`, which
-Traefik logs but doesn't crash on. Expect noisy `crowdsec`-related lines in `docker compose logs
-traefik` until the next step replaces the placeholder.
-
-#### Apply the CrowdSec Bouncer Key
-CrowdSec splits detection from enforcement: the *agent* (the `crowdsec` container) parses Traefik's
-access log and decides an IP is malicious; a *bouncer* is what actually enforces that decision.
-Traefik's `crowdsec` plugin middleware is the bouncer here — on every request it calls CrowdSec's
-Local API (LAPI, `crowdsec:8080`) asking "any decisions against this IP?" That call has to
-authenticate with a per-bouncer API key so CrowdSec knows who's asking and can revoke access per
-bouncer independently of any other.
-
-`dynamic_config.yml` above still has `crowdsecLapiKey` set to the literal placeholder
-`PUT_YOUR_BOUNCER_KEY_HERE_OR_IT_WILL_NOT_WORK` — this is what the installer's own
-[`crowdsec.go`](https://github.com/fosrl/pangolin/blob/main/install/crowdsec.go) does too, since
-the real key can only be generated once the `crowdsec` container is actually running.
-
-***Don't skip this or leave it for later*** — with the placeholder in place, every LAPI call the
-bouncer plugin makes gets rejected with `403`, and the plugin fails closed: not just noisy log
-lines (`GET /v1/decisions?ip=... 403`), but **legitimate requests to your own dashboard/resources
-returning `403`** too, since the plugin can't distinguish "auth failed" from "actually banned."
-
-Register the `traefik-bouncer` and capture its key:
-```bash
-$ sudo docker compose exec crowdsec cscli bouncers add traefik-bouncer -o raw
-```
-**Paste that value into `config/traefik/dynamic_config.yml`**, replacing the placeholder in the
-`crowdsecLapiKey` line, then restart only `traefik` to pick it up — the other three containers
-don't need to move:
-```bash
-$ sudo docker compose restart traefik
-```
-**Confirm the bouncer registered and the key took**:
-```bash
-$ sudo docker compose exec crowdsec cscli bouncers list
-$ sudo docker compose logs traefik | grep -i crowdsec
-```
-`cscli bouncers list` should show `traefik-bouncer` with a recent "last pull" time — if it stays
-blank, the key in `dynamic_config.yml` doesn't match what `crowdsec` issued, or `traefik` hasn't
-picked up the restart yet. As a final check, confirm ordinary requests no longer 403:
-```bash
-$ curl -vI https://<your-dashboard-domain> 2>&1 | grep 'HTTP/'
-```
-
-#### Retrieve the Initial Setup Token
-**Retrieve the initial setup token** from the pangolin container's logs — this is the exact grep
-the installer's own `showSetupTokenInstructions()` in
-[`main.go`](https://github.com/fosrl/pangolin/blob/main/install/main.go) tells you to run manually;
-a plain `grep -i token` also works but is looser and can pick up unrelated log lines (e.g. CORS
-header names) that happen to contain "token":
-```bash
-$ sudo docker compose logs pangolin | grep -A 2 -B 2 'SETUP TOKEN'
-```
-Continue in [Create Admin Account](#create-admin-account) below to finish setup with this token.
-
-#### CrowdSec Is Included, Matching Quick Install
-The `docker-compose.yml`, `traefik_config.yml`, `dynamic_config.yml`, and
-[`config/crowdsec` acquisition/profiles files](#write-configcrowdsec-acquisition-and-profiles-files)
-above already fold in what the installer's `--crowdsec` flag would add — this is [Pangolin's own
-CrowdSec engine](#crowdsec-two-separate-engines-by-design), scoped to Traefik/HTTP traffic, distinct
-from the host-level CrowdSec already configured in the
-[hardening doc](../../../system/ubuntu/hardening/README.md#crowdsec). If you'd rather not run it at
-all, drop the `crowdsec` service from `docker-compose.yml`, the `crowdsec` plugin/`accessLog` block
-from `traefik_config.yml`, the `crowdsec` middleware from `dynamic_config.yml`, and skip writing the
-`config/crowdsec` files entirely — none of the other services depend on it existing except
-`traefik`'s `depends_on`, which you'd also remove.
-
-### Switch to DNS-01 and Close Port 80
-[Port Requirements](#port-requirements) above notes `80/tcp` (HTTP-01) can be closed in favor of
-DNS-01, but only gestures at the config. This section does it concretely against the manual-install
-files already in place, and — importantly — corrects a gap in that earlier `ufw delete` instruction:
-on its own, it doesn't actually close anything.
-
-**Create a scoped Cloudflare API token** — see
-[Cloudflare API token](../../dns/cloudflare_dns/README.md#cloudflare-api-token) (`Zone:DNS:Edit` +
-`Zone:Zone:Read`, not the Global API Key), naming it something like `Pangolin example.com` so it's
-identifiable and revocable independently of any other token (e.g. Caddy's, if your homelab also
-runs the [internal Caddy setup](../../reverse_proxy/caddy/README.md#lets-encrypt-cert-generation)).
-
-**Store the token in a `.env` file**, not inline in `docker-compose.yml` — `docker compose`
-auto-loads `.env` from the same directory, and restricting its permissions keeps the token out of
-anything that might later get `cat`'d or committed by accident:
-```bash
-$ cd /opt/pangolin
-$ sudo tee .env > /dev/null <<'EOF'
-CF_DNS_API_TOKEN=<token-from-cloudflare>
-EOF
-$ sudo chmod 600 .env
-```
-
-**Wire it into `traefik`'s environment** in `docker-compose.yml` — add `env_file` alongside its
-existing `volumes:` key:
+and in its `secrets.enc.yaml`:
 ```yaml
-  traefik:
-    image: docker.io/traefik:v3.7
-    container_name: traefik
-    restart: unless-stopped
-    network_mode: service:gerbil
-    depends_on:
-      pangolin:
-        condition: service_healthy
-      crowdsec:
-        condition: service_healthy
-    env_file:
-      - .env
-    command:
-      - --configFile=/etc/traefik/traefik_config.yml
-    volumes:
-      - ./config/traefik:/etc/traefik:ro
-      - ./config/letsencrypt:/letsencrypt
-      - ./config/traefik/logs:/var/log/traefik
+newt:
+    clientSecret: <newt secret>               # the site's "Secret"
 ```
+The three values come from the dashboard when [creating the site](#create-a-site-for-the-homelab).
 
-**Switch the `letsencrypt` resolver from `httpChallenge` to `dnsChallenge`** in
-`config/traefik/traefik_config.yml` — keep the resolver named `letsencrypt` rather than introducing
-a second `letsencrypt-dns` resolver, since `dynamic_config.yml`'s four routers already reference
-`certResolver: letsencrypt` and renaming it would mean updating every one of them for no benefit:
-```yaml
-certificatesResolvers:
-  letsencrypt:
-    acme:
-      dnsChallenge:
-        provider: cloudflare
-        propagation:
-          delayBeforeChecks: "30s"
-      email: "admin@example.com" # REPLACE — same value already used above
-      storage: "/letsencrypt/acme.json"
-      caServer: "https://acme-v02.api.letsencrypt.org/directory"
+### Egress Containment
+Pangolin decides which targets Newt proxies to, so without a limit whoever controls the Pangolin
+server could reach any LAN host:port or use the homelab as a relay to the internet. The
+`newt-egress` nftables table only lets Newt's bridge reach:
+* its own gateway on `tcp/443` (Caddy - i.e. only Caddy-fronted services) and `udp/53` (podman DNS)
+* `pangolin.ip` on `tcp/443` (API + websocket) and `udp/51820,21820` (Gerbil)
+
+Everything else is ***rejected*** (TCP reset / ICMP admin-prohibited) rather than dropped, so a
+blocked dial fails immediately instead of waiting out its timeout - Newt's startup update check to
+`api.fossorial.io`, which has no off switch, would otherwise stall every start by 10 seconds. The hook
+is prerouting at mangle priority, ahead of netavark's DNAT, so it judges the address Newt actually
+dialed.
+
+***Consequence: only Caddy-fronted services can be Resources.*** A service on some other host:port
+is unreachable through Newt by design - front it with Caddy. See
+[Expose a Caddy-fronted service](#expose-a-caddy-fronted-service).
+
+### Endpoint Pinned to pangolin.ip
+The endpoint's hostname is pinned to `pangolin.ip` in Newt's `/etc/hosts` (`--add-host`), which Newt
+checks before DNS. That makes the name and the egress rule agree by construction:
+* otherwise the name resolves through podman's DNS to the host's upstream resolver. On a host that
+  doesn't use the LAN AdGuard the name may not resolve at all (no public record for a test VPS), and
+  where AdGuard is used its `*.<domain>` split-horizon wildcard would answer with the homelab's own
+  Caddy - either way Newt silently never connects
+* a spoofed DNS answer can't steer Newt's dials
+* TLS still validates against the name, and Gerbil's `base_endpoint` (the WireGuard dial) is the same
+  hostname, so it's covered too
+
+The URL is still required even with the IP pinned: Traefik's certificate doesn't cover an IP, its
+routers match `Host(pangolin.<domain>)`, and Newt builds its API/websocket URLs from it. `pangolin.ip`
+decides *where* packets go; `pangolin.url` provides the name TLS and Traefik check.
+
+### Why NO_CLOUD Is Not Set
+Despite the name, Pangolin's **Enterprise** build answers a Newt that reports `noCloud: true` with no
+`gerbil`-type exit nodes at all - including a self-hosted Gerbil
+(`server/private/lib/exitNodes/exitNodes.ts`):
+```ts
+node.type === "gerbil" && (!filterOnline || node.online) && !noCloud
 ```
-`propagation.delayBeforeChecks` (not the older top-level `delayBeforeCheck`, deprecated as of this
-Traefik release with a startup log warning but not yet removed) is how long Traefik waits before
-polling DNS to confirm the `TXT` record it published has propagated — `30s` is generous headroom for
-Cloudflare's usually-fast propagation without meaningfully slowing down issuance.
+Newt then logs `No exit nodes provided` and never brings its tunnel up. The CE build ignores the flag,
+which is why it looks harmless. Cloud failover is impossible regardless - the egress rule only
+allows `pangolin.ip`.
 
-Remove the `httpChallenge: { entryPoint: web }` block it replaces. Leave the `web` entry point
-itself (`address: ":80"`) defined — `main-app-router-redirect` still references it for the
-HTTP→HTTPS redirect, and an unpublished entry point with nothing routed to it is harmless; Traefik
-just never receives traffic there once port 80 stops being published to the host.
+## Local Test Pair (vm-vps1 + vm-homelab)
+`hosts/vm-vps1` is the local-VM staging twin of `hosts/vps1` (isolated, same `*vps` sops key, same
+module config) and `hosts/vm-homelab` the twin of the homelab. Test changes there before production.
 
-**Test DNS-01 before closing anything** — force a fresh certificate request so a broken Cloudflare
-token or DNS propagation issue surfaces while port 80 is still open as a fallback, rather than after.
-Use `restart`, not `up -d`, here — `docker compose up -d` only recreates a container when it detects
-a change in the *compose service definition itself* (image, env vars, etc.); truncating a
-bind-mounted file like `acme.json` isn't a compose-level change, so `up -d` can silently no-op and
-leave Traefik running with its old in-memory cert store, making the truncated file on disk
-irrelevant. (It happened to work funcionally when you also added `env_file` to the compose file in
-the same pass, since *that* is a compose-level change — but that's incidental, not something to rely
-on.) `restart` always stops and starts the process, guaranteeing a fresh read from disk:
 ```bash
-$ sudo cp config/letsencrypt/acme.json config/letsencrypt/acme.json.bak
-$ sudo sh -c 'echo "{}" > config/letsencrypt/acme.json'
-$ sudo docker compose restart traefik
-$ sudo docker compose logs -f traefik
+$ ./clu deploy vm vps1      # on the VM host: copies the repo to /var/lib/vms/vm-vps1 and builds it
 ```
-Look for `"Trying to solve DNS-01 challenge"` followed by `"Server responded with a certificate."` —
-the same pair of log lines the original HTTP-01 issuance produced, just with `dns-01` in place of
-`http-01`. If it fails instead, restore the backup and troubleshoot the token/zone before proceeding:
+Inside a running VM, changes are applied the normal way (`./clu build`).
+
+What's different from production:
+* **`pangolin.ip` is vm-vps1's LAN IP** in vm-homelab's args, so Newt's egress rule and `/etc/hosts`
+  pin point at the VM rather than a public address.
+* **LAN browsers need an AdGuard rewrite** `pangolin.<domain>` → vm-vps1's LAN IP to reach the
+  dashboard (via `services.native.adguardhome.dnsRewrites`). Newt itself doesn't need it - its pin
+  bypasses DNS.
+* **vm-vps1's `allowList` includes the LAN CIDR**, so LAN clients pass the US geo-allowlist and skip
+  CrowdSec.
+* **Shut it down with `sudo poweroff`.** Closing the QEMU SDL window quits QEMU on the spot - a
+  power cut: no unit stops, the journal tail is lost, containers survive into the next boot, and
+  SQLite/`acme.json` writes can be interrupted.
+
+## Operations
+
+### Health Check
+A read-only pass over the whole VPS deployment (no secrets printed):
 ```bash
-$ sudo cp config/letsencrypt/acme.json.bak config/letsencrypt/acme.json
-$ sudo docker compose restart traefik
-```
-
-***`sudo ufw delete allow 80/tcp` alone does not close port 80*** — this is the gap in the
-[Port Requirements](#port-requirements) table's instruction. `gerbil` publishes `80:80` directly via
-Docker (`ports:` in `docker-compose.yml`), and per the
-[hardening doc's Docker/`ufw` note](../../../system/ubuntu/hardening/README.md#firewall), Docker
-inserts its own `iptables`/`nftables` rules ahead of `ufw`'s — a container port published with
-`ports:` stays reachable from the internet regardless of `ufw deny` rules. Deleting the `ufw allow`
-rule only stops `ufw` itself from *advertising* the port as intentionally open; it doesn't stop
-Docker from routing to it. The only way to actually stop `gerbil` from listening on `80` is to
-remove the port mapping itself.
-
-**Remove the `80:80` line from `gerbil`'s `ports:`** in `docker-compose.yml`:
-```yaml
-    ports:
-      - 51820:51820/udp
-      - 21820:21820/udp
-      - 443:443
-      - 443:443/udp # For HTTP/3 (QUIC) — on by default in Pangolin's own template, unrelated to CrowdSec.
-```
-Recreate `gerbil` (and `traefik`, which rides its network via `network_mode: service:gerbil`) to
-pick up the port change:
-```bash
-$ sudo docker compose up -d
-```
-
-**Now delete the `ufw` rule too**, for consistency between `ufw status` and what's actually
-reachable — it's no longer misleading once the port mapping itself is gone:
-```bash
-$ sudo ufw delete allow 80/tcp
-```
-
-**Verify port 80 is actually closed**, from outside the VPS (a second terminal, not the VPS itself):
-```bash
-$ curl -v --connect-timeout 5 http://pangolin.example.com
-```
-Should time out or refuse the connection rather than returning Traefik's redirect response. Also
-confirm `443` still works and serves the DNS-01-issued cert:
-```bash
-$ curl -vI https://pangolin.example.com 2>&1 | grep -E 'issuer|subject|HTTP/'
-```
-
-**Clean up the backup** once satisfied:
-```bash
-$ sudo rm config/letsencrypt/acme.json.bak
-```
-
-### Enable Wildcard Certificates
-DNS-01 (above) is a prerequisite for a wildcard cert, but doesn't request one by itself — without
-the config below, Traefik still requests a separate, single-host cert for every hostname it sees
-(`pangolin.example.com`, then another automatically the moment you expose `jellyfin.example.com`,
-etc.), just via DNS-01 instead of HTTP-01. Checked against
-[Pangolin's own Wildcard Domains docs](https://docs.pangolin.net/self-host/advanced/wild-card-domains):
-getting one `*.<base_domain>` cert reused for every subdomain needs two more pieces on top of the
-DNS-01 switch.
-
-**1. Tell Pangolin to prefer a wildcard cert**, in `config/config.yml`'s `domains.domain1` block:
-```yaml
-domains:
-    domain1:
-        base_domain: "example.com"
-        prefer_wildcard_cert: true
-        cert_resolver: "letsencrypt"
-```
-
-**2. Put the dashboard itself under the wildcard** — without this, Pangolin's own dashboard routers
-still request their own single-host cert for `pangolin.example.com` even once
-`prefer_wildcard_cert` is set for resources. ***This override has to go on all three
-`websecure` routers that match the dashboard host — `next-router`, `api-router`, and
-`ws-router` — not just `next-router`.*** All three independently match
-`Host(\`pangolin.example.com\`)` in `dynamic_config.yml`, and Traefik requests a cert per router
-that has a `tls:` block without an explicit `domains:` override, inferring the router's own `Host()`
-rule as that cert's domain. Leaving even one of the three without the override means Traefik ends up
-holding two certs that both cover `pangolin.example.com` — the wildcard and an exact-match one — and
-it prefers the more specific exact match for that SNI, silently defeating the wildcard for the
-dashboard itself while still working fine for every other resource:
-```yaml
-next-router:
-  tls:
-    certResolver: letsencrypt
-    domains:
-      - main: "example.com"
-        sans:
-          - "*.example.com"
-
-api-router:
-  tls:
-    certResolver: letsencrypt
-    domains:
-      - main: "example.com"
-        sans:
-          - "*.example.com"
-
-ws-router:
-  tls:
-    certResolver: letsencrypt
-    domains:
-      - main: "example.com"
-        sans:
-          - "*.example.com"
-```
-
-**Apply and re-issue**, same pattern as the DNS-01 switch above — back up `acme.json` first so
-port 80 (already closed) isn't the fallback if something's wrong with the request:
-```bash
-$ sudo cp config/letsencrypt/acme.json config/letsencrypt/acme.json.bak
-$ sudo sh -c 'echo "{}" > config/letsencrypt/acme.json'
-$ sudo docker compose up -d traefik
-$ sudo docker compose logs -f traefik
-```
-Look for the DNS-01 challenge succeeding for `*.example.com` specifically (the `sans` entry), not
-just the bare `pangolin.example.com` host.
-
-**Verify the served cert actually covers the wildcard**, from outside the VPS:
-```bash
-$ curl -vI https://pangolin.example.com 2>&1 | grep -E 'subject|issuer|Subject Alternative'
-$ openssl s_client -connect pangolin.example.com:443 -servername pangolin.example.com </dev/null 2>/dev/null \
-    | openssl x509 -noout -text | grep -A1 'Subject Alternative Name'
-```
-The `Subject Alternative Name` line should list `DNS:example.com, DNS:*.example.com` — if it only
-shows `DNS:pangolin.example.com` even after confirming in the logs that Traefik *did* obtain the
-wildcard cert (`"Server responded with a certificate."` for `domains: example.com, *.example.com`),
-the most likely cause isn't a failed/stale request — it's `api-router` or `ws-router` still missing
-the `domains:` override from step 2 above. Check both:
-```bash
-$ sudo grep -A16 '    api-router:' config/traefik/dynamic_config.yml
-$ sudo grep -A16 '    ws-router:' config/traefik/dynamic_config.yml
-```
-If either shows `tls: { certResolver: letsencrypt }` with no `domains:` block underneath, that
-router is still requesting its own exact-match cert for `pangolin.example.com` — and Traefik will
-keep preferring that exact match over the wildcard for that SNI no matter how many times you
-re-issue. Add the override to whichever router is missing it, then repeat the
-back-up/blank/`up -d`/re-check cycle above.
-
-**No change needed to `docker-compose.yml`** — this doc's DNS-01 switch already wires the
-Cloudflare token in via `traefik`'s `env_file: [.env]`, and `CF_DNS_API_TOKEN` (the variable name
-that `.env` already sets) is what Traefik's `lego`-based Cloudflare provider actually reads for a
-scoped API token. Nothing further to add there.
-
-**Once one resource is confirmed under the wildcard**, every other resource you add under
-`*.example.com` reuses the same cert automatically — no more per-subdomain Let's Encrypt requests,
-and no more waiting on individual DNS-01 challenges each time you expose something new.
-
-### CrowdSec: Two Separate Engines by Design
-Pangolin's installer has a `--crowdsec` flag that sets up its **own**, Docker-based CrowdSec
-engine — distinct from the host-level one already configured in the
-[hardening doc](../../../system/ubuntu/hardening/README.md#crowdsec). They don't overlap, so this
-isn't redundancy to eliminate, it's two engines each scoped to what they're actually watching:
-
-|             | Host-level CrowdSec (hardening doc)         | Pangolin's CrowdSec (`--crowdsec` flag) |
-| ----------- | ------------------------------------------- | --------------------------------------- |
-| Watches     | `auth.log`, `syslog`, `kern.log`            | Traefik access logs                     |
-| Protects    | SSH, host-level system                      | HTTP(S) traffic through Traefik         |
-| Runs as     | native host service                         | Docker container, own Local API on `8080` |
-| Collections | `crowdsecurity/sshd`, `crowdsecurity/linux` | HTTP/Traefik-focused (e.g. `crowdsecurity/traefik`) |
-
-Pangolin's CrowdSec has no visibility into SSH/host logs unless you deliberately mount them into
-its container and add the `sshd` collection there — don't assume enabling `--crowdsec` gives you
-the SSH brute-force protection the host-level one already provides. Keep both running
-independently: `cscli` on the host reports SSH/system decisions, `cscli` inside the Pangolin
-Docker stack reports HTTP/Traefik decisions.
-
-**Enabling `--crowdsec` turns on Traefik access logging**, which grows unbounded by default —
-set up log rotation for it before traffic ramps up, same rationale as any other unbounded log file.
-
-### Log Rotation for Traefik's Access Log
-With `--crowdsec` enabled, Traefik writes its access log to
-`config/traefik/logs/access.log` relative to the installer's default install directory
-(`/opt/pangolin`), so the full host path is `/opt/pangolin/config/traefik/logs/access.log`. Nothing
-rotates this by default.
-
-**Create a logrotate config**:
-```bash
-$ sudo tee /etc/logrotate.d/pangolin-traefik > /dev/null <<'EOF'
-/opt/pangolin/config/traefik/logs/access.log {
-    daily
-    rotate 7
-    compress
-    delaycompress
-    missingok
-    notifempty
-    copytruncate
-}
+$ cat > /tmp/pangolin-check.sh <<'EOF'
+s() { printf '\n===== %s =====\n' "$1"; }
+s "systemd";     systemctl is-system-running; systemctl --failed --no-legend --plain
+s "containers";  podman ps -a --format '{{.Names}}\t{{.State}}\t{{.Status}}' </dev/null
+s "ports";       ss -tulpnH | awk '{print $1, $5, $7}' | sort -u
+s "tunnel";      podman exec gerbil ip -s link show wg0 </dev/null | grep -A1 -E 'RX|TX'
+s "crowdsec";    cscli bouncers list -o raw; podman exec crowdsec cscli bouncers list -o raw </dev/null
+s "geo";         grep -c '^ *- ' /var/lib/pangolin/config/traefik/dynamic/geo-allowlist.yml
+s "cert";        D=$(grep -oP 'dashboard_url: "https://\K[^"]+' /var/lib/pangolin/config/config.yml)
+                 echo | openssl s_client -connect 127.0.0.1:443 -servername "$D" 2>/dev/null \
+                   | openssl x509 -noout -enddate -ext subjectAltName
+s "alerts";      for f in /var/lib/alerts/*.state; do printf '%s: ' "${f##*/}"; [ -s "$f" ] && cat "$f" || echo ok; done
+s "resources";   free -h | head -2; podman stats --no-stream --format '{{.Name}}\t{{.MemUsage}}' </dev/null
 EOF
+$ sudo bash /tmp/pangolin-check.sh
 ```
+Writing it to a file matters: piping a script into `bash` through a heredoc lets the first command
+that reads stdin (several `podman` subcommands do) swallow the rest of it silently.
 
-***`copytruncate` is required, not optional*** — Traefik runs inside a container holding an open
-file handle to this log. A normal rotate-then-reopen cycle needs the process to notice the file was
-renamed and open a fresh one, which means signaling the containerized process specifically
-(`docker kill -s HUP <container>`, if Traefik even honors that signal for log reopening). Since this
-log only feeds CrowdSec's traffic analysis rather than serving as a long-term audit trail,
-`copytruncate` (copy the current contents, then truncate the original file in place) is the
-simpler, container-agnostic option — Traefik keeps writing to the same inode the whole time, no
-signal needed. The small tradeoff is a handful of log lines written in the brief window between the
-copy and the truncate can be lost, which is an acceptable loss for this use case.
+Healthy means: no failed units; all four containers running (pangolin and crowdsec `(healthy)`);
+only the [expected ports](#ports-and-firewall); `wg0` RX/TX non-zero and climbing once a site is
+connected; both bouncers registered; thousands of geo entries; SANs `DNS:<domain>, DNS:*.<domain>`
+with expiry more than ~30 days out; all alert states `ok`.
 
-**Verify it's picked up**:
+### Alerts
+`services.native.alerts` pushes to ntfy, and the Pangolin module registers itself with it - nothing
+to configure per host beyond the `alerts/ntfyTopic` secret:
+
+* **Failed units** - every 5 minutes, on change.
+* **Containers** - every 5 minutes: alerts when one of the stack's containers is missing, stopped or
+  unhealthy while `pangolin-stack` is active. A oneshot compose unit stays `active` however its
+  containers fare, so the failed-unit check alone never sees a crash-looping container. Every
+  `oci-containers` service on any host (e.g. the homelab's Newt) is registered automatically too,
+  plus a restart-count check that catches containers crash-looping too slowly to ever mark their
+  unit failed.
+* **Daily security digest** - rejected SSH logins plus active decisions from *both* CrowdSec
+  engines.
+* **Image updates** - daily, compares every pinned tag against the project's latest GitHub release
+  and alerts when the set of outdated images changes. The `ee-` prefix is stripped for the comparison
+  and re-added in the alert (so it names the exact tag to pull); Traefik's floating `v3.7`-style tag
+  is compared by minor version only. A notice is never an update - bumping stays deliberate.
+
+### Updating Images
+1. Read the release notes - especially CrowdSec and Traefik
+2. Bump the tag in the host's `configuration.nix` and `./clu build`
+
+The changed compose file restarts `pangolin-stack`, whose start always runs `podman-compose down`
+first, so all four containers are recreated together. That also sidesteps the classic
+[gerbil-alone update](#troubleshooting) breakage, since Traefik lives in Gerbil's network namespace.
+
+### Logs
 ```bash
-$ sudo logrotate -d /etc/logrotate.d/pangolin-traefik
+$ sudo journalctl -u pangolin-stack -b         # stack start/stop + all container output
+$ sudo podman logs --since 1h traefik          # Traefik's general log (stdout)
+$ sudo tail -f /var/lib/pangolin/config/traefik/logs/access.log
 ```
-`-d` is a dry run — confirms the config parses and shows what it *would* do without actually
-rotating anything.
+Container output is attributed to `pangolin-stack` in the journal (the log processes run in its
+cgroup) and logged at error priority regardless of content, so `journalctl -p err` is mostly noise -
+CrowdSec's healthcheck alone logs a `POST /v1/watchers/login` every 10 seconds.
 
-### Extend Monitoring & Alerts for Pangolin
-The `ntfy` alerting set up in the
-[hardening doc's Monitoring & Alerts](../../../system/ubuntu/hardening/README.md#monitoring--alerts)
-section only watches host-level state — it has two blind spots once Pangolin's stack is running,
-both worth closing using the same `ntfy` topic already configured.
-
-#### Docker Container Health Isn't Covered by check-failed-units.sh
-That script greps `systemctl --failed`, which only sees systemd units. If Pangolin, Gerbil,
-Traefik, or Newt crash-loops or exits, `docker.service` itself stays `active` the whole time —
-nothing in the existing alerting notices. Add a parallel check scoped to the Pangolin stack,
-following the same diff-on-change pattern as `check-failed-units.sh` so a still-down container
-doesn't re-page every run:
-```bash
-$ sudo tee /usr/local/sbin/check-pangolin-containers.sh > /dev/null <<'EOF'
-#!/bin/bash
-set -euo pipefail
-COMPOSE_FILE=/opt/pangolin/docker-compose.yml
-STATE_FILE=/var/lib/check-pangolin-containers.state
-DEFINED=$(docker compose -f "$COMPOSE_FILE" config --services | sort)
-RUNNING=$(docker compose -f "$COMPOSE_FILE" ps --services --filter "status=running" | sort)
-DOWN=$(comm -23 <(echo "$DEFINED") <(echo "$RUNNING"))
-PREV=$(cat "$STATE_FILE" 2>/dev/null || true)
-if [ "$DOWN" != "$PREV" ]; then
-  if [ -n "$DOWN" ]; then
-    curl -sf -H "Title: Pangolin container(s) down on $(hostname)" -H "Priority: high" \
-      -d "$DOWN" https://ntfy.sh/<your-private-topic-name>
-  else
-    curl -sf -H "Title: Pangolin containers recovered on $(hostname)" \
-      -d "All Pangolin containers are running again" https://ntfy.sh/<your-private-topic-name>
-  fi
-fi
-echo "$DOWN" > "$STATE_FILE"
-EOF
-$ sudo chmod +x /usr/local/sbin/check-pangolin-containers.sh
-```
-`comm -23` reports service names present in `DEFINED` but absent from `RUNNING` — i.e. anything
-defined in the compose file that isn't currently up. This is a best-effort check, not a
-substitute for Docker health checks: a container mid-restart-loop can flap between `running` and
-`restarting` faster than the polling interval, so a persistent crash loop is guaranteed to be
-caught eventually but a brief blip might be missed between runs.
-
-**Schedule it** on the same 5-minute cadence as `check-failed-units.timer`:
-```bash
-$ sudo tee /etc/systemd/system/check-pangolin-containers.timer > /dev/null <<'EOF'
-[Unit]
-Description=Check Pangolin container health every 5 minutes
-
-[Timer]
-OnBootSec=2min
-OnUnitActiveSec=5min
-
-[Install]
-WantedBy=timers.target
-EOF
-$ sudo tee /etc/systemd/system/check-pangolin-containers.service > /dev/null <<'EOF'
-[Unit]
-Description=Check Pangolin container health
-
-[Service]
-Type=oneshot
-ExecStart=/usr/local/sbin/check-pangolin-containers.sh
-EOF
-$ sudo systemctl daemon-reload
-$ sudo systemctl enable --now check-pangolin-containers.timer
-```
-
-#### The Security Review Digest Only Reports the Host-Level CrowdSec Engine
-Per the [Two Separate Engines](#crowdsec-two-separate-engines-by-design) decision above, Pangolin's
-`--crowdsec` runs its own engine inside Docker for Traefik/HTTP traffic — a completely separate
-`cscli` context from the host one the
-[Security Review Digest](../../../system/ubuntu/hardening/README.md#security-review-digest) script
-already queries. Extend `security-digest.sh` with a second `cscli` call, run inside the container,
-so one daily digest covers both engines instead of just the host one:
-```bash
-$ sudo sed -i \
-  '/^CS_DECISIONS=/a CS_HTTP_DECISIONS=$(docker exec crowdsec cscli decisions list -o raw 2>/dev/null | tail -n +2 | wc -l || echo 0)' \
-  /usr/local/sbin/security-digest.sh
-$ sudo sed -i \
-  's/^Active Crowdsec bans: \$CS_DECISIONS$/Active Crowdsec bans (host\/SSH): $CS_DECISIONS\nActive Crowdsec bans (Traefik\/HTTP): $CS_HTTP_DECISIONS/' \
-  /usr/local/sbin/security-digest.sh
-```
-`crowdsec` here is the container name Pangolin's compose stack uses for its bundled CrowdSec
-engine — confirm this matches your actual `docker ps` output before relying on the sed, since a
-custom compose override could rename it. Verify the edit landed correctly with
-`sudo cat /usr/local/sbin/security-digest.sh` before the next scheduled run, and re-run the digest
-manually once to confirm both counts appear in the `ntfy` push.
-
-#### Alert on New Upstream Image Versions
-Every image in `docker-compose.yml` is pinned to a specific tag (see
-[Write docker-compose.yml](#write-docker-composeyml) above) — good for reproducibility, but it means
-none of them update themselves, and nothing currently notices when upstream ships a new release.
-Check each project's latest GitHub release against the tag actually pinned in `docker-compose.yml`,
-and push an `ntfy` alert only when that comparison changes — same diff-on-change pattern as
-[Alert on Service Failures](../../../system/ubuntu/hardening/README.md#alert-on-service-failures) so
-a still-outdated pin doesn't re-page every run:
-```bash
-$ sudo tee /usr/local/sbin/check-pangolin-image-versions.sh > /dev/null <<'EOF'
-#!/bin/bash
-set -euo pipefail
-COMPOSE_FILE=/opt/pangolin/docker-compose.yml
-STATE_FILE=/var/lib/check-pangolin-image-versions.state
-
-latest_tag() {
-  curl -sf "https://api.github.com/repos/$1/releases/latest" \
-    | grep -oP '"tag_name":\s*"\K[^"]+'
-}
-
-PANGOLIN_CUR=$(grep -oP 'fosrl/pangolin:\K\S+' "$COMPOSE_FILE")
-GERBIL_CUR=$(grep -oP 'fosrl/gerbil:\K\S+' "$COMPOSE_FILE")
-TRAEFIK_CUR=$(grep -oP 'docker\.io/traefik:\K\S+' "$COMPOSE_FILE")
-CROWDSEC_CUR=$(grep -oP 'crowdsecurity/crowdsec:\K\S+' "$COMPOSE_FILE")
-
-PANGOLIN_LATEST=$(latest_tag fosrl/pangolin)
-GERBIL_LATEST=$(latest_tag fosrl/gerbil)
-CROWDSEC_LATEST=$(latest_tag crowdsecurity/crowdsec)
-TRAEFIK_LATEST=$(latest_tag traefik/traefik | grep -oP '^v\d+\.\d+')
-
-# Re-add the ee- prefix for display/comparison if the pinned tag carries one, so the
-# reported target is the actual pullable image tag (ee-1.22.0), not the bare GitHub
-# release number (1.22.0) — which is also a real, but different, CE-only image tag.
-PANGOLIN_LATEST_DISPLAY=$PANGOLIN_LATEST
-[[ "$PANGOLIN_CUR" == ee-* ]] && PANGOLIN_LATEST_DISPLAY="ee-$PANGOLIN_LATEST"
-
-REPORT=""
-if [ "${PANGOLIN_CUR#ee-}" != "$PANGOLIN_LATEST" ]; then
-  REPORT+="pangolin: $PANGOLIN_CUR -> $PANGOLIN_LATEST_DISPLAY"$'\n'
-fi
-if [ "$GERBIL_CUR" != "$GERBIL_LATEST" ]; then
-  REPORT+="gerbil: $GERBIL_CUR -> $GERBIL_LATEST"$'\n'
-fi
-if [ "$TRAEFIK_CUR" != "$TRAEFIK_LATEST" ]; then
-  REPORT+="traefik: $TRAEFIK_CUR -> $TRAEFIK_LATEST (new minor/major series)"$'\n'
-fi
-if [ "$CROWDSEC_CUR" != "$CROWDSEC_LATEST" ]; then
-  REPORT+="crowdsec: $CROWDSEC_CUR -> $CROWDSEC_LATEST"$'\n'
-fi
-
-PREV=$(cat "$STATE_FILE" 2>/dev/null || true)
-if [ "$REPORT" != "$PREV" ] && [ -n "$REPORT" ]; then
-  curl -sf -H "Title: Pangolin stack: new image version(s) available" \
-    -d "$REPORT" https://ntfy.sh/<your-private-topic-name>
-fi
-echo "$REPORT" > "$STATE_FILE"
-EOF
-$ sudo chmod +x /usr/local/sbin/check-pangolin-image-versions.sh
-```
-***`traefik` is compared by minor version only, not exact tag*** — `docker-compose.yml` pins
-`v3.7`, a Docker Hub floating tag Traefik itself republishes on every `v3.7.x` patch (confirmed in
-this VPS's own logs: the `v3.7` tag resolved to `Traefik version 3.7.10` at pull time). Comparing
-that against GitHub's latest *patch* release (`v3.7.10`, `v3.7.11`, ...) would false-positive on
-every single patch even though `v3.7` already tracks them automatically — only a new minor/major
-series (`v3.8`, `v4.0`) is actually actionable here. `pangolin`, `gerbil`, and `crowdsec` are pinned
-to an exact patch, so those three compare exactly.
-
-***`pangolin`'s `ee-` prefix is stripped before comparing, but re-added before reporting*** — if
-you've switched to [Enterprise Edition](#enable-enterprise-edition), `docker-compose.yml` pins
-something like `ee-1.21.1`, but GitHub's `releases/latest` API for `fosrl/pangolin` reports bare
-version numbers (`1.21.1`, no `ee-`/`v` prefix — EE and CE ship from the same release, as separate
-image tags for the same version). Comparing the raw pinned tag against that would false-positive
-every single run, flagging a match as a mismatch forever. The `${PANGOLIN_CUR#ee-}` strip handles
-that for the *comparison* — but the target version in the alert text must not reuse the same
-stripped value, since `1.22.0` and `ee-1.22.0` are two different, independently-tagged images and
-only one of them is what an EE install should actually pull. `PANGOLIN_LATEST_DISPLAY` re-adds the
-`ee-` prefix for reporting whenever the pinned tag had one, so the alert reads `ee-1.21.1 ->
-ee-1.22.0` — the exact tag to pull next — not the ambiguous bare `1.22.0`. Harmless no-op on a CE
-install, since a CE tag has no `ee-` prefix to strip or re-add.
-
-**Schedule it** daily — a version check doesn't need the 5-minute cadence the health/failure checks
-use:
-```bash
-$ sudo tee /etc/systemd/system/check-pangolin-image-versions.timer > /dev/null <<'EOF'
-[Unit]
-Description=Check for new upstream Pangolin stack image versions daily
-
-[Timer]
-OnCalendar=*-*-* 09:00:00
-Persistent=true
-
-[Install]
-WantedBy=timers.target
-EOF
-$ sudo tee /etc/systemd/system/check-pangolin-image-versions.service > /dev/null <<'EOF'
-[Unit]
-Description=Check for new upstream Pangolin stack image versions
-
-[Service]
-Type=oneshot
-ExecStart=/usr/local/sbin/check-pangolin-image-versions.sh
-EOF
-$ sudo systemctl daemon-reload
-$ sudo systemctl enable --now check-pangolin-image-versions.timer
-```
-
-**Test it manually** before trusting the timer:
-```bash
-$ sudo /usr/local/sbin/check-pangolin-image-versions.sh
-$ cat /var/lib/check-pangolin-image-versions.state
-```
-An empty state file means everything's current. To confirm the `ntfy` push itself actually fires,
-temporarily edit one `*_CUR` line's comparison (or just downgrade a tag in a scratch copy of
-`docker-compose.yml` pointed at by a throwaway `COMPOSE_FILE` value) rather than waiting for a real
-upstream release.
-
-**A version notice isn't an auto-update** — bumping a tag in `docker-compose.yml` and running
-`docker compose up -d` is still a manual, deliberate step (see
-[Manual Install](#manual-install-docker-compose) above for how each tag was originally chosen and
-pinned). Read the project's release notes first, especially for `crowdsec` and `traefik`, before
-bumping — a breaking change landing via unattended automation is exactly what pinning was meant to
-prevent in the first place.
-
-### Troubleshooting
-When one of the `ntfy` pushes wired up above (or the host-level ones from the
-[hardening doc](../../../system/ubuntu/hardening/README.md#monitoring--alerts)) reports something —
-e.g. a "Daily security digest" showing failed SSH password attempts — see
-[Alert Recon](../../../security/alert_recon/README.md) for the full triage sequence: reading the raw
-log, checking each ban mechanism's own status independently (`fail2ban`, host-level `cscli`, and —
-per the [Two Separate Engines](#crowdsec-two-separate-engines-by-design) split above — Pangolin's own
-Dockerized `crowdsec` engine separately from the host one), catching config typos that pass
-validation but silently do nothing, and testing a ban safely without disconnecting your own session.
-
-#### Updating gerbil Alone Breaks traefik's Networking
-`traefik` has no ports or network of its own — `network_mode: service:gerbil` in `docker-compose.yml`
-makes it share `gerbil`'s network namespace outright (see [Write docker-compose.yml](#write-docker-composeyml)
-above), which is how it sees traffic arriving on the ports `gerbil` publishes. That namespace is tied
-to `gerbil`'s specific *container*, not just its name — bumping only `gerbil`'s image tag and running
-`sudo docker compose up -d gerbil` recreates `gerbil` as a new container with a new namespace, but
-leaves the running `traefik` container still attached to the old, now-stopped one. The dashboard and
-every resource go unreachable, and `traefik`'s own logs show DNS failures that look unrelated to the
-real cause:
-```
-dial tcp: lookup pangolin on 127.0.0.11:53: read udp 127.0.0.1:xxxxx->127.0.0.11:53: read: connection refused
-```
-That's Docker's embedded DNS resolver being unreachable — expected once `traefik` is orphaned in a
-dead network namespace, since that namespace no longer has a working resolver behind it.
-
-**Confirm this is what happened** — compare `traefik`'s pinned namespace against `gerbil`'s actual
-current container ID:
-```bash
-$ sudo docker inspect traefik --format '{{.HostConfig.NetworkMode}}'
-$ sudo docker ps --filter name=gerbil --format '{{.ID}}'
-```
-If the ID inside `traefik`'s `container:<id>` output doesn't match `gerbil`'s current ID, this is it.
-
-**Fix** — recreate `traefik` alongside `gerbil` any time `gerbil` is updated, so Compose re-attaches
-it to the new namespace instead of leaving it pinned to the old one:
-```bash
-$ sudo docker compose up -d gerbil traefik
-```
-`pangolin` and `crowdsec` don't share `gerbil`'s namespace, so they're unaffected either way and don't
-need to be included. No need to recreate the whole stack (`docker compose down && up -d`) for a
-`gerbil`-only update — just remember `gerbil`+`traefik` are a package deal.
-
-### Harden Beyond the Quick Install Defaults
-Everything above reproduces what quick install gives you out of the box — a working instance, not
-a hardened one. Every setting below was checked directly against Pangolin's application source
-(`server/lib/readConfigFile.ts`'s zod schema for defaults, and the actual consuming code for whether
-a setting does anything at all) rather than the docs pages alone — two schema fields turned out to
-be unused dead weight once traced through the code, called out explicitly below rather than silently
-included. Add these to `config/config.yml` and restart:
-
-```yaml
-server:
-    # ...existing keys above (secret, maxmind_db_path, cors, etc.) stay as-is...
-    trust_proxy: 1
-    dashboard_session_length_hours: 24
-    resource_session_length_hours: 168
-
-rate_limits:
-    global:
-        window_minutes: 1
-        max_requests: 100
-
-traefik:
-    additional_middlewares:
-        - "security-headers@file"
-
-app:
-    # ...existing keys above (dashboard_url, log_level, telemetry) stay as-is...
-    save_logs: true
-    log_failed_attempts: true
-```
-```bash
-$ sudo docker compose restart pangolin
-```
-
-* **`trust_proxy: 1`** — how many proxy hops Pangolin trusts when reading the client IP from
-  forwarded headers. `1` is correct for this deployment specifically because Traefik is the *only*
-  proxy hop in front of Pangolin (Cloudflare's own proxying is disabled per
-  [Configure DNS](#configure-dns) above, so DNS resolves straight to the VPS). Leaving this unset
-  relies on the app's own default rather than a value this doc has verified matches the actual
-  topology — set it explicitly so a future change (e.g. turning Cloudflare proxying back on) is a
-  deliberate bump to `2`, not a silent mismatch. Getting this wrong doesn't just log the wrong IP —
-  every IP-based [Resource Rule](#how-access-control-works) (CIDR/geo/ASN) and `rate_limits.global`
-  below would evaluate against the wrong address if `trust_proxy` doesn't match the real hop count.
-* **`rate_limits.global`** — confirmed wired in
-  [`server/apiServer.ts`](https://github.com/fosrl/pangolin/blob/main/server/apiServer.ts) via
-  `express-rate-limit`, applied to every API route. Absent entirely from quick install's
-  `config.yml`, meaning the app-side default of `500` requests/minute applies unless set — `100`
-  here is a real tightening, not just documentation. ***`rate_limits.auth` is deliberately omitted
-  above*** — it exists in the config schema with the same shape, but tracing it through
-  `apiServer.ts`, `internalServer.ts`, and `server/routers/auth/login.ts` found no code that actually
-  reads it; setting it would be a no-op today, not a second layer of protection. `rate_limits.global`
-  already covers login requests too, since auth endpoints are still API routes.
-* **`traefik.additional_middlewares: ["security-headers@file"]`** — the single highest-value fix in
-  this section. Confirmed in
-  [`server/lib/traefik/getTraefikConfig.ts`](https://github.com/fosrl/pangolin/blob/main/server/lib/traefik/getTraefikConfig.ts):
-  every router Pangolin generates dynamically (i.e. *every resource you expose through the
-  dashboard* — Jellyfin, Vaultwarden, anything) gets `[badgerMiddlewareName, ...additionalMiddlewares]`
-  as its middleware chain. Without this key, the `security-headers` middleware defined in
-  `dynamic_config.yml` above only ever applies to Pangolin's own dashboard routers
-  (`next-router`/`api-router`/`ws-router`) — every resource you actually add is missing it entirely.
-  `crowdsec@file` doesn't have this gap since it's applied at the `websecure` *entry point* in
-  `traefik_config.yml`, which covers every router regardless of which provider created it — the
-  contrast between how these two middlewares needed to be wired is exactly why this was worth
-  tracing through source instead of assuming symmetry. `security-headers@file` uses the `@file`
-  provider suffix since that middleware is defined in the static `dynamic_config.yml`, not generated
-  by Pangolin itself.
-* **`traefik.rate_limit` (`average`/`burst`) is not included above** — it exists in the config
-  schema (`server/lib/readConfigFile.ts`) with defaults `average: 30`/`burst: 50`, but grepping
-  `getTraefikConfig.ts` and `TraefikConfigManager.ts` found no code path that reads it. Treat it as
-  unverified/possibly-unused rather than a real Traefik-level rate limit — don't rely on it as a
-  control.
-* **`save_logs`/`log_failed_attempts`** — both confirmed wired, unlike the two settings above.
-  `save_logs` (in [`server/logger.ts`](https://github.com/fosrl/pangolin/blob/main/server/logger.ts))
-  is what the mystery `config/logs` directory (created during
-  [Create the Install Directory](#create-the-install-directory), mounted nowhere by the compose file)
-  is actually for: a `winston` `DailyRotateFile` transport, 20MB/7-day retention. `log_failed_attempts`
-  (in `server/routers/auth/login.ts`) logs both wrong-password and wrong-TOTP-code attempts by name —
-  distinct from CrowdSec's Traefik-log view and the hardening doc's host-level
-  [Security Review Digest](../../../system/ubuntu/hardening/README.md#security-review-digest) —
-  worth wiring into that same digest later once you've confirmed the log format.
-* **`dashboard_session_length_hours`/`resource_session_length_hours`** — both default to `720`
-  (30 days) if left unset. That's a long-lived session for an admin-facing dashboard specifically;
-  `24` hours here is a reasonable tightening for the dashboard while `168` (one week) stays generous
-  for end users hitting resources day to day — adjust either to taste. Pangolin's dashboard also has
-  per-org session/password-rotation policy pages
-  ([Session Length](https://docs.pangolin.net/manage/access-control/session-length),
-  [Password Rotation](https://docs.pangolin.net/manage/access-control/password-rotation)) that layer
-  on top of this install-wide default — set the install-wide value first, then tune per-org policy
-  once you have real users.
+Traefik's *access* log is a file rather than stdout because the container CrowdSec reads it through
+a shared mount. logrotate rotates it daily and then sends Traefik `USR1`, Traefik's documented hook to
+reopen its log files. Without that, Traefik keeps writing to the renamed `access.log.1` - outside
+CrowdSec's `*.log` acquisition glob - blinding it from the first rotation on.
 
 ### Back Up Pangolin's State
-No official Pangolin backup/restore guide exists — checked the docs index directly, nothing under
-self-host or operations covers it. What actually needs preserving, traced through
-[`server/db/sqlite/driver.ts`](https://github.com/fosrl/pangolin/blob/main/server/db/sqlite/driver.ts)
-and this doc's own file layout:
-* **`config/db/db.sqlite`** — the entire app database: users, orgs, sites, resources, sessions.
-  Confirmed via source, not assumed — `APP_PATH` resolves to `config`, so the DB really does live at
-  the bind-mounted path this doc already creates, not somewhere unmounted that would silently vanish
-  on container recreation.
-* **`config/config.yml`** — includes `server.secret`, which signs every existing session; losing it
-  invalidates all logged-in sessions even if you restore the database.
-* **`config/letsencrypt/acme.json`** — Let's Encrypt's issued certs and account key. Losing this
-  means re-issuing from scratch, which is rate-limited by Let's Encrypt itself, not just slow.
-* **`config/traefik/`**, **`config/crowdsec/`**, **`docker-compose.yml`** — all hand-written earlier
-  in this doc, so technically reproducible from this doc alone, but restoring from a live backup is
-  faster than re-typing every file and re-registering the CrowdSec bouncer key.
+***Not automated yet*** - there's no `backup-pangolin` unit. What has to survive losing the VPS:
+* **`config/db/db.sqlite`** - users, orgs, sites, resources. Copy with `sqlite3 .backup`, not `cp`,
+  for a consistent snapshot.
+* **`config/letsencrypt/acme.json`** - certificates and the ACME account; re-issuing from scratch is
+  rate-limited by Let's Encrypt.
+* **`config/crowdsec/db/` and `state/`** - CrowdSec history, the bouncer key, the cached US list.
 
-**Back up on a schedule** — same `tar`-the-`config`-directory approach the installer's own
-`backupConfig()` uses internally before modifying an existing install, just scheduled instead of
-one-off:
-```bash
-$ sudo mkdir -p /opt/pangolin-backups
-$ sudo tee /usr/local/sbin/backup-pangolin.sh > /dev/null <<'EOF'
-#!/bin/bash
-set -euo pipefail
-cd /opt/pangolin
-tar -czf "/opt/pangolin-backups/pangolin-$(date +%F).tar.gz" config docker-compose.yml
-find /opt/pangolin-backups -name 'pangolin-*.tar.gz' -mtime +14 -delete
-EOF
-$ sudo chmod +x /usr/local/sbin/backup-pangolin.sh
-$ (sudo crontab -l 2>/dev/null; echo "0 4 * * * /usr/local/sbin/backup-pangolin.sh") | sudo crontab -
-```
-`-mtime +14` keeps two weeks locally, trimming older archives automatically so this doesn't quietly
-fill the disk over months.
+Everything else (`config.yml`, compose, Traefik, CrowdSec config) is regenerated from Nix and the
+secrets. The fleet pattern to follow is the one in `services.native.vaultwarden`: a `backupDir`
+forwarded from `host.backupDir`, a nightly `backup-<name>` unit, and registration in
+`services.native.alerts.backup.services`. A local copy on the same VPS doesn't protect against
+losing the VPS, so pull it to the homelab over the tunnel.
 
-***`04:00`, not `03:00`*** — deliberately scheduled an hour after the hardening doc's
-[unattended-upgrades reboot window](../../../system/ubuntu/hardening/README.md#automatic-updates):
-a `tar` mid-reboot risks an incomplete archive, and `config/` should reflect the post-reboot state
-anyway if a package update changed anything under it. See the hardening doc's
-[Scheduled Job Times](../../../system/ubuntu/hardening/README.md#scheduled-job-times) for how this
-slots in alongside its own cron/timer jobs on the same VPS.
-
-***A local backup on the same VPS doesn't protect against losing the VPS itself*** — same reasoning
-as [Ship Logs Off-Box](#ship-logs-off-box) above. If you've already got the homelab-side `rsyslog`
-receiver from that section, reuse the same WireGuard tunnel to pull backups off-box too, e.g. a
-nightly `scp`/`rsync` from the homelab host pulling `/opt/pangolin-backups/` over the tunnel address
-rather than the public internet.
-
-**Restoring**: stop the stack, replace `config/` and `docker-compose.yml` with the backup's
-contents, start it back up:
-```bash
-$ sudo docker compose down
-$ cd /opt/pangolin && sudo tar -xzf /opt/pangolin-backups/pangolin-<date>.tar.gz
-$ sudo docker compose up -d
-```
-Untested against an actual disaster on this specific deployment — worth doing a dry-run restore
-(to a scratch directory, `docker compose -p pangolin-restore-test up -d` with different host ports)
-before trusting this procedure blind in a real outage.
+## Troubleshooting
+| Symptom | Cause / fix |
+| ------- | ----------- |
+| A removed port (e.g. `443/udp`) still listening after a rebuild | A stale container survived. podman-compose 1.6.0 does detect a changed service's config hash, but only recreates *running* dependents with it - at boot everything is exited, so changing gerbil skips traefik (which shares gerbil's netns), podman refuses to remove gerbil, the create fails on the name in use, and podman-compose starts the stale container and exits 0. The stack now always runs `down` before `up`; `sudo systemctl restart pangolin-stack` forces the same. Check with `sudo podman inspect gerbil --format '{{.Created}}'` |
+| Newt: `lookup pangolin.<domain> ... no such host` | The endpoint doesn't resolve where Newt is. The `--add-host` pin fixes this - check `sudo podman exec newt cat /etc/hosts` |
+| Newt: `get token ... status code: 400`, `No newt found with that newtId` | The site doesn't exist on *this* Pangolin (different instance, deleted, DB reset). Create it and update `id` + `newt/clientSecret` |
+| Newt: `Secret is incorrect` | ID exists, secret doesn't match - secrets are only shown at creation, so recreate the site |
+| Newt: `Websocket connected` then `No exit nodes provided` | `NO_CLOUD` set against an EE server - see [Why NO_CLOUD Is Not Set](#why-no_cloud-is-not-set) |
+| Newt healthy, `wg0` RX/TX at 0 on the VPS | UDP 51820 not getting through - provider firewall, or `pangolin.ip` wrong in the egress rule |
+| No `/api/v1/auth/newt` requests in the access log at all | Newt never reached Traefik: DNS, egress `pangolin.ip`, or a TLS failure (TLS failures never reach the access log) |
+| Dashboard `403` from a LAN/trusted client | Geo-allowlist or a CrowdSec decision - check the address is in `allowList`, then `cscli decisions list` in the container |
+| Host `crowdsec.service` failing: `ParseAddr("x.x.x.x/24")` | A CIDR under a whitelist's `ip:` field. The module splits `ip`/`cidr` now; a stale generated whitelist is pruned by `crowdsec-prune-stale-links` |
+| Traefik logs DNS errors to `127.0.0.11` after only gerbil was recreated | Traefik is orphaned in gerbil's old network namespace - recreate both together; the stack's `down`-first start always does |
 
 ## Configure Pangolin
 
 ### Create Admin Account
-Before anything else in this section — sites, resources — Pangolin needs an admin account and a
-first organization. If you haven't already grabbed the setup token, see
-[Retrieve the Initial Setup Token](#retrieve-the-initial-setup-token) above.
-
 1. Visit `https://pangolin.<your-domain>`
-2. Enter the setup token pulled from the pangolin docker container logs
+2. Enter the setup token from [the pangolin container's log](#units-and-files)
 3. Create your admin account with a strong password
-4. Complete the account creation
 
 ### First Run Experience
 
@@ -2008,92 +674,57 @@ first organization. If you haven't already grabbed the setup token, see
 3. Click `Create Organization`
 
 #### Enable MFA on Your Account
-Considering this is a public facing portal you'll want extra protection on your account. TOTP is the
-only supported method out of the box. This only turns TOTP on for *your own* account — see
-[Enforce MFA Organization-Wide](#enforce-mfa-organization-wide) below to require it for every user
-instead of relying on each one to opt in individually.
-
-**References**
-* [Configure MFA - Pangolin docs](https://docs.pangolin.net/manage/access-control/mfa)
+This is a public facing portal, so add TOTP to your account. This only covers *your own* account -
+see [Enforce MFA Organization-Wide](#enforce-mfa-organization-wide) to require it for everyone.
 
 1. Click on your profile image in the top right
 2. Choose the `Enable Two-factor` menu option
 3. Enter your password for confirmation
-4. User your favorite authenticator app to complete the standard process
+4. Use your authenticator app to complete the standard process
 
-### Create a temp service to expose
-Before wiring in a real service, run something disposable through the whole chain
-(Newt → Gerbil → Traefik → your homelab) to confirm it actually works end-to-end.
-[`traefik/whoami`](https://github.com/traefik/whoami) is built for exactly this — it just echoes
-back the request it received (hostname, headers, source IP) as plain text, with no database, no
-auth, and nothing to secure or clean up beyond stopping the container:
+**References**
+* [Configure MFA - Pangolin docs](https://docs.pangolin.net/manage/access-control/mfa)
 
-```bash
-$ sudo podman run -d --rm --name whoami -p 8080:80 docker.io/traefik/whoami
-```
-
-**Open the test port on the homelab host's own firewall** — this step is easy to skip by mistake if
-you're used to Docker, but Podman doesn't behave the same way here. The
-[hardening doc](../../../system/ubuntu/hardening/README.md#firewall) notes that Docker inserts its
-own `iptables`/`nftables` rules *ahead of* `ufw`'s, bypassing the host firewall entirely for any
-published port. On a NixOS host with `nixos-fw` (also nftables-based), Podman's published port did
-***not*** get the same bypass — the host firewall still blocked it until an explicit accept rule was
-added:
-```bash
-$ sudo nft insert rule ip filter nixos-fw tcp dport 8080 counter accept
-```
-**Confirm the rule landed**:
-```bash
-$ sudo nft list chain ip filter nixos-fw | grep 8080
-```
-***This rule is temporary, not part of the declarative NixOS config*** — `nft insert` edits the
-live ruleset directly, so it disappears on the next `nixos-rebuild switch` (which regenerates
-`nixos-fw` from `networking.firewall.allowedTCPPorts` in config, not from whatever's live in the
-kernel). That's actually the right behavior for a throwaway test: nothing to remember to revert.
-If you want this port open permanently for a real service later, add it to
-`networking.firewall.allowedTCPPorts` in the host's NixOS config instead.
-
-**Confirm it's reachable on the LAN** before involving Pangolin at all — isolates whether a later
-problem is the tunnel or the container/firewall itself:
-```bash
-$ curl http://<homelab-host-ip>:8080
-```
-Should return plain text like `Hostname: <container-id>` plus the request headers.
-
-**Now expose it through Pangolin** the same way any other resource would be: [Add a Site](#add-a-site)
-and [Install Newt](#install-newt) if you haven't already, then [Create a Resource](#create-resource)
-pointing at `<homelab-host-ip>:8080`. Hitting `https://whoami.<your-domain>` afterward and seeing the
-same plain-text echo confirms the full path — Newt tunnel, Gerbil, Traefik, and (since the wildcard
-cert covers any new subdomain automatically) no extra Let's Encrypt request needed either.
-
-**Clean up when done**:
-```bash
-$ sudo podman stop whoami
-```
-The `--rm` flag on the original `run` means it's removed automatically the moment it stops — no
-separate `podman rm` needed. Delete the test Resource and Site in the dashboard too if they were
-only created for this.
-
-### Create a Site describing your server
-A site describes a server instance that may have one or more services your interested in exposing
-over Pangolin.
+### Create a Site for the Homelab
+A site is one Newt connection - one homelab host exposing any number of services.
 
 1. Navigate to `NETWORK >Sites` in the left hand navigation then click `+ Add Site`
-2. Choose `Newt Site (Recommended)`
-3. Set the `Name` e.g. `testlab`
-4. Normally you'd save the 3 credentials `Endpoint`, `ID` and `Secret` for the Newt client
-   However for this test they are all baked into the docker run string below
-5. Choose `Install Site >Operating System >Docker` and then `Method >Docker Run`
-6. Copy out the docker run string to be run later
-7. Now back in Pangolin click `Create Site`
-8. Disable the `Enable Docker Blueprint`
-9. Now paste the docker run into your local server and run it
+2. Choose `Newt Site (Recommended)` and set the `Name` e.g. `homelab`
+3. Save the three credentials - `Endpoint`, `ID` and `Secret`. ***The secret is only ever shown
+   here*** - there's no way to view it again, only to recreate the site
+4. Click `Create Site` and disable `Enable Docker Blueprint`
+5. Put them into the homelab's config ([Newt Host Args and Secrets](#newt-host-args-and-secrets)):
+   ```bash
+   $ sops hosts/homelab/args.enc.yaml       # services.oci.newt.id (+ pangolin.url/ip)
+   $ sops hosts/homelab/secrets.enc.yaml    # newt.clientSecret
+   ```
+6. `./clu build` on the homelab
+
+Dashboard-created sites always get generated credentials. (Pangolin's integration API's
+`PUT /org/{orgId}/site` accepts your own `newtId`/`secret`, but that API is off in this setup;
+Blueprints can't create sites at all - their `sites:` section only renames/configures existing ones.)
+
+**Confirm it connected** on the homelab:
+```bash
+$ sudo podman ps --filter name=newt --format '{{.Status}}'       # (healthy) after the 60s start period
+$ sudo podman logs --tail 10 newt 2>&1                           # "Tunnel connection to server established successfully!"
+```
+and on the VPS `wg0` RX/TX should be non-zero and climbing, and the site **Online** in the
+dashboard.
+
+### Verify the Tunnel End-to-End
+A connected site only proves Newt registered. Prove traffic flows by exposing one existing
+Caddy-fronted homelab service (e.g. Homarr) as a public resource, then from outside the LAN (or from a
+LAN client resolving the name to the VPS):
+```bash
+$ curl -I https://home.example.com
+```
+That service's response means VPS → tunnel → Newt → Caddy works. Because of
+[egress containment](#egress-containment), a throwaway container on an arbitrary port (the classic
+`traefik/whoami` test) is *not* reachable through Newt - only Caddy is.
 
 ### Access Control
-Pangolin resources describe and provide access to services. You can essentially think of a Pangolin
-resource as a service. Pangolin resources come in two flavors. First `public` refering to the fact
-that no special software is needed to access the resource, but it can be controlled and locked down
-if desired. Second `private` meaning you have to have the Pangolin client to connect at all.
+Pangolin resources come in two flavors:
 
 |                 | Public Resource                       | Private Resource (ZTNA)                                 |
 |-----------------|---------------------------------------|---------------------------------------------------------|
@@ -2102,172 +733,55 @@ if desired. Second `private` meaning you have to have the Pangolin client to con
 | Auth            | SSO redirect + cookie session         | Login to the client app itself                          |
 | Best for        | Web apps used in a browser            | Native apps, SSH, databases, anything not browser-based |
 
-All Pangolin resources are ***deny-by-default*** out of the box. You have to specifically edit and
-change their configuration to make them truely public.
+All Pangolin resources are ***deny-by-default***.
 
-#### Expose a public service over Pangolin
-Use the public resource when you want expose your service without the need for the Pangolin client.
-Think of anything that you'd interact with through a browser e.g. web site.
+***Private resources need Newt's client support, which this setup turns off*** (`DISABLE_CLIENTS`)
+- with it off, Newt never sets up client connections, so private resources can't route through the
+homelab site. Using them means dropping that flag from `services.oci.newt` *and* opening the egress
+rule to whatever the private resources target - a deliberate widening of what the Pangolin server can
+reach.
 
-1. Navigate to `NETWORK >Resources >Public` in the left hand navigation then click `+ Add Resource`
-2. Set the `Name` to e.g. `whoami`
-3. Choose the `Type` of service e.g. `HTTP`
-   * Note the type is what the service is on your LAN not how you want to expose through Pangolin
-4. Choose the `Subdomain` to expose it on e.g. `whoami.example.com`
-5. Click `+ Add Target`
-6. Choose the `Site` you configured for your server e.g. `testlab`
-7. Set the `Address` to your testlab server's LAN address e.g. `192.168.x.x`
-8. Set the `Port` to the port you exposed your test service on e.g. `8080`
-9. Click `Create Resource`
+#### Expose a Caddy-fronted service
+Every homelab service reachable through Newt sits behind Caddy, which terminates TLS and multiplexes
+apps on 443 by hostname. The target is therefore always the same:
 
-#### Expose a service fronted by Caddy over Pangolin
-Some homelab services aren't reachable directly by their own LAN IP:port — they sit behind a local
-Caddy reverse proxy that terminates TLS and multiplexes several apps on port 443 by hostname (see
-`services.raw.caddy` in the NixOS config). Pointing a Pangolin Resource straight at the app's own
-port would bypass Caddy entirely (and in the NixOS setup, that port usually isn't even published on
-the LAN — see `options/services/oci/newt.nix`), so the target has to go through Caddy instead, and
-Caddy has to be told which app to route to.
+1. `NETWORK >Resources >Public` → `+ Add Resource`, `Name` e.g. `homarr`, `Type` `HTTP`,
+   `Subdomain` e.g. `home.example.com`
+2. `+ Add Target`: `Site` = the homelab, `Scheme` = `https`, `Address` = `host.containers.internal`,
+   `Port` = `443`. `host.containers.internal` is pinned to Newt's own network gateway - reachable only
+   from inside Newt's namespace, and exactly what the egress rule allows
+3. If the public subdomain differs from the Caddy vhost, under
+   `HTTP Settings >Additional Proxy Settings` set **TLS Server Name** and **Custom Host Header** to
+   the vhost (e.g. `home.example.com`). Caddy routes on `Host`; a mismatch 502s
+4. Click `Create Resource`
 
-**The target is always the same, for every Caddy-fronted app**: `https://host.containers.internal:443`
-with `Enable TLS` on. `host.containers.internal` is a host alias Newt's container is given for its
-own network's gateway address — reachable only from inside Newt's namespace, never from the LAN — and
-Caddy listens on all interfaces, so it's reachable there. Since every app is multiplexed behind this
-one address/port, the target alone can't tell Caddy which app you mean — that's the job of the two
-fields below.
-
-1. Create the Resource same as [a public](#expose-a-public-service-over-pangolin) or
-   [private](#expose-a-private-service-over-pangolin) HTTP resource, but set the `Address` to
-   `host.containers.internal` and `Port` to `443`, `Scheme` to `https`
-2. Under `HTTP Settings >Additional Proxy Settings`, set:
-   * **TLS Server Name**: the app's Caddy vhost, e.g. `home.example.com` for Homarr. Caddy answers
-     every connection with its one wildcard cert (`*.example.com`), so without this the backend TLS
-     client verifies the cert against the wrong hostname (the literal target, `host.containers.internal`)
-     and the handshake fails before any HTTP request is sent — Pangolin reports this as a generic
-     `502 Bad Gateway` with nothing useful in Newt's own logs, since Newt just tunnels raw TCP bytes
-     and never sees inside the TLS session.
-   * **Custom Host Header**: the same value, e.g. `home.example.com`. This is what Caddy actually
-     routes on — its Caddyfile matches `@home host home.example.com` per app. Left empty, the request
-     arrives with the Resource's own public hostname as the `Host` header (e.g. `test2.example.com`),
-     which matches none of Caddy's per-app blocks, so it 502s even once TLS succeeds.
-3. Leave `TLS Server Name` and `Custom Host Header` as the *only* per-app difference — reuse the exact
-   same target `host.containers.internal:443` for every other Caddy-fronted app, just with its own
-   subdomain in those two fields.
-
-Note: Newt's HTTPS-resource proxying is known to not forward the real SNI on its backend connection at
-all (fosrl/pangolin#207), so Caddy's `default_sni` directive is what actually keeps the TLS handshake
-alive server-side, independent of whatever you type into `TLS Server Name` here — that field only
-controls hostname verification on Pangolin's end, it does not fix the missing on-wire SNI.
-
-#### Expose a private service over Pangolin
-Use the private resource when you have a service that is more nuanced, such as a custom API for an
-application e.g. hosting your own Vaultwarden but useing the Bitwarden app on your Android phone to
-access it.
-
-The `Type` field describes what the destination actually *is*, which determines what Pangolin does
-with the traffic once the client's tunnel is up:
-* **Host** — a single internal host/IP:port. Traffic to that exact destination is proxied through
-  the tunnel — the right choice for one specific service, e.g. Vaultwarden's container address.
-* **CIDR** — a whole subnet/range (e.g. `192.168.x.0/24`) instead of one host. Use this when the
-  client needs reach into a block of addresses rather than one service — broader blast radius than
-  `Host`, so scope it as tight as actually needed.
-* **HTTP** — the destination is a web service; Pangolin proxies it as HTTP(S) at the application
-  layer, same as a Public resource's proxying, just gated behind the client-tunnel requirement
-  instead of the SSO redirect.
-* **SSH** — the destination is an SSH server; lets Pangolin apply SSH-specific, protocol-aware
-  handling instead of treating it as an opaque TCP stream.
-
-##### Create HTTP Private Resource
-Unfortunately the HTTP Private resources don't work with Rerverse Proxies as they don't pass on the
-SNI values needed to map to the correct backend. However if you wanted to connect directly to the
-service its still an option.
-
-1. Navigate to `NETWORK >Resources >Private` in the left hand navigation then click `+ Add Resource`
-2. Set the `Name` to e.g. `whoami`
-3. Choose the `Type` of service e.g. `HTTP`
-   * Note the type here referes to the target service not how Pangolin exposes it
-4. Choose the `Subdomain` and `Base Domain` to expose it on e.g. `whoami.example.com`
-5. Choose the `Site` you configured for your server e.g. `testlab`
-6. Choose the `Scheme` appropriate for your service:
-   * `http` for raw HTTP service
-   * `http` for a Caddy HTTPS fronted service 
-7. Set the `Address` to the service from Newt's perspective:
-   * For standalong service use your server's LAN address e.g. `192.168.x.x`
-   * For Caddy HTTPS fronted service use `host.containers.internal`
-8. Set the `Port` to the port you exposed your test service:
-   * e.g. `8080` for standard service
-   * `443` for Caddy HTTPS fronted service
-9. Leave the `Enable TLS` on to ensure you get a Let's encrypt cert generated for the subdomain
-10. Click `Create Resource`
+Newt's HTTPS proxying doesn't send SNI on the backend connection (fosrl/pangolin#207), so Caddy's
+`default_sni` is what keeps the handshake alive - `TLS Server Name` only controls verification on
+Pangolin's side. Caddy sees all of this traffic from Newt's fixed container IP, which
+`modules/default.nix` adds to Caddy's `trustedProxies`, so backends (e.g. Vaultwarden's login rate
+limiting) see real client IPs from Traefik's `X-Forwarded-For`.
 
 #### Require Device Approval on Private Resources
-Private/ZTNA resources are reached through the Pangolin Client (Olm) app, not a browser — correct
-password + TOTP alone lets any device the user logs in from connect. Device approval closes that
-gap: even after correct credentials, a brand-new unrecognized device is blocked until an admin
-explicitly approves it from the dashboard. Devices are identified by fingerprint (OS version,
-hostname, etc.), so "Alice's iPhone" is distinguishable from any other device attempting to log in
-with her credentials, and a lost/compromised device can be revoked individually — archived, not
-deleted, preserving the audit trail — without touching the rest of her access.
+Even after correct credentials, a brand-new device is blocked until an admin approves it; devices
+are fingerprinted and can be revoked individually. **EE or Pangolin Cloud only.**
 
-**Requires Enterprise Edition or Pangolin Cloud** — see
-[Enable Enterprise Edition](#enable-enterprise-edition) above; Community/Professional don't have
-this control.
-
-***This is a per-role setting, not global or per-resource*** — there's no single toggle that
-covers every Private Resource at once. It has to be enabled on every non-admin role that has any
-Private Resource attached; a role you forget leaves its resources reachable from any device the
-first time correct credentials are entered. It also can't be enabled on the admin role.
-
-1. Identify every role with a Private Resource attached (e.g. `vaultwarden-family` from the
-   [case study](#case-study-locking-down-vaultwarden) below).
-2. Navigate to `Roles` in the left hand navigation.
-3. Click into one of those roles.
-4. Toggle `Require Device Approval` on.
-5. Repeat for every other non-admin role that grants access to a Private Resource.
-
-**Approving devices going forward**
-- The first time a user logs into the Pangolin Client app from a device Pangolin hasn't seen
-  before, it shows as `Pending Approval` instead of connecting.
-- A centralized approvals page in the dashboard lists pending devices as they come in — approve or
-  deny each one there.
-- Revoke a specific device any time (e.g. Alice loses her phone) without affecting her account's
-  other access.
+***Per-role, not global*** - enable `Require Device Approval` on every non-admin role with a Private
+Resource attached (`Roles` → role → toggle). A forgotten role leaves its resources reachable from any
+device. New devices then show as `Pending Approval` on the dashboard's approvals page.
 
 **References**
 * [Device Approvals - Pangolin Docs](https://docs.pangolin.net/manage/access-control/approvals)
 
 #### Enforce MFA Organization-Wide
-[Enable MFA on Your Account](#enable-mfa-on-your-account) above only turns TOTP on for the account
-that enables it — it relies on every other user opting in themselves. Organization-wide enforcement
-instead blocks *any* user from reaching resources until they've set up TOTP, without needing to
-chase each one down individually.
+Blocks every internal-account user from resources until they've set up TOTP. **EE or Pangolin Cloud
+only**, one org-wide toggle. Doesn't cover external IdP accounts (Google SSO users are governed by
+Google's MFA).
 
-**Requires Enterprise Edition or Pangolin Cloud** — same restriction as
-[device approval](#require-device-approval-on-private-resources); Community/Professional don't have
-this control.
-
-***Org-wide, not per-role*** — unlike device approval, this is a single toggle that applies to the
-whole organization at once, not something to repeat per role.
-
-***Doesn't cover external IdP accounts*** — if you've set up
-[Google as OAuth2 provider](#google-as-oauth2-provider), this policy only governs Pangolin's native
-username/password + TOTP accounts. A user authenticated through Google SSO is still gated by
-whatever MFA Google itself enforces on that account, not this toggle.
-
-1. Navigate to `Organization Settings` in the dashboard.
-2. Find the `Security` section.
-3. Under `Security Settings` toggle `Require Two-Factor Authentication for All Users` to on.
-4. Set the `Maximum Session Length` to `7 days`
-
-Once enabled, any internal-account user without TOTP configured is prompted to enable it before
-they can proceed — they're blocked from every resource until they do.
-
-**References**
-* [Configure MFA - Pangolin docs](https://docs.pangolin.net/manage/access-control/mfa)
+1. `Organization Settings` → `Security`
+2. Toggle `Require Two-Factor Authentication for All Users` on
+3. Set `Maximum Session Length` to `7 days`
 
 #### Remove restrictions from public service
-Resources in Pangolin are ***deny-by-default*** — nothing is reachable until you explicitly define
-a policy for who can reach it.
-
 1. Edit your resource
 2. Click the `Authentication` tab
 3. Toggle `Platform SSO` off
@@ -2275,45 +789,30 @@ a policy for who can reach it.
 #### Google as OAuth2 provider
 * [Setup GCP OAuth2](https://youtu.be/Bu8WFh1ns4c?t=655)
 
-**Auto-provisioning itself is available on Community**, and it's the actual mechanism for
-"log in with a Google email, no pre-created account needed" — don't confuse it with the native
-Google IDP type above. As of [Pangolin 1.4.0](https://github.com/orgs/fosrl/discussions/718), the
-project moved to full feature parity between Community and Professional editions: *"All features will
-always be available in BOTH the Professional and Community Edition of Pangolin."* (One older docs
-page still states auto-provisioning is Cloud/Enterprise-only — that appears to be stale relative to
-the 1.4.0 change; the GitHub announcement is the more specific, dated source and is confirmed
-accurate.) To use it:
-
-1. Configure Google as a generic OAuth2/OIDC identity provider (as above).
-2. Enable the **"Auth Provision Users"** toggle on that IDP.
-3. Set a role/org mapping — e.g. a JMESPath rule matching on email domain — using fixed roles, the
-   mapping builder, or a raw expression. Every role/org referenced must already exist in Pangolin
-   with exact, character-for-character name matching.
-4. The user visits the resource and authenticates with Google. On first successful login, Pangolin
-   auto-creates their account and applies the mapped role/org — no manual pre-provisioning needed.
+Auto-provisioning ("log in with a Google email, no pre-created account") is available on Community
+as of [Pangolin 1.4.0](https://github.com/orgs/fosrl/discussions/718):
+1. Configure Google as a generic OAuth2/OIDC identity provider
+2. Enable **"Auth Provision Users"** on that IDP
+3. Set a role/org mapping (e.g. a JMESPath rule on email domain); every referenced role/org must
+   already exist with an exact name match
+4. On first successful login Pangolin creates the account and applies the mapping
 
 #### Case Study: Locking Down Vaultwarden
-See [Vaultwarden Example](vault_example/README.md) for a full walkthrough — exposing Vaultwarden
-through Pangolin so that Pangolin's own identity layer (not just Vaultwarden's) gates *all*
-traffic, including the Bitwarden mobile app's API calls and not merely the browser-based web
-vault. Covers the `vaultwarden-family` role/device-approval setup, the upstream-source-verified fix
-for the Private HTTP resource SNI/Host-header gap, and how to apply it via the Pangolin API.
+See [Vaultwarden Example](vault_example/README.md). It relies on a Private resource - see the
+[`DISABLE_CLIENTS` note](#access-control) above before applying it to this setup.
 
 ### Using the Pangolin API
-See [Using the Pangolin API](api/README.md) for calling Pangolin's REST API directly — needed for
-resource fields (like `tlsServerName`/`setHostHeader` on a Private HTTP resource, per the
-[Vaultwarden Example](vault_example/README.md)) that aren't exposed in the dashboard form yet.
-Covers the two separate API servers Pangolin runs (only one accepts an API key — hitting the wrong
-one is a common source of a confusing generic `401 Unauthorized`), how to turn the key-gated one on
-without ever exposing it publicly, and how to create a properly scoped API key.
+See [Using the Pangolin API](api/README.md). The key-gated integration API (port 3003) is off in
+this setup. It can be enabled temporarily by hand - the module re-renders `config.yml` on every
+activation, which turns it back off - and reached over SSH at the container's bridge address, so
+3003 is never published.
 
 ### Configure Pangolin Client
 
 #### Android Client
-See [Android Client](android_client/README.md) for connecting from a phone, and — critically — the
-Private DNS and full-tunnel routing gotchas found troubleshooting it against a live instance.
+See [Android Client](android_client/README.md) for connecting from a phone, including the Private
+DNS and full-tunnel routing gotchas.
 
 #### Linux CLI (NixOS)
 See [NixOS Client](nixos_client/README.md) for installing `Pangolin CLI` via `nixpkgs`, logging in,
-and — critically — how routing scope and DNS overrides actually work so it doesn't silently take
-over the whole machine's network.
+and how routing scope and DNS overrides work so it doesn't take over the machine's network.
