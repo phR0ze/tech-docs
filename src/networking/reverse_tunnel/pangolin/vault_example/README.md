@@ -109,10 +109,18 @@ The original client's TLS `ClientHello` — real SNI included — reaches Caddy 
 exactly as if the client were on the LAN talking to Caddy directly. There's nothing to override
 because nothing in Pangolin is parsing the TLS session in the first place.
 
-This is also why a dedicated Caddy listener for the private path (rather than reusing the public
-resource's shared, SNI-multiplexed `443` vhost) earns its keep here: point `destination`/
-`destinationPort` straight at that listener's real LAN `IP:port`, and it needs zero Caddy-side
-changes — the SNI reaching it is genuinely correct, not routed around a gap.
+Unlike the Private HTTP gap above, this doesn't need a dedicated Caddy listener — the same shared,
+SNI-multiplexed `443` vhost the public resource already uses works unmodified, since the real
+`ClientHello` now reaches it intact.
+
+**Destination must be `host.containers.internal`, not the homelab's LAN IP.** Newt's site-connector
+container egress-filters outbound traffic to exactly its own podman gateway (which is what
+`host.containers.internal` resolves to inside the container) plus the Pangolin server itself — see
+the "Egress containment" notes in `nixos-config`'s `modules/services/oci/newt.nix`. Pointing
+`destination` at the host's LAN address (e.g. `192.168.x.x`) gets silently rejected by that rule:
+Newt logs `dial tcp <lan-ip>:443: connect: connection refused` and the tunnel never reaches Caddy,
+even though the site and Pangolin-side config both look correct. This is a real failure mode, not a
+hypothetical — it bit this exact setup live (`hosts/homelab`, 2026-10-08).
 
 ## Configure Vaultwarden for access outside your homelab
 The ***Ergonomics of the setup*** are that we want to be able to access our internal homelab
@@ -170,8 +178,12 @@ This is for configuring Pangolin proxy to Caddy over TCP for native applications
 3. Choose the `Type` as `Host`
 4. Set the Alias to the name you'd like e.g. `vault-vpn.example.com`
 5. Set the site e.g. `testlab`
-6. Set the destination to your internal LAN caddy service address e.g. `192.168.x.x`
-7. Set the `TCP` selection to `Custom` and the actual port value to your caddy service e.g. `433`
+6. Set the destination to `host.containers.internal` — **not** the homelab's LAN IP (e.g.
+   `192.168.x.x`). Newt's egress containment only allows outbound traffic to its own podman gateway
+   (what `host.containers.internal` resolves to inside the Newt container) and the Pangolin server
+   itself; a LAN IP destination is silently rejected (`connection refused` in Newt's logs) even
+   though the resource looks correctly configured. See the "Host mode resource solution" note above.
+7. Set the `TCP` selection to `Custom` and the actual port value to your caddy service e.g. `443`
 8. Set `UDP` to `Blocked`
 9. Disable ICMP and click `Create Resource`
 10. After creation switch to the `Authentication` tab and add the custom role that requires device
