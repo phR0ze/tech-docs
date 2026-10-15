@@ -165,9 +165,12 @@ This is for configuring Pangolin to proxy to Caddy meaning a HTTPS service with 
 9. Switch to the `HTTP Settings` tab
 10. Ensure `Enable TLS` is checked
 11. Set `TLS Server Name` to `vault.example.com`
+    * i.e. the value passed on to Caddy for identification
 12. Set `Custom Host Header` to `vault.example.com`
-13. Switch to the `Authentication` tab and add the custom role that requires device approval e.g.
-    `Family Device Approval`
+    * i.e. the value passed on to Caddy for identification
+13. Switch to the `Authentication` tab
+    * Ensure `Platform SSO` is enabled
+    * Select the `Roles` e.g. `Device Approval`
 14. Click `Save Settings`
 
 #### Create Private Host Resource
@@ -176,18 +179,14 @@ This is for configuring Pangolin proxy to Caddy over TCP for native applications
 1. Navigate in the Pangolin UI to `NETWORK >Resources >Private`
 2. Set the name e.g. `vault-vpn`
 3. Choose the `Type` as `Host`
-4. Set the Alias to the name you'd like e.g. `vault-vpn.example.com`
+4. Set the Alias to the SNI value that Caddy will recognize e.g. `vault-vpn.example.com`
 5. Set the site e.g. `testlab`
-6. Set the destination to `host.containers.internal` — **not** the homelab's LAN IP (e.g.
-   `192.168.x.x`). Newt's egress containment only allows outbound traffic to its own podman gateway
-   (what `host.containers.internal` resolves to inside the Newt container) and the Pangolin server
-   itself; a LAN IP destination is silently rejected (`connection refused` in Newt's logs) even
-   though the resource looks correctly configured. See the "Host mode resource solution" note above.
-7. Set the `TCP` selection to `Custom` and the actual port value to your caddy service e.g. `443`
+6. Set the destination to your internal LAN caddy service address `host.containers.internal`
+7. Set the `TCP` selection to `Custom` and the actual port value to your caddy service e.g. `433`
 8. Set `UDP` to `Blocked`
 9. Disable ICMP and click `Create Resource`
 10. After creation switch to the `Authentication` tab and add the custom role that requires device
-    approval e.g. `Family Device Approval`
+    approval e.g. `Device Approval`
 
 ### Device Setup Steps
 

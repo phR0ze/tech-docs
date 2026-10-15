@@ -12,6 +12,8 @@ mitigation.
 - [Overview](#overview)
   - [Homelab overview](#homelab-overview)
   - [Domain Name Registrar](#domain-name-registrar)
+  - [Configure DNS](#configure-dns)
+  - [Verify the Wildcard Record](#verify-the-wildcard-record)
 - [Let's Encrypt cert generation](#lets-encrypt-cert-generation)
   - [Cloudflare API token](#cloudflare-api-token)
   - [Caddy](#caddy)
@@ -54,6 +56,38 @@ chains to a trusted CA (usually Let's Encrypt in both cases).
 The first thing you need is to purchase a domain name to then use with Cloudflare DNS. There are 
 numerous registrars but Cloudflare is reliable, keeps prices steady and integrates well with the 
 rest of their system.
+
+### Configure DNS
+1. From the Cloudflare console navigate to `Domains >Overview`
+2. Choose the options menu to the right of your domain e.g. `example.com` and click `Configure DNS`
+   * Alternately if you're already on the target domain config page use `DNS >Records`
+3. Click the `Add record` button
+4. Set `Type` to `A` and set `Name` to wildcard `*`
+5. Set the `IPv4 address` to your VPS's public IP address
+6. Flip the `Proxied` toggle to disable it
+7. Leave `TTL` at `Auto`
+8. Click `Save`
+
+***The public wildcard and the homelab's split-horizon DNS work together*** - LAN clients use the
+homelab's AdGuard (`services.native.adguardhome`), which rewrites `*.<domain>` to the homelab's own
+Caddy, so LAN traffic never hairpins through the VPS. Anything that should reach the VPS from the
+LAN - at minimum the dashboard, `pangolin.<domain>` - needs its own exact rewrite to the VPS IP
+(exact matches beat the wildcard), set through `services.native.adguardhome.dnsRewrites` in the
+homelab's args.
+
+### Verify the Wildcard Record
+Before anything is deployed you can confirm the DNS layer - this is purely resolution, not HTTP.
+
+**Confirm the wildcard resolves to your VPS's public IP** from public resolvers (not your own, in
+case something is cached or rewritten locally), for a made-up subdomain with no explicit record:
+```bash
+$ dig @1.1.1.1 randomtest123.example.com +short
+$ dig @8.8.8.8 randomtest123.example.com +short
+$ dig @9.9.9.9 randomtest123.example.com +short
+```
+All three should return the VPS's real IP. A Cloudflare edge IP (e.g. `104.x.x.x`, `172.6x.x.x`)
+means the `Proxied` toggle didn't take.
+
 
 ## Let's Encrypt cert generation
 
