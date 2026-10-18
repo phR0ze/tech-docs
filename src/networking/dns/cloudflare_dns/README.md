@@ -11,8 +11,9 @@ mitigation.
 - [.. up dir](../README.md)
 - [Overview](#overview)
   - [Homelab overview](#homelab-overview)
-  - [Domain Name Registrar](#domain-name-registrar)
-  - [Configure DNS](#configure-dns)
+- [Domain Name Registrar](#domain-name-registrar)
+  - [Porkbun as Registrar](#porkbun-as-registrar)
+  - [Cloudflare as Registrar](#cloudflare-as-registrar)
   - [Verify the Wildcard Record](#verify-the-wildcard-record)
 - [Let's Encrypt cert generation](#lets-encrypt-cert-generation)
   - [Cloudflare API token](#cloudflare-api-token)
@@ -52,12 +53,40 @@ chains to a trusted CA (usually Let's Encrypt in both cases).
   token and the DNS gets overridden by Adguard's local DNS to point to Caddy's proxy port to
   Vaultwarden. 
 
-### Domain Name Registrar
-The first thing you need is to purchase a domain name to then use with Cloudflare DNS. There are 
+## Domain Name Registrar
+The first thing you need to purchase is a domain name to then use with Cloudflare DNS. There are 
 numerous registrars but Cloudflare is reliable, keeps prices steady and integrates well with the 
-rest of their system.
+rest of their system. That said you don't need to use Cloudflare as your registrar to use Cloudflare
+DNS. The DNS-01 cloudflare caddy support remains identical if you use Cloudflare as the registrar or
+Porkbun. The only difference is that you pay Porkbun and have to configure Cloudflare DNS servers for
+the porkbun name.
 
-### Configure DNS
+### Porkbun as Registrar
+1. Buy your porkbun domain name
+   1. Create a porkbun account
+   2. Choose your domain and purchase it
+2. Add domain to your cloudflare account
+   1. Login to cloudflare
+   2. Navigate to `Domains >Overview`
+   3. Click the `Add domain` button in the top right
+   4. Click `Connect a domain`
+   5. Enter your new domain name `example.com`
+   6. I just left the defaults for the next bot preference page and click `Continue`
+   7. Select the `Free` Cloudflare plan
+3. Setup appropriate DNS records
+   1. Delete all the existing copied over Porkbun records
+   2. Click `+ Add record`
+   3. Set `Type` to `A`, `Name` to `*`, `IPv4` to any address it won't be used e.g. `192.168.x.x`
+   4. Toggle off the `Proxied` option then click `Save`
+   5. Click `Continue to activation` and click through the proxied warning
+   6. Note on the next page the two nameservers that Cloudflare is providing for you
+4. Configure porkbun to use Cloudflare DNS
+   1. Back in porkbun navigate to `ACCOUNT >Domain Management`
+   2. Next to your domain name click the tiny `NS` button to open the Nameservers options
+   3. Delete the existing values and replace with the cloudflare given ones
+   4. Click `Save Nameservers`
+
+### Cloudflare as Registrar
 1. From the Cloudflare console navigate to `Domains >Overview`
 2. Choose the options menu to the right of your domain e.g. `example.com` and click `Configure DNS`
    * Alternately if you're already on the target domain config page use `DNS >Records`

@@ -7,7 +7,4 @@
 - [Adguard](adguard/README.md)
 - [Homarr](homarr/README.md)
 - [Portainer](portainer/README.md)
-- [Cloudflare DDNS](cloud_flare_ddns/README.md)
-- [Nginx Proxy Manager](nginx_proxy_manager/README.md)
 - [Twingate](twingate/README.md)
-

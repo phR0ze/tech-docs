@@ -165,9 +165,7 @@
   - [Homelab Security](homelab/security/README.md)
   - [Utils](homelab/utils/README.md)
     - [AdGuard Home](homelab/utils/adguard/README.md)
-    - [Cloudflare DDNS](homelab/utils/cloudflare_ddns/README.md)
     - [Homarr](homelab/utils/homarr/README.md)
-    - [Nginx Proxy Manager](homelab/utils/nginx_proxy_manager/README.md)
     - [Portainer](homelab/utils/portainer/README.md)
 
 - [Media](media/README.md)
